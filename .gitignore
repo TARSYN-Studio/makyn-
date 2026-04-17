@@ -1,9 +1,15 @@
 .env
+.env.local
+.env.*.local
 node_modules
 dist
+.next
+.turbo
 logs
 coverage
 *.log
+next-env.d.ts
+tsconfig.tsbuildinfo
 
 # Secrets / credentials — never commit
 *.json.key
