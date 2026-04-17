@@ -5,3 +5,11 @@ logs
 coverage
 *.log
 
+# Secrets / credentials — never commit
+*.json.key
+gcp-vision.json
+makyn-*.json
+ca-certificate.crt
+*.pem
+*.key
+
