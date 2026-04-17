@@ -5,6 +5,9 @@ import { logger } from "./utils/logger";
 
 async function main(): Promise<void> {
   const bot = createBot();
+  // Required because we call bot.handleUpdate directly (bypassing
+  // grammY's webhookCallback, which would have done this for us).
+  await bot.init();
   await registerWebhook(bot);
 
   const server = createWebhookServer(bot);
