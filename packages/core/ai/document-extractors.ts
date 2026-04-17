@@ -26,7 +26,15 @@ async function ocrImageFile(filePath: string): Promise<string> {
 
 async function ocrPdf(filePath: string): Promise<string> {
   const pages: string[] = [];
-  const doc = await pdf(filePath, { scale: 2.0 });
+  // disableWorker: Next.js bundles this route and doesn't ship pdfjs's
+  // pdf.worker.mjs into .next/server/... — run pdfjs on the main thread.
+  // pdfjs types omit disableWorker but it's a documented runtime option, and
+  // pdf-to-img's Options type doesn't surface docInitParams in our installed
+  // version. Cast through unknown to pass both options to pdfjs at runtime.
+  const doc = await pdf(filePath, {
+    scale: 2.0,
+    docInitParams: { disableWorker: true, useWorkerFetch: false, isEvalSupported: false }
+  } as unknown as Parameters<typeof pdf>[1]);
   let pageIndex = 0;
   for await (const page of doc) {
     // page is a Buffer (PNG image)
