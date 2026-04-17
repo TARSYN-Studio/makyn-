@@ -13,8 +13,8 @@ const envSchema = z.object({
   FOUNDER_ADMIN_CHAT_ID: z.coerce.bigint(),
   DATABASE_URL: z.string().min(1),
   DATABASE_CA_CERT_PATH: z.string().min(1),
-  ANTHROPIC_API_KEY: z.string().min(1),
-  ANTHROPIC_MODEL: z.string().default("claude-sonnet-4-20250514"),
+  OPENAI_API_KEY: z.string().min(1),
+  OPENAI_MODEL: z.string().default("gpt-5-mini"),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().min(1),
   NODE_ENV: z.enum(["development", "test", "production"]).default("production"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
@@ -34,4 +34,3 @@ if (!fs.existsSync(parsed.GOOGLE_APPLICATION_CREDENTIALS) && parsed.NODE_ENV ===
 }
 
 export const config = parsed;
-

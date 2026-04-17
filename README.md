@@ -1,6 +1,6 @@
 # MAKYN v0
 
-MAKYN v0 is a Telegram-based concierge MVP for Saudi compliance and professional-services communication. This build uses grammY, Prisma, Claude, Google Cloud Vision, PM2, and Caddy with a webhook-only production setup.
+MAKYN v0 is a Telegram-based concierge MVP for Saudi compliance and professional-services communication. This build uses grammY, Prisma, OpenAI GPT, Google Cloud Vision, PM2, and Caddy with a webhook-only production setup.
 
 ## Stack
 
@@ -8,7 +8,7 @@ MAKYN v0 is a Telegram-based concierge MVP for Saudi compliance and professional
 - TypeScript
 - grammY
 - Prisma + PostgreSQL 16
-- Anthropic Claude (`claude-sonnet-4-20250514`)
+- OpenAI GPT (`gpt-5-mini` by default)
 - Google Cloud Vision OCR
 - PM2
 - Caddy
@@ -90,8 +90,8 @@ FOUNDER_TELEGRAM_USER_ID=
 FOUNDER_ADMIN_CHAT_ID=
 DATABASE_URL=
 DATABASE_CA_CERT_PATH=/etc/ssl/vultr-db-ca.crt
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=claude-sonnet-4-20250514
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5-mini
 GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/gcp-vision.json
 NODE_ENV=production
 LOG_LEVEL=info
@@ -246,7 +246,7 @@ GROUP BY "detectedGovernmentBody";
 
 - Rotate the Telegram bot token and paste the new value into `/opt/makyn/.env`.
 - Rotate the database password and paste the new `DATABASE_URL` into `/opt/makyn/.env`.
-- Obtain the Anthropic API key and paste it into `/opt/makyn/.env`.
+- Obtain the OpenAI API key and paste it into `/opt/makyn/.env`.
 - Obtain the Google Cloud Vision service account JSON and place it at `/etc/secrets/gcp-vision.json`.
 - Point your domain’s A record to `139.84.138.94` and replace `<your-domain>` in `/opt/makyn/Caddyfile`.
 - Create the Telegram admin group, add the bot, capture the group chat ID, and paste it into `/opt/makyn/.env` as `FOUNDER_ADMIN_CHAT_ID`.
