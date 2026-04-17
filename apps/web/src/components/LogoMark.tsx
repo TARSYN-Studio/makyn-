@@ -1,41 +1,43 @@
+/* eslint-disable @next/next/no-img-element */
+// Plain <img> is intentional — we want the page to render even if
+// /logo.png is missing (no next/image build-time optimization pass).
+
+type Size = "sm" | "lg";
+
 export function LogoMark({
-  className = "h-5 w-5",
+  className = "",
   title = "MAKYN"
 }: {
   className?: string;
   title?: string;
 }) {
+  // Icon-scale usage: default 32px tall, native aspect ratio preserved.
   return (
-    <svg
-      viewBox="0 0 100 100"
-      className={className}
-      fill="currentColor"
-      aria-label={title}
-      role="img"
-    >
-      <rect x="13" y="13" width="16" height="74" />
-      <rect x="71" y="13" width="16" height="74" />
-      <polygon points="13,13 29,13 50,50 42,58" />
-      <polygon points="71,13 87,13 58,58 50,50" />
-    </svg>
+    <img
+      src="/logo.png"
+      alt={title}
+      className={`h-8 w-auto ${className}`}
+      style={{ width: "auto" }}
+    />
   );
 }
 
-export function Wordmark({ className = "" }: { className?: string }) {
+export function Wordmark({
+  className = "",
+  size = "sm",
+  title = "MAKYN"
+}: {
+  className?: string;
+  size?: Size;
+  title?: string;
+}) {
+  const sizeClass = size === "lg" ? "h-16" : "h-8";
   return (
-    <span className={`flex flex-col leading-none ${className}`}>
-      <span
-        className="text-[16px] font-bold text-[var(--text)]"
-        style={{ letterSpacing: "0.1em" }}
-      >
-        MAKYN
-      </span>
-      <span
-        className="text-[10px] font-normal text-[var(--text-dim)] mt-0.5"
-        style={{ letterSpacing: "0.06em" }}
-      >
-        by Tarsyn AI
-      </span>
-    </span>
+    <img
+      src="/logo.png"
+      alt={title}
+      className={`${sizeClass} w-auto ${className}`}
+      style={{ width: "auto" }}
+    />
   );
 }

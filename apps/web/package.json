@@ -12,9 +12,11 @@
   "dependencies": {
     "@makyn/core": "workspace:*",
     "@makyn/db": "workspace:*",
+    "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "^6.7.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.468.0",
     "next": "14.2.15",
     "react": "18.3.1",

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LoginForm } from "./login-form";
+import { Wordmark } from "@/components/LogoMark";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { t, type Lang } from "@/lib/i18n";
 import { getCurrentUser } from "@/lib/session";
@@ -13,9 +14,8 @@ export default async function LoginPage() {
     <div className="min-h-screen grid place-items-center px-4 bg-[var(--bg)]">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex items-center gap-2 text-[var(--accent)] mb-3">
-            <div className="h-9 w-9 rounded-md bg-[var(--accent)] text-white grid place-items-center font-bold">م</div>
-            <span className="font-semibold">{t("brand.name", lang)}</span>
+          <div className="mb-3">
+            <Wordmark size="sm" />
           </div>
           <h1 className="text-xl font-semibold text-[var(--text)]">{t("login.title", lang)}</h1>
         </CardHeader>

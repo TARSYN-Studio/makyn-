@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Wordmark } from "@/components/LogoMark";
 import { t, type Lang } from "@/lib/i18n";
 import { getCurrentUser } from "@/lib/session";
 
@@ -13,11 +14,8 @@ export default async function LandingPage() {
   return (
     <main className="min-h-screen bg-[var(--bg)]">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pt-24 pb-12 text-center">
-        <div className="mb-8 inline-flex items-center gap-2 text-[var(--accent)]">
-          <div className="h-10 w-10 rounded-md bg-[var(--accent)] text-white grid place-items-center font-bold">
-            م
-          </div>
-          <span className="text-xl font-semibold">{t("brand.name", lang)}</span>
+        <div className="mb-8 inline-flex items-center">
+          <Wordmark size="lg" />
         </div>
 
         <h1
