@@ -11,19 +11,24 @@ export default async function LandingPage() {
   const lang: Lang = "ar";
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-navy-50">
+    <main className="min-h-screen bg-[var(--bg)]">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pt-24 pb-12 text-center">
-        <div className="mb-8 inline-flex items-center gap-2 text-navy-500">
-          <div className="h-10 w-10 rounded-lg bg-navy-500 text-white grid place-items-center font-bold">
+        <div className="mb-8 inline-flex items-center gap-2 text-[var(--accent)]">
+          <div className="h-10 w-10 rounded-md bg-[var(--accent)] text-white grid place-items-center font-bold">
             م
           </div>
           <span className="text-xl font-semibold">{t("brand.name", lang)}</span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-navy-800 mb-4 leading-tight">
+        <h1
+          className="font-display-en text-[32px] md:text-[40px] text-[var(--text)] mb-4 leading-tight"
+          style={{ fontWeight: 400 }}
+        >
           {t("landing.headline", lang)}
         </h1>
-        <p className="text-slate-600 md:text-lg max-w-2xl mb-10">{t("landing.sub", lang)}</p>
+        <p className="text-[var(--text-mid)] md:text-[16px] max-w-2xl mb-10">
+          {t("landing.sub", lang)}
+        </p>
 
         <div className="flex items-center gap-3">
           <Link href="/signup">

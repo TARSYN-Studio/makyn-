@@ -21,7 +21,7 @@ export function ConnectTelegramCard({ lang }: { lang: Lang }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-600">
+      <p className="text-[13px] text-[var(--text-mid)]">
         {lang === "ar"
           ? "اربط حسابك بـ Telegram لتستقبل وتحوّل الإشعارات الحكومية إلى قضايا داخل لوحة التحكم."
           : "Link your Telegram account to receive and convert government notices into issues inside your dashboard."}
@@ -30,9 +30,9 @@ export function ConnectTelegramCard({ lang }: { lang: Lang }) {
         {t("channels.telegram.cta", lang)}
       </Button>
       {link && (
-        <p className="text-xs text-slate-500 break-all">
+        <p className="text-[12px] text-[var(--text-dim)] break-all">
           {lang === "ar" ? "لم يفتح Telegram؟ افتح الرابط مباشرة:" : "Telegram didn't open? Click directly:"}{" "}
-          <a className="text-navy-600 hover:underline" href={link} target="_blank" rel="noopener noreferrer">
+          <a className="text-[var(--accent)] hover:underline num" href={link} target="_blank" rel="noopener noreferrer">
             {link}
           </a>
         </p>

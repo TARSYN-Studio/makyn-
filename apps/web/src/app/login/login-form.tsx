@@ -30,7 +30,7 @@ export function LoginForm({ lang }: { lang: Lang }) {
         <Input name="password" id="password" type="password" required autoComplete="current-password" />
       </div>
       {state?.error === "invalid_credentials" && (
-        <p className="text-sm text-red-600">
+        <p className="text-[13px] text-[var(--red)]">
           {lang === "ar" ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password."}
         </p>
       )}

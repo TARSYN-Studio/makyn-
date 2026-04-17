@@ -27,25 +27,27 @@ export default async function OnboardingPage() {
   const step2Done = Boolean(telegramChannel);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12">
+    <div className="min-h-screen bg-[var(--bg)] px-4 py-12">
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-2xl font-semibold text-navy-800 mb-6">{t("onboarding.title", lang)}</h1>
+        <h1 className="text-2xl font-semibold text-[var(--text)] mb-6">{t("onboarding.title", lang)}</h1>
         <div className="space-y-4">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div
-                  className={`h-7 w-7 rounded-full grid place-items-center text-sm font-semibold ${
-                    step1Done ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-600"
+                  className={`h-7 w-7 rounded-full grid place-items-center text-[13px] font-semibold ${
+                    step1Done
+                      ? "bg-[var(--green)] text-white"
+                      : "bg-[var(--surface)] text-[var(--text-mid)] border border-[var(--border)]"
                   }`}
                 >
                   {step1Done ? "✓" : "1"}
                 </div>
-                <h2 className="font-semibold text-navy-800">{t("onboarding.step1", lang)}</h2>
+                <h2 className="font-semibold text-[var(--text)]">{t("onboarding.step1", lang)}</h2>
               </div>
             </CardHeader>
             <CardBody>
-              <p className="text-sm text-slate-600 mb-4">{t("onboarding.step1.desc", lang)}</p>
+              <p className="text-[13px] text-[var(--text-mid)] mb-4">{t("onboarding.step1.desc", lang)}</p>
               {!step1Done && (
                 <Link href="/companies/new">
                   <Button>{t("onboarding.addCompany", lang)}</Button>
@@ -58,17 +60,19 @@ export default async function OnboardingPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div
-                  className={`h-7 w-7 rounded-full grid place-items-center text-sm font-semibold ${
-                    step2Done ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-600"
+                  className={`h-7 w-7 rounded-full grid place-items-center text-[13px] font-semibold ${
+                    step2Done
+                      ? "bg-[var(--green)] text-white"
+                      : "bg-[var(--surface)] text-[var(--text-mid)] border border-[var(--border)]"
                   }`}
                 >
                   {step2Done ? "✓" : "2"}
                 </div>
-                <h2 className="font-semibold text-navy-800">{t("onboarding.step2", lang)}</h2>
+                <h2 className="font-semibold text-[var(--text)]">{t("onboarding.step2", lang)}</h2>
               </div>
             </CardHeader>
             <CardBody>
-              <p className="text-sm text-slate-600 mb-4">{t("onboarding.step2.desc", lang)}</p>
+              <p className="text-[13px] text-[var(--text-mid)] mb-4">{t("onboarding.step2.desc", lang)}</p>
               {!step2Done && (
                 <Link href="/channels">
                   <Button>{t("onboarding.connectTelegram", lang)}</Button>
