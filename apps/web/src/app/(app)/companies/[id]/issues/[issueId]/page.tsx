@@ -10,6 +10,7 @@ import { AddNoteForm } from "./add-note";
 import { CopyHandlerBrief } from "./copy-handler";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { PageFrame } from "@/components/PageFrame";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -85,7 +86,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
   const archiveConfirm = lang === "ar" ? "أرشفة القضية؟" : "Archive this issue?";
 
   return (
-    <div className="max-w-7xl">
+    <PageFrame className="max-w-7xl">
       {/* Breadcrumb */}
       <div className="mb-4 text-[12px] text-[var(--text-dim)]">
         <Link href="/companies" className="hover:text-[var(--accent)]">
@@ -357,6 +358,6 @@ export default async function IssueDetailPage({ params }: PageProps) {
           </Card>
         </aside>
       </div>
-    </div>
+    </PageFrame>
   );
 }

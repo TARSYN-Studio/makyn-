@@ -7,6 +7,9 @@ import { Badge, StatusDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
+import { PageFrame } from "@/components/PageFrame";
+import { Wordmark } from "@/components/LogoMark";
+import { NoCompanies } from "@/components/illustrations/NoCompanies";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -126,7 +129,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   ];
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <PageFrame className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <h1
           className="font-display-en text-[32px] leading-none text-[var(--text)]"
@@ -224,19 +227,29 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
       </div>
 
       {filtered.length === 0 && (
-        <Card>
-          <CardBody className="py-12 text-center">
-            <h2 className="text-[15px] font-semibold text-[var(--text)] mb-2">
-              {t("companies.empty.title", lang)}
-            </h2>
-            <p className="text-[13px] text-[var(--text-mid)] mb-6">
-              {t("companies.empty.desc", lang)}
-            </p>
-            <Link href="/companies/new">
-              <Button>+ {t("companies.add", lang)}</Button>
-            </Link>
-          </CardBody>
-        </Card>
+        <div className="relative">
+          <Card>
+            <CardBody className="py-12 text-center flex flex-col items-center gap-4">
+              <NoCompanies />
+              <h2 className="text-[15px] font-semibold text-[var(--text)]">
+                {t("companies.empty.title", lang)}
+              </h2>
+              <p className="text-[13px] text-[var(--text-mid)]">
+                {t("companies.empty.desc", lang)}
+              </p>
+              <Link href="/companies/new">
+                <Button>+ {t("companies.add", lang)}</Button>
+              </Link>
+            </CardBody>
+          </Card>
+          {/* Brand watermark — empty state only */}
+          <div
+            className="pointer-events-none absolute bottom-4 end-4 opacity-[0.06]"
+            aria-hidden
+          >
+            <Wordmark size="lg" className="h-20" />
+          </div>
+        </div>
       )}
 
       {view === "grid" && filtered.length > 0 && (
@@ -352,6 +365,6 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
           </Table>
         </Card>
       )}
-    </div>
+    </PageFrame>
   );
 }
