@@ -19,3 +19,4 @@ ca-certificate.crt
 *.pem
 *.key
 
+/.claude/worktrees/
