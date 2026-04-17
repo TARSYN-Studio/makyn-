@@ -1,0 +1,4 @@
+<your-domain> {
+  reverse_proxy /webhook/* localhost:8080
+  encode gzip
+}
