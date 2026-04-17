@@ -23,6 +23,11 @@ export type AppContext = Context & {
 export function createBot(): Bot<AppContext> {
   const bot = new Bot<AppContext>(config.TELEGRAM_BOT_TOKEN);
 
+  bot.use(async (ctx, next) => {
+    ctx.state = ctx.state ?? {};
+    await next();
+  });
+
   bot.use(loggingMiddleware);
   bot.use(authMiddleware);
 
