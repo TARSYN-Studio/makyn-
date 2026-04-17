@@ -33,7 +33,7 @@ export function Tr({ className, ...rest }: HTMLAttributes<HTMLTableRowElement>) 
   return (
     <tr
       className={cn(
-        "border-b border-[var(--border)] hover:bg-[var(--surface)] transition-colors",
+        "border-b border-[var(--border)] transition-colors",
         className
       )}
       {...rest}

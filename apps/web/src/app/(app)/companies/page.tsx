@@ -148,7 +148,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               <Link
                 key={f.key}
                 href={buildHref(searchParams, { filter: f.key })}
-                className={`px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
                   active
                     ? "bg-[var(--accent)] text-white"
                     : "bg-[var(--card)] border border-[var(--border)] text-[var(--text-mid)] hover:bg-[var(--surface)]"
@@ -170,7 +170,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             name="q"
             defaultValue={q}
             placeholder={lang === "ar" ? "بحث بالاسم أو السجل" : "Search name or CR"}
-            className="w-full rounded-md bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[13px] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
+            className="w-full rounded-lg bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[13px] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
           />
         </form>
 
@@ -182,7 +182,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
           <select
             name="sort"
             defaultValue={sort}
-            className="rounded-md bg-[var(--card)] border border-[var(--border)] px-2 py-1.5 text-[13px] text-[var(--text-mid)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
+            className="rounded-lg bg-[var(--card)] border border-[var(--border)] px-2 py-1.5 text-[13px] text-[var(--text-mid)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
           >
             {sorts.map((s) => (
               <option key={s.key} value={s.key}>
@@ -199,7 +199,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
         </form>
 
         {/* View toggle */}
-        <div className="ms-auto flex items-center rounded-md border border-[var(--border)] bg-[var(--card)] p-0.5">
+        <div className="ms-auto flex items-center rounded-lg border border-[var(--border)] bg-[var(--card)] p-0.5">
           {(["grid", "list"] as ViewKey[]).map((v) => (
             <Link
               key={v}
