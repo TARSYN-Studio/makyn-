@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  font-family: "IBM Plex Sans Arabic", Inter, system-ui, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: #f7f8fb;
+  color: #111827;
+}
+
+[dir="rtl"] {
+  font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+}

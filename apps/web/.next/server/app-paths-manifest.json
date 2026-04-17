@@ -1,0 +1,13 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/login/page": "app/login/page.js",
+  "/onboarding/page": "app/onboarding/page.js",
+  "/page": "app/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/(app)/companies/[id]/page": "app/(app)/companies/[id]/page.js",
+  "/(app)/companies/new/page": "app/(app)/companies/new/page.js",
+  "/(app)/companies/[id]/issues/[issueId]/page": "app/(app)/companies/[id]/issues/[issueId]/page.js",
+  "/(app)/channels/page": "app/(app)/channels/page.js",
+  "/(app)/settings/page": "app/(app)/settings/page.js",
+  "/(app)/companies/page": "app/(app)/companies/page.js"
+}
