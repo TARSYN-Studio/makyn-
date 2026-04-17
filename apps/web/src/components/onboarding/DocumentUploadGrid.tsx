@@ -198,9 +198,13 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
   const [dialogOpen, setDialogOpen] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const crUploaded = uploaded.has("COMMERCIAL_REGISTRATION");
-  const crStatus = statuses.get("COMMERCIAL_REGISTRATION");
-  const crDone = crUploaded && (crStatus?.extractionStatus === "COMPLETED" || crStatus?.extractionStatus === "PARTIAL" || crStatus?.extractionStatus === "FAILED");
+  const crUp = uploaded.get("COMMERCIAL_REGISTRATION");
+  const crStatus = crUp ? statuses.get(crUp.documentId) : null;
+  const crDone =
+    !!crUp &&
+    (crStatus?.extractionStatus === "COMPLETED" ||
+      crStatus?.extractionStatus === "PARTIAL" ||
+      crStatus?.extractionStatus === "FAILED");
   const canContinue = crDone;
 
   // Poll extraction status every 2 seconds for any pending/processing docs
