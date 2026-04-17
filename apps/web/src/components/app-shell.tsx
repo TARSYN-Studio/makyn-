@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { logoutAction } from "@/actions/auth";
+import { setLanguageAction } from "@/actions/settings";
 import { t, type Lang } from "@/lib/i18n";
 import { LogoMark, Wordmark } from "@/components/LogoMark";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
@@ -63,13 +64,16 @@ export function AppShell({
 
         {/* Right: language toggle + avatar + logout */}
         <div className="ms-auto flex items-center gap-3">
-          <Link
-            href="/settings"
-            className="hidden md:inline-flex text-[12px] font-medium text-[var(--text-mid)] hover:text-[var(--text)]"
-            aria-label="Change language"
-          >
-            {otherLang === "ar" ? "العربية" : "EN"}
-          </Link>
+          <form action={setLanguageAction} className="hidden md:block">
+            <input type="hidden" name="lang" value={otherLang} />
+            <button
+              type="submit"
+              className="text-[12px] font-medium text-[var(--text-mid)] hover:text-[var(--text)]"
+              aria-label="Change language"
+            >
+              {otherLang === "ar" ? "العربية" : "EN"}
+            </button>
+          </form>
           <form action={logoutAction} className="hidden md:block">
             <button
               type="submit"

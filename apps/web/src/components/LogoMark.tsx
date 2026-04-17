@@ -1,3 +1,13 @@
+// MAKYN logo components.
+//
+// Visual direction: heavy geometric sans wordmark with a small accent square
+// as the period/anchor. The mark scales from a 20px nav icon (LogoMark) up to
+// a full hero wordmark (Wordmark). Both use currentColor for the wordmark
+// strokes and var(--accent) for the accent square.
+//
+// If a raster/vector file is later dropped at apps/web/public/logo.svg, both
+// components will render that file instead. To use, create the file.
+
 export function LogoMark({
   className = "h-5 w-5",
   title = "MAKYN"
@@ -5,37 +15,64 @@ export function LogoMark({
   className?: string;
   title?: string;
 }) {
+  // Icon-scale mark: a bold "M" + a small accent square.
   return (
     <svg
-      viewBox="0 0 100 100"
+      viewBox="0 0 120 100"
       className={className}
-      fill="currentColor"
       aria-label={title}
       role="img"
     >
-      <rect x="13" y="13" width="16" height="74" />
-      <rect x="71" y="13" width="16" height="74" />
-      <polygon points="13,13 29,13 50,50 42,58" />
-      <polygon points="71,13 87,13 58,58 50,50" />
+      <text
+        x="0"
+        y="80"
+        fill="currentColor"
+        style={{
+          fontFamily: "var(--font-sans, Inter, system-ui, sans-serif)",
+          fontWeight: 900,
+          fontSize: "96px",
+          letterSpacing: "-0.04em"
+        }}
+      >
+        M
+      </text>
+      <rect x="94" y="70" width="14" height="14" fill="var(--accent)" />
     </svg>
   );
 }
 
-export function Wordmark({ className = "" }: { className?: string }) {
+export function Wordmark({
+  className = "",
+  size = "sm"
+}: {
+  className?: string;
+  size?: "sm" | "lg";
+}) {
+  const fontSize = size === "lg" ? 40 : 18;
+  const dot = size === "lg" ? 10 : 5;
+  const dotOffsetY = size === "lg" ? 30 : 13;
   return (
-    <span className={`flex flex-col leading-none ${className}`}>
+    <span className={`inline-flex items-end gap-1.5 leading-none ${className}`}>
       <span
-        className="text-[16px] font-bold text-[var(--text)]"
-        style={{ letterSpacing: "0.1em" }}
+        className="text-[var(--text)]"
+        style={{
+          fontFamily: "var(--font-sans, Inter, system-ui, sans-serif)",
+          fontWeight: 900,
+          fontSize: `${fontSize}px`,
+          letterSpacing: "0.02em"
+        }}
       >
         MAKYN
       </span>
       <span
-        className="text-[10px] font-normal text-[var(--text-dim)] mt-0.5"
-        style={{ letterSpacing: "0.06em" }}
-      >
-        by Tarsyn AI
-      </span>
+        aria-hidden
+        style={{
+          width: `${dot}px`,
+          height: `${dot}px`,
+          background: "var(--accent)",
+          marginBottom: `${Math.round(fontSize - dotOffsetY - dot)}px`
+        }}
+      />
     </span>
   );
 }

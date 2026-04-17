@@ -47,7 +47,14 @@ body {
 }
 
 html[lang="en"] body { font-family: var(--font-sans); }
-html[lang="ar"] body { font-family: var(--font-arabic); }
+html[lang="ar"] body {
+  font-family: var(--font-arabic);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+html[lang="ar"] .text-\[13px\] { font-size: 14px; }
+html[lang="ar"] .text-\[12px\] { font-size: 13px; }
+html[lang="ar"] .text-\[11px\] { font-size: 12px; }
 
 /* Display / font utilities */
 .font-display-en { font-family: var(--font-display); }

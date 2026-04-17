@@ -26,6 +26,18 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function setLanguageAction(formData: FormData) {
+  const user = await requireUser();
+  const raw = formData.get("lang")?.toString();
+  const parsed = languageSchema.safeParse(raw);
+  if (!parsed.success) return;
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { preferredLanguage: parsed.data }
+  });
+  revalidatePath("/", "layout");
+}
+
 export async function endSessionAction(sessionId: string) {
   const user = await requireUser();
   await destroySessionById(sessionId, user.id);

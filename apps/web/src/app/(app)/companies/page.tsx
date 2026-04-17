@@ -183,7 +183,6 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             name="sort"
             defaultValue={sort}
             className="rounded-md bg-[var(--card)] border border-[var(--border)] px-2 py-1.5 text-[13px] text-[var(--text-mid)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
-            onChange={() => undefined}
           >
             {sorts.map((s) => (
               <option key={s.key} value={s.key}>
