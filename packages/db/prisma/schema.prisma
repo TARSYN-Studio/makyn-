@@ -372,3 +372,14 @@ model AuditLog {
   @@index([eventType])
   @@index([occurredAt])
 }
+
+// Idempotency ledger for Telegram webhook updates. We write a row on first
+// receipt; the unique constraint on updateId makes retries fail with P2002
+// so we can skip re-processing instead of running the pipeline twice.
+model TelegramUpdate {
+  id         String   @id @default(uuid())
+  updateId   BigInt   @unique
+  receivedAt DateTime @default(now())
+
+  @@index([receivedAt])
+}

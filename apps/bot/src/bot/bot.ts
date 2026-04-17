@@ -1,6 +1,8 @@
 import http from "node:http";
 
-import { Bot, Context, webhookCallback } from "grammy";
+import { Prisma, prisma } from "@makyn/db";
+import { Bot, Context } from "grammy";
+import type { Update } from "grammy/types";
 
 import { config } from "../config";
 import { logger } from "../utils/logger";
@@ -59,11 +61,36 @@ export async function registerWebhook(bot: Bot<AppContext>): Promise<void> {
   });
 }
 
-export function createWebhookServer(bot: Bot<AppContext>): http.Server {
-  const handler = webhookCallback(bot, "http");
+async function readBody(req: http.IncomingMessage): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
 
+// Returns true if this update_id was seen before and should be skipped.
+// On DB failure we log and allow processing — better to risk a duplicate
+// than drop a real update.
+async function isDuplicateUpdate(updateId: number): Promise<boolean> {
+  try {
+    await prisma.telegramUpdate.create({ data: { updateId: BigInt(updateId) } });
+    return false;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return true;
+    }
+    logger.error({ error, updateId }, "telegram_update_dedup_failed");
+    return false;
+  }
+}
+
+export function createWebhookServer(bot: Bot<AppContext>): http.Server {
   return http.createServer(async (req, res) => {
-    if (!req.url?.startsWith(`/webhook/${config.TELEGRAM_WEBHOOK_SECRET}`)) {
+    if (req.method !== "POST" || !req.url?.startsWith(`/webhook/${config.TELEGRAM_WEBHOOK_SECRET}`)) {
       res.statusCode = 404;
       res.end("Not found");
       return;
@@ -75,6 +102,27 @@ export function createWebhookServer(bot: Bot<AppContext>): http.Server {
       return;
     }
 
-    await handler(req, res);
+    let update: Update;
+    try {
+      update = JSON.parse(await readBody(req)) as Update;
+    } catch {
+      res.statusCode = 400;
+      res.end("Bad request");
+      return;
+    }
+
+    if (await isDuplicateUpdate(update.update_id)) {
+      logger.info({ updateId: update.update_id }, "telegram_update_duplicate_skipped");
+      res.statusCode = 200;
+      res.end();
+      return;
+    }
+
+    res.statusCode = 200;
+    res.end();
+
+    bot.handleUpdate(update).catch((err) => {
+      logger.error({ err, updateId: update.update_id }, "telegram_handle_update_failed");
+    });
   });
 }
