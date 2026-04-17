@@ -611,7 +611,7 @@ export default async function DashboardPage() {
   );
 }
 
-type StatIcon = React.ComponentType<{ className?: string; weight?: "duotone" | "regular" }>;
+type StatIcon = import("@phosphor-icons/react").Icon;
 
 function StatCard({
   label,
