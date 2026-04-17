@@ -15,6 +15,8 @@ import { Badge, StatusDot } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
+import { PageFrame } from "@/components/PageFrame";
+import { NoIssues } from "@/components/illustrations/NoIssues";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -234,7 +236,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   const timeline = events.slice(0, 30);
 
   return (
-    <div className="max-w-6xl">
+    <PageFrame className="max-w-6xl">
       <div className="mb-2">
         <Link
           href="/companies"
@@ -313,8 +315,11 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <div className="space-y-6">
           {activeIssues.length === 0 && (
             <Card>
-              <CardBody className="py-8 text-center text-[var(--text-dim)] text-[13px]">
-                {t("company.noOpenIssues", lang)}
+              <CardBody className="py-10 flex flex-col items-center text-center gap-3">
+                <NoIssues />
+                <p className="text-[13px] text-[var(--text-dim)]">
+                  {t("company.noOpenIssues", lang)}
+                </p>
               </CardBody>
             </Card>
           )}
@@ -525,7 +530,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
           )}
         </>
       )}
-    </div>
+    </PageFrame>
   );
 }
 
