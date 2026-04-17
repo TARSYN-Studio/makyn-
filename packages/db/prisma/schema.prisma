@@ -34,6 +34,7 @@ model User {
   messages      Message[]
   issues        Issue[]
   issueNotes    IssueNote[]
+  documents     CompanyDocument[]
 
   @@index([email])
   @@index([phoneNumber])
@@ -90,8 +91,70 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  issues   Issue[]
-  messages Message[]
+  // Chamber of Commerce
+  chamberMembershipNumber String?
+  chamberMembershipExpiry DateTime?
+
+  // Mudad / WPS
+  mudadWpsCompliant   Boolean?
+  mudadLastUpdateDate DateTime?
+
+  // Civil Defense
+  civilDefenseCertNumber String?
+  civilDefenseExpiry     DateTime?
+
+  // Ministry of Industry
+  industryLicenseNumber String?
+  industryLicenseExpiry DateTime?
+  industryActivities    String?   @db.Text
+
+  // SFDA
+  sfdaLicenseNumber String?
+  sfdaLicenseType   String?
+  sfdaLicenseExpiry DateTime?
+
+  // Ministry of Health
+  mohLicenseNumber String?
+  mohFacilityType  String?
+  mohLicenseExpiry DateTime?
+
+  // Ministry of Tourism
+  tourismLicenseNumber    String?
+  tourismClassification   String?
+  tourismLicenseExpiry    DateTime?
+
+  // CST
+  cstLicenseNumber String?
+  cstServiceType   String?
+
+  // SAMA
+  samaLicenseNumber String?
+  samaLicenseType   String?
+
+  // CMA
+  cmaLicenseNumber String?
+  cmaLicenseType   String?
+
+  // MISA
+  misaLicenseNumber String?
+  misaLicenseExpiry DateTime?
+
+  // SASO
+  sasoCertNumber String?
+
+  // Monsha'at
+  monshaatRegistrationId String?
+
+  // Professional bodies (SOCPA / SCE)
+  professionalBodyMembershipNumber String?
+  professionalBodyType             String?
+
+  // Free-form for misc documents
+  otherDocuments Json?
+
+  issues    Issue[]
+  messages  Message[]
+  documents CompanyDocument[]
 
   @@index([ownerId])
   @@index([crNumber])
@@ -326,6 +389,82 @@ enum FounderAction {
   EDITED
   REJECTED
   PENDING
+}
+
+// ==========================================================================
+//  COMPANY DOCUMENTS (document-driven onboarding)
+// ==========================================================================
+
+model CompanyDocument {
+  id        String   @id @default(uuid())
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  docType      DocumentType
+  originalName String
+  storagePath  String
+  mimeType     String
+  fileSizeBytes Int
+
+  ocrText               String?          @db.Text
+  extractedData         Json?
+  extractionVersion     String?
+  extractionConfidence  Float?
+  extractionStatus      ExtractionStatus @default(PENDING)
+  extractionError       String?          @db.Text
+  extractionStartedAt   DateTime?
+  extractionCompletedAt DateTime?
+
+  sessionId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([docType])
+  @@index([sessionId])
+}
+
+enum DocumentType {
+  COMMERCIAL_REGISTRATION
+  ZATCA_VAT_CERTIFICATE
+  ZAKAT_ASSESSMENT
+  CHAMBER_OF_COMMERCE
+  GOSI_REGISTRATION
+  QIWA_ESTABLISHMENT
+  MUDAD_CERTIFICATE
+  MUQEEM_ACCOUNT
+  BALADY_LICENSE
+  CIVIL_DEFENSE_CERT
+  MINISTRY_OF_INDUSTRY
+  MINISTRY_OF_HEALTH
+  MINISTRY_OF_TOURISM
+  MINISTRY_OF_JUSTICE
+  MINISTRY_OF_ENVIRONMENT
+  MINISTRY_OF_CULTURE
+  MINISTRY_OF_SPORTS
+  SFDA_LICENSE
+  SASO_CERTIFICATE
+  CST_LICENSE
+  SAMA_LICENSE
+  CMA_LICENSE
+  MISA_INVESTMENT_LICENSE
+  MONSHAAT_REGISTRATION
+  SOCPA_MEMBERSHIP
+  SCE_MEMBERSHIP
+  MHRSD_NITAQAT
+  OTHER
+}
+
+enum ExtractionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIAL
 }
 
 // ==========================================================================
