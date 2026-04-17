@@ -37,13 +37,19 @@ mkdir -p /var/makyn/media /var/log/makyn /etc/secrets
 chown -R "$APP_USER:$APP_USER" /var/makyn /var/log/makyn "$APP_DIR"
 chmod 750 /var/makyn /var/log/makyn
 
-curl -fsSL https://docs.vultr.com/public/documents/managed-databases/ca-certificates/vultr-global-root-ca.crt -o "$DB_CA_PATH"
-chmod 644 "$DB_CA_PATH"
+if [[ ! -f "$DB_CA_PATH" ]]; then
+  echo "DB CA cert missing at $DB_CA_PATH — attempting download."
+  if ! curl -fsSL https://docs.vultr.com/public/documents/managed-databases/ca-certificates/vultr-global-root-ca.crt -o "$DB_CA_PATH"; then
+    echo "WARNING: could not auto-download Vultr CA cert. Place it at $DB_CA_PATH manually before the bot starts."
+  fi
+fi
+[[ -f "$DB_CA_PATH" ]] && chmod 644 "$DB_CA_PATH"
 
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow 22/tcp
+ufw allow 80/tcp
 ufw allow 443/tcp
 ufw --force enable
 
