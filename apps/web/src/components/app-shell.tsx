@@ -3,7 +3,7 @@ import Link from "next/link";
 import { logoutAction } from "@/actions/auth";
 import { setLanguageAction } from "@/actions/settings";
 import { t, type Lang } from "@/lib/i18n";
-import { LogoMark, Wordmark } from "@/components/LogoMark";
+import { Wordmark } from "@/components/LogoMark";
 import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 
 export function AppShell({
@@ -31,9 +31,8 @@ export function AppShell({
     <div className="min-h-screen bg-[var(--bg)] flex flex-col">
       <header className="h-14 bg-[var(--card)] border-b border-[var(--border)] flex items-center px-4 md:px-6">
         {/* Left: logo + wordmark */}
-        <Link href="/dashboard" className="flex items-center gap-2.5 me-6 shrink-0">
-          <LogoMark className="h-5 w-5 text-[var(--accent)]" />
-          <Wordmark className="hidden sm:flex" />
+        <Link href="/dashboard" className="flex items-center me-6 shrink-0">
+          <Wordmark size="sm" />
         </Link>
 
         {/* Center: desktop nav */}
