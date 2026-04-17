@@ -4,18 +4,88 @@
 
 :root {
   color-scheme: light;
+
+  /* Font stacks */
+  --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
+  --font-display: var(--font-serif), Georgia, serif;
+  --font-mono-stack: var(--font-mono), "SF Mono", Consolas, monospace;
+  --font-arabic: var(--font-ar), "IBM Plex Sans Arabic", "Geeza Pro", system-ui, sans-serif;
+
+  /* Color tokens — Slate warm canvas */
+  --bg: #F5F5F0;
+  --surface: #FAFAF7;
+  --card: #FFFFFF;
+  --border: #E5E4DC;
+  --border-s: #CECCC0;
+  --text: #1A1A14;
+  --text-mid: #4A4A3C;
+  --text-dim: #9A9A88;
+  --accent: #1E3A8A;
+  --accent-mid: #2D52B8;
+  --accent-l: #EEF2FF;
+  --accent-xl: #F5F7FF;
+  --red: #B91C1C;
+  --red-l: #FEF2F2;
+  --green: #065F46;
+  --green-l: #ECFDF5;
+  --amber: #92400E;
+  --amber-l: #FFFBEB;
+  --teal: #0E7490;
+  --teal-l: #F0FDFA;
 }
 
 html {
-  font-family: "IBM Plex Sans Arabic", Inter, system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 body {
   min-height: 100vh;
-  background: #f7f8fb;
-  color: #111827;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
 }
 
-[dir="rtl"] {
-  font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+html[lang="en"] body { font-family: var(--font-sans); }
+html[lang="ar"] body { font-family: var(--font-arabic); }
+
+/* Display / font utilities */
+.font-display-en { font-family: var(--font-display); }
+html[lang="ar"] .font-display-en { font-family: var(--font-arabic); font-weight: 600; }
+
+.font-mono { font-family: var(--font-mono-stack); letter-spacing: -0.01em; }
+
+.text-ar { font-family: var(--font-arabic) !important; direction: rtl; }
+
+.num {
+  font-family: var(--font-mono-stack);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Directional icon flip helper for RTL */
+[dir="rtl"] .flip-rtl { transform: scaleX(-1); }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 200ms ease-out both; }
+
+@keyframes urgentPulse {
+  0%, 100% { border-color: var(--red); }
+  50% { border-color: rgba(185, 28, 28, 0.4); }
+}
+.urgent-pulse { animation: urgentPulse 2s ease-in-out infinite; }
+
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 0%, rgba(255,255,255,0.6) 50%, var(--border) 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s linear infinite;
 }
