@@ -30,7 +30,7 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
   const result = await login({ email, password });
   if (!result.ok) return { error: "invalid_credentials" };
 
-  redirect("/companies");
+  redirect("/dashboard");
 }
 
 export async function logoutAction() {

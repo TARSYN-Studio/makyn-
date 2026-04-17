@@ -26,7 +26,7 @@ export function ReviewFieldGroup({ titleAr, titleEn, fields, lang, onChange }: P
 
   return (
     <fieldset className="border border-gray-200 rounded-lg overflow-hidden">
-      <legend className="px-4 py-2 bg-navy-50 w-full text-left font-semibold text-navy-800 text-sm border-b border-gray-200">
+      <legend className="px-4 py-2 bg-[var(--accent-xl)] w-full text-start font-semibold text-[var(--text)] text-[13px] border-b border-[var(--border)]">
         {isAr ? titleAr : titleEn}
       </legend>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 p-4">

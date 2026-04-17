@@ -2,15 +2,42 @@ import { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-type Variant = "neutral" | "green" | "yellow" | "red" | "navy" | "gold";
+type Variant =
+  | "neutral"
+  | "green"
+  | "yellow"
+  | "amber"
+  | "red"
+  | "navy"
+  | "accent"
+  | "gold"
+  | "teal"
+  | "progress"
+  | "open"
+  | "urgent"
+  | "waiting"
+  | "done"
+  | "escalated";
 
 const tones: Record<Variant, string> = {
-  neutral: "bg-slate-100 text-slate-700",
-  green: "bg-emerald-100 text-emerald-800",
-  yellow: "bg-amber-100 text-amber-800",
-  red: "bg-red-100 text-red-700",
-  navy: "bg-navy-100 text-navy-700",
-  gold: "bg-gold-500/10 text-gold-600 border border-gold-500/30"
+  neutral: "bg-[var(--surface)] text-[var(--text-mid)]",
+  // Status tones
+  urgent: "bg-[var(--red-l)] text-[var(--red)]",
+  red: "bg-[var(--red-l)] text-[var(--red)]",
+  open: "bg-[var(--accent-l)] text-[var(--accent)]",
+  navy: "bg-[var(--accent-l)] text-[var(--accent)]",
+  accent: "bg-[var(--accent-l)] text-[var(--accent)]",
+  progress: "bg-[var(--teal-l)] text-[var(--teal)]",
+  teal: "bg-[var(--teal-l)] text-[var(--teal)]",
+  waiting: "bg-[var(--amber-l)] text-[var(--amber)]",
+  yellow: "bg-[var(--amber-l)] text-[var(--amber)]",
+  amber: "bg-[var(--amber-l)] text-[var(--amber)]",
+  done: "bg-[var(--green-l)] text-[var(--green)]",
+  green: "bg-[var(--green-l)] text-[var(--green)]",
+  escalated:
+    "bg-[var(--red-l)] text-[var(--red)] border border-[rgba(185,28,28,0.3)]",
+  // Legacy alias
+  gold: "bg-[var(--accent-l)] text-[var(--accent)]"
 };
 
 export function Badge({
@@ -21,7 +48,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded px-2 py-0.5 text-[11px] font-medium",
         tones[variant],
         className
       )}
@@ -31,6 +58,16 @@ export function Badge({
 }
 
 export function StatusDot({ color }: { color: "green" | "yellow" | "red" }) {
-  const tone = color === "green" ? "bg-emerald-500" : color === "yellow" ? "bg-amber-500" : "bg-red-500";
-  return <span className={cn("inline-block h-2.5 w-2.5 rounded-full", tone)} aria-hidden />;
+  const tone =
+    color === "green"
+      ? "bg-[var(--green)]"
+      : color === "yellow"
+        ? "bg-[var(--amber)]"
+        : "bg-[var(--red)]";
+  return (
+    <span
+      className={cn("inline-block h-2.5 w-2.5 rounded-full", tone)}
+      aria-hidden
+    />
+  );
 }

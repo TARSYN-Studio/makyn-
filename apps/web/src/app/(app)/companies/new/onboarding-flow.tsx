@@ -56,23 +56,23 @@ export function OnboardingFlow({ lang }: { lang: Lang }) {
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                 i < currentIndex
-                  ? "bg-green-500 text-white"
+                  ? "bg-[var(--green)] text-white"
                   : i === currentIndex
-                    ? "bg-navy-700 text-white"
-                    : "bg-gray-200 text-gray-500"
+                    ? "bg-[var(--accent)] text-white"
+                    : "bg-[var(--surface)] text-[var(--text-dim)] border border-[var(--border)]"
               }`}
             >
               {i < currentIndex ? "✓" : i + 1}
             </div>
             <span
               className={`text-sm ${
-                i === currentIndex ? "font-semibold text-navy-800" : "text-gray-400"
+                i === currentIndex ? "font-semibold text-[var(--text)]" : "text-[var(--text-dim)]"
               }`}
             >
               {STAGE_LABELS[s]}
             </span>
             {i < stageOrder.length - 1 && (
-              <div className={`h-px w-8 ${i < currentIndex ? "bg-green-400" : "bg-gray-200"}`} />
+              <div className={`h-px w-8 ${i < currentIndex ? "bg-[var(--green)]" : "bg-[var(--border)]"}`} />
             )}
           </div>
         ))}

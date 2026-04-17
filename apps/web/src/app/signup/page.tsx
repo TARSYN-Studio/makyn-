@@ -10,20 +10,20 @@ export default async function SignupPage() {
   const lang: Lang = user?.preferredLanguage === "en" ? "en" : "ar";
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 bg-slate-50">
+    <div className="min-h-screen grid place-items-center px-4 bg-[var(--bg)]">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex items-center gap-2 text-navy-500 mb-3">
-            <div className="h-9 w-9 rounded-lg bg-navy-500 text-white grid place-items-center font-bold">م</div>
+          <div className="flex items-center gap-2 text-[var(--accent)] mb-3">
+            <div className="h-9 w-9 rounded-md bg-[var(--accent)] text-white grid place-items-center font-bold">م</div>
             <span className="font-semibold">{t("brand.name", lang)}</span>
           </div>
-          <h1 className="text-xl font-semibold text-navy-800">{t("signup.title", lang)}</h1>
+          <h1 className="text-xl font-semibold text-[var(--text)]">{t("signup.title", lang)}</h1>
         </CardHeader>
         <CardBody>
           <SignupForm lang={lang} />
-          <p className="text-sm text-slate-600 mt-6 text-center">
+          <p className="text-[13px] text-[var(--text-mid)] mt-6 text-center">
             {t("signup.haveAccount", lang)}{" "}
-            <Link href="/login" className="text-navy-500 hover:underline">
+            <Link href="/login" className="text-[var(--accent)] hover:underline">
               {t("signup.login", lang)}
             </Link>
           </p>

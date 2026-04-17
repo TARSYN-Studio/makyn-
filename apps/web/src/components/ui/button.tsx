@@ -8,17 +8,22 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
-  primary: "bg-navy-500 text-white hover:bg-navy-600 focus:ring-navy-400",
-  secondary: "bg-white border border-navy-200 text-navy-700 hover:bg-navy-50 focus:ring-navy-400",
-  ghost: "bg-transparent text-navy-700 hover:bg-navy-50 focus:ring-navy-400",
-  danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-400",
-  gold: "bg-gold-500 text-white hover:bg-gold-600 focus:ring-gold-400"
+  primary:
+    "bg-[var(--accent)] text-white hover:bg-[var(--accent-mid)] active:scale-[0.98] focus:border-[var(--accent)]",
+  secondary:
+    "bg-transparent text-[var(--text-mid)] border border-[var(--border)] hover:bg-[var(--surface)] focus:border-[var(--accent)]",
+  ghost:
+    "bg-transparent text-[var(--text-mid)] hover:bg-[var(--surface)] focus:border-[var(--accent)]",
+  danger:
+    "bg-[var(--red)] text-white hover:brightness-110 focus:border-[var(--red)]",
+  // Legacy alias — "gold" used to mean a warm accent; route to primary.
+  gold: "bg-[var(--accent)] text-white hover:bg-[var(--accent-mid)] active:scale-[0.98]"
 };
 
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
-  sm: "h-8 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
-  lg: "h-12 px-6 text-base"
+  sm: "h-8 px-3 text-[13px]",
+  md: "px-[18px] py-[10px] text-[13px]",
+  lg: "h-11 px-6 text-[14px]"
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -30,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center rounded-md font-medium transition-colors duration-[120ms] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] disabled:pointer-events-none disabled:opacity-50",
         variants[variant],
         sizes[size],
         className

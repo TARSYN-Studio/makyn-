@@ -26,15 +26,15 @@ export default async function ChannelsPage() {
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-2xl font-semibold text-navy-800 mb-6">{t("channels.title", lang)}</h1>
+      <h1 className="text-2xl font-semibold text-[var(--text)] mb-6">{t("channels.title", lang)}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-navy-800">{t("channels.telegram", lang)}</h2>
+              <h2 className="font-semibold text-[var(--text)]">{t("channels.telegram", lang)}</h2>
               {telegram ? (
-                <Badge variant="green">✅</Badge>
+                <Badge variant="done">✅</Badge>
               ) : (
                 <Badge variant="neutral">—</Badge>
               )}
@@ -42,12 +42,12 @@ export default async function ChannelsPage() {
           </CardHeader>
           <CardBody>
             {telegram ? (
-              <div className="space-y-3 text-sm text-slate-700">
+              <div className="space-y-3 text-[13px] text-[var(--text)]">
                 <div>
                   {t("channels.telegram.connected", lang)}{" "}
-                  <span className="font-medium">@{telegram.externalHandle ?? "?"}</span>
+                  <span className="font-medium num">@{telegram.externalHandle ?? "?"}</span>
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-[12px] text-[var(--text-dim)] num">
                   {t("channels.telegram.lastUsed", lang)}: {relative(telegram.lastUsedAt, lang)}
                 </div>
                 <DisconnectTelegramButton lang={lang} />
@@ -58,15 +58,15 @@ export default async function ChannelsPage() {
           </CardBody>
         </Card>
 
-        <Card className="border-gold-500/30 bg-gold-500/5 relative">
+        <Card className="border-[var(--accent-l)] bg-[var(--accent-xl)] relative">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-navy-800">{t("channels.whatsapp", lang)}</h2>
-              <Badge variant="gold">{t("channels.whatsapp.soon", lang)}</Badge>
+              <h2 className="font-semibold text-[var(--text)]">{t("channels.whatsapp", lang)}</h2>
+              <Badge variant="accent">{t("channels.whatsapp.soon", lang)}</Badge>
             </div>
           </CardHeader>
           <CardBody>
-            <p className="text-sm text-slate-600">{t("channels.whatsapp.desc", lang)}</p>
+            <p className="text-[13px] text-[var(--text-mid)]">{t("channels.whatsapp.desc", lang)}</p>
           </CardBody>
         </Card>
       </div>

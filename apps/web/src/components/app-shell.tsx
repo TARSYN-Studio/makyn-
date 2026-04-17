@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { LogOut, Building2, MessageSquare, Settings, Globe } from "lucide-react";
 
 import { logoutAction } from "@/actions/auth";
 import { t, type Lang } from "@/lib/i18n";
+import { LogoMark, Wordmark } from "@/components/LogoMark";
+import { MobileNavDrawer } from "@/components/MobileNavDrawer";
 
 export function AppShell({
   children,
@@ -16,74 +17,85 @@ export function AppShell({
   activePath: string;
 }) {
   const nav = [
-    { href: "/companies", label: t("nav.companies", lang), Icon: Building2 },
-    { href: "/channels", label: t("nav.channels", lang), Icon: MessageSquare },
-    { href: "/settings", label: t("nav.settings", lang), Icon: Settings }
+    { href: "/dashboard", label: t("nav.dashboard", lang) },
+    { href: "/companies", label: t("nav.companies", lang) },
+    { href: "/channels", label: t("nav.channels", lang) },
+    { href: "/settings", label: t("nav.settings", lang) }
   ];
 
+  const initial = (userName ?? "").trim().slice(0, 1).toUpperCase() || "·";
+  const otherLang: Lang = lang === "ar" ? "en" : "ar";
+
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <aside className="hidden md:flex flex-col w-64 border-e border-slate-200 bg-white">
-        <div className="flex items-center gap-2 px-5 py-5 border-b border-slate-100">
-          <div className="h-9 w-9 rounded-lg bg-navy-500 text-white grid place-items-center font-bold">م</div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-navy-800">{t("brand.name", lang)}</span>
-            <span className="text-xs text-slate-500">{t("brand.tagline", lang)}</span>
-          </div>
-        </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {nav.map(({ href, label, Icon }) => {
+    <div className="min-h-screen bg-[var(--bg)] flex flex-col">
+      <header className="h-14 bg-[var(--card)] border-b border-[var(--border)] flex items-center px-4 md:px-6">
+        {/* Left: logo + wordmark */}
+        <Link href="/dashboard" className="flex items-center gap-2.5 me-6 shrink-0">
+          <LogoMark className="h-5 w-5 text-[var(--accent)]" />
+          <Wordmark className="hidden sm:flex" />
+        </Link>
+
+        {/* Center: desktop nav */}
+        <nav className="hidden md:flex items-center gap-1 h-full">
+          {nav.map(({ href, label }) => {
             const active = activePath === href || activePath.startsWith(`${href}/`);
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  active ? "bg-navy-50 text-navy-700" : "text-slate-600 hover:bg-slate-50"
+                className={`relative h-full flex items-center px-3 text-[13px] font-medium transition-colors ${
+                  active
+                    ? "text-[var(--text)]"
+                    : "text-[var(--text-mid)] hover:text-[var(--text)]"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
+                {label}
+                {active && (
+                  <span
+                    className="absolute left-0 right-0 bottom-0 h-[2px] bg-[var(--accent)]"
+                    aria-hidden
+                  />
+                )}
               </Link>
             );
           })}
         </nav>
-        <div className="px-3 py-4 border-t border-slate-100">
-          <div className="flex items-center gap-2 px-3 py-2 text-sm">
-            <div className="h-8 w-8 rounded-full bg-navy-100 text-navy-700 grid place-items-center text-xs font-semibold">
-              {userName.slice(0, 1)}
-            </div>
-            <span className="truncate text-slate-700">{userName}</span>
-          </div>
-          <form action={logoutAction}>
+
+        {/* Right: language toggle + avatar + logout */}
+        <div className="ms-auto flex items-center gap-3">
+          <Link
+            href="/settings"
+            className="hidden md:inline-flex text-[12px] font-medium text-[var(--text-mid)] hover:text-[var(--text)]"
+            aria-label="Change language"
+          >
+            {otherLang === "ar" ? "العربية" : "EN"}
+          </Link>
+          <form action={logoutAction} className="hidden md:block">
             <button
               type="submit"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+              className="text-[12px] font-medium text-[var(--text-mid)] hover:text-[var(--text)]"
             >
-              <LogOut className="h-4 w-4" />
-              <span>{t("nav.logout", lang)}</span>
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      <main className="flex-1 flex flex-col">
-        <header className="h-14 border-b border-slate-200 bg-white px-6 flex items-center justify-between">
-          <div className="md:hidden flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-navy-500 text-white grid place-items-center text-sm font-bold">م</div>
-            <span className="font-semibold text-navy-800">{t("brand.name", lang)}</span>
-          </div>
-          <div className="hidden md:flex items-center gap-1 text-sm text-slate-500">
-            <Globe className="h-4 w-4" />
-            <span>{lang === "ar" ? "العربية" : "English"}</span>
-          </div>
-          <form action={logoutAction} className="md:hidden">
-            <button type="submit" className="text-sm text-slate-600">
               {t("nav.logout", lang)}
             </button>
           </form>
-        </header>
-        <div className="flex-1 p-6">{children}</div>
+          <div
+            className="h-8 w-8 rounded-full bg-[var(--accent)] text-white grid place-items-center text-[13px] font-semibold"
+            aria-label={userName}
+            title={userName}
+          >
+            {initial}
+          </div>
+          <MobileNavDrawer
+            lang={lang}
+            activePath={activePath}
+            nav={nav}
+            logoutLabel={t("nav.logout", lang)}
+          />
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col">
+        <div className="flex-1 px-4 md:px-6 py-6 fade-in">{children}</div>
       </main>
     </div>
   );
