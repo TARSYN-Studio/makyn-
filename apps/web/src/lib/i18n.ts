@@ -6,10 +6,36 @@ const AR: Dict = {
   "brand.name": "مكين",
   "brand.tagline": "مركز عمليات الامتثال السعودي",
 
+  "nav.dashboard": "لوحة القيادة",
   "nav.companies": "شركاتي",
   "nav.channels": "القنوات",
   "nav.settings": "الإعدادات",
   "nav.logout": "تسجيل الخروج",
+
+  "dashboard.greeting.morning": "صباح الخير، أستاذ {name}",
+  "dashboard.greeting.afternoon": "مساء الخير، أستاذ {name}",
+  "dashboard.greeting.evening": "مساء الخير، أستاذ {name}",
+  "dashboard.urgencyBanner.count": "عاجل: لديك {n} قضية تحتاج إجراء اليوم",
+  "dashboard.viewAllUrgent": "عرض كل القضايا العاجلة",
+  "dashboard.metrics.companies": "إجمالي الشركات",
+  "dashboard.metrics.openIssues": "قضايا مفتوحة",
+  "dashboard.metrics.dueThisWeek": "مستحقة هذا الأسبوع",
+  "dashboard.metrics.resolvedThisMonth": "تم حلها هذا الشهر",
+  "dashboard.metrics.comparedToPrev": "مقارنة بالأسبوع الماضي",
+  "dashboard.companiesSection": "شركاتي",
+  "dashboard.activitySection": "النشاط الأخير",
+  "dashboard.deadlinesSection": "المواعيد النهائية القادمة",
+  "dashboard.addCompany": "إضافة شركة",
+  "dashboard.activity.newIssue": "قضية جديدة",
+  "dashboard.activity.resolved": "تم حل قضية",
+  "dashboard.activity.docExtracted": "تم استخراج مستند",
+  "dashboard.activity.deadlineSoon": "موعد نهائي قريب",
+  "dashboard.activity.noticeReceived": "تم استلام إشعار",
+  "dashboard.deadline.in": "خلال {count} يوم",
+  "dashboard.deadline.today": "اليوم",
+  "dashboard.deadline.tomorrow": "غداً",
+  "dashboard.noActivity": "لا يوجد نشاط حديث",
+  "dashboard.noDeadlines": "لا توجد مواعيد نهائية قريبة",
 
   "landing.cta": "ابدأ الآن",
   "landing.signin": "تسجيل الدخول",
@@ -149,10 +175,36 @@ const EN: Dict = {
   "brand.name": "MAKYN",
   "brand.tagline": "Saudi compliance command center",
 
+  "nav.dashboard": "Dashboard",
   "nav.companies": "Companies",
   "nav.channels": "Channels",
   "nav.settings": "Settings",
   "nav.logout": "Sign out",
+
+  "dashboard.greeting.morning": "Good morning, {name}",
+  "dashboard.greeting.afternoon": "Good afternoon, {name}",
+  "dashboard.greeting.evening": "Good evening, {name}",
+  "dashboard.urgencyBanner.count": "Urgent: {n} issues need action today",
+  "dashboard.viewAllUrgent": "View all urgent",
+  "dashboard.metrics.companies": "Total companies",
+  "dashboard.metrics.openIssues": "Open issues",
+  "dashboard.metrics.dueThisWeek": "Due this week",
+  "dashboard.metrics.resolvedThisMonth": "Resolved this month",
+  "dashboard.metrics.comparedToPrev": "vs. last week",
+  "dashboard.companiesSection": "My Companies",
+  "dashboard.activitySection": "Recent Activity",
+  "dashboard.deadlinesSection": "Upcoming Deadlines",
+  "dashboard.addCompany": "Add company",
+  "dashboard.activity.newIssue": "New issue",
+  "dashboard.activity.resolved": "Issue resolved",
+  "dashboard.activity.docExtracted": "Document extracted",
+  "dashboard.activity.deadlineSoon": "Deadline approaching",
+  "dashboard.activity.noticeReceived": "Notice received",
+  "dashboard.deadline.in": "in {count}d",
+  "dashboard.deadline.today": "today",
+  "dashboard.deadline.tomorrow": "tomorrow",
+  "dashboard.noActivity": "No recent activity",
+  "dashboard.noDeadlines": "No upcoming deadlines",
 
   "landing.cta": "Get started",
   "landing.signin": "Sign in",
@@ -290,8 +342,14 @@ const EN: Dict = {
 
 const dicts: Record<Lang, Dict> = { ar: AR, en: EN };
 
-export function t(key: string, lang: Lang): string {
-  return dicts[lang][key] ?? key;
+export function t(key: string, lang: Lang, vars?: Record<string, string | number>): string {
+  let s = dicts[lang][key] ?? key;
+  if (vars) {
+    for (const k of Object.keys(vars)) {
+      s = s.replace(new RegExp(`\\{${k}\\}`, "g"), String(vars[k]));
+    }
+  }
+  return s;
 }
 
 export function dirFor(lang: Lang): "rtl" | "ltr" {

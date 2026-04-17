@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
   ]);
 
   if (companyCount > 0 && telegramChannel) {
-    redirect("/companies");
+    redirect("/dashboard");
   }
 
   const step1Done = companyCount > 0;
@@ -79,7 +79,7 @@ export default async function OnboardingPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link href="/companies">
+          <Link href="/dashboard">
             <Button variant="ghost">{t("onboarding.done", lang)}</Button>
           </Link>
         </div>

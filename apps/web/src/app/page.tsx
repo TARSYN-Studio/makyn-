@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { t, type Lang } from "@/lib/i18n";
@@ -6,7 +7,8 @@ import { getCurrentUser } from "@/lib/session";
 
 export default async function LandingPage() {
   const user = await getCurrentUser();
-  const lang: Lang = user?.preferredLanguage === "en" ? "en" : "ar";
+  if (user) redirect("/dashboard");
+  const lang: Lang = "ar";
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-navy-50">
