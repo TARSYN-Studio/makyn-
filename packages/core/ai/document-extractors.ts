@@ -3,7 +3,6 @@ import path from "node:path";
 
 import * as visionLib from "@google-cloud/vision";
 import { prisma, type DocumentType } from "@makyn/db";
-import { pdf } from "pdf-to-img";
 
 import { openaiClient, OPENAI_MODEL } from "./client";
 import { EXTRACTOR_PROMPTS, EXTRACTOR_PROMPT_VERSION } from "./extractor-prompts";
@@ -25,29 +24,32 @@ async function ocrImageFile(filePath: string): Promise<string> {
 }
 
 async function ocrPdf(filePath: string): Promise<string> {
+  // Use Vision's native PDF support via batchAnnotateFiles — one call, inline
+  // base64 content, handles born-digital AND scanned PDFs. Replaces the
+  // previous pdf-to-img → pdfjs pipeline which broke in Next's server bundle
+  // because pdf.worker.mjs wasn't shipped into .next/server/app/api/...
+  // Limits: ≤20MB payload, ≤5 pages sync. Our upload cap is 10MB; CRs are 1-2
+  // pages, so sync fits for v1. If we ever need >5 pages, switch to
+  // asyncBatchAnnotateFiles with a GCS bucket.
+  const client = getVisionClient();
+  const buf = fs.readFileSync(filePath);
+  const [result] = await client.batchAnnotateFiles({
+    requests: [
+      {
+        inputConfig: {
+          content: buf.toString("base64"),
+          mimeType: "application/pdf"
+        },
+        features: [{ type: "DOCUMENT_TEXT_DETECTION" }]
+      }
+    ]
+  });
+  const responses = result.responses?.[0]?.responses ?? [];
   const pages: string[] = [];
-  // disableWorker: Next.js bundles this route and doesn't ship pdfjs's
-  // pdf.worker.mjs into .next/server/... — run pdfjs on the main thread.
-  // pdfjs types omit disableWorker but it's a documented runtime option, and
-  // pdf-to-img's Options type doesn't surface docInitParams in our installed
-  // version. Cast through unknown to pass both options to pdfjs at runtime.
-  const doc = await pdf(filePath, {
-    scale: 2.0,
-    docInitParams: { disableWorker: true, useWorkerFetch: false, isEvalSupported: false }
-  } as unknown as Parameters<typeof pdf>[1]);
-  let pageIndex = 0;
-  for await (const page of doc) {
-    // page is a Buffer (PNG image)
-    const tmpPath = `${filePath}.page${pageIndex}.png`;
-    fs.writeFileSync(tmpPath, page);
-    try {
-      const text = await ocrImageFile(tmpPath);
-      if (text) pages.push(`--- Page ${pageIndex + 1} ---\n${text}`);
-    } finally {
-      fs.rmSync(tmpPath, { force: true });
-    }
-    pageIndex++;
-  }
+  responses.forEach((r, i) => {
+    const text = r.fullTextAnnotation?.text?.trim();
+    if (text) pages.push(`--- Page ${i + 1} ---\n${text}`);
+  });
   return pages.join("\n\n");
 }
 
