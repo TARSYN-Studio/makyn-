@@ -9,7 +9,7 @@
   --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-display: var(--font-serif), Georgia, serif;
   --font-mono-stack: var(--font-mono), "SF Mono", Consolas, monospace;
-  --font-arabic: var(--font-ar), "IBM Plex Sans Arabic", "Geeza Pro", system-ui, sans-serif;
+  --font-arabic: var(--font-ar), "Readex Pro", "IBM Plex Sans Arabic", "Geeza Pro", system-ui, sans-serif;
 
   /* Color tokens — Slate warm canvas */
   --bg: #F5F5F0;
@@ -49,12 +49,20 @@ body {
 html[lang="en"] body { font-family: var(--font-sans); }
 html[lang="ar"] body {
   font-family: var(--font-arabic);
-  font-size: 15.5px;
-  line-height: 1.7;
+  font-size: 16.5px;
+  line-height: 1.9;
+  font-weight: 400;
 }
-html[lang="ar"] .text-\[13px\] { font-size: 14px; }
-html[lang="ar"] .text-\[12px\] { font-size: 13px; }
-html[lang="ar"] .text-\[11px\] { font-size: 12px; }
+
+/* Arabic legibility floor — never render below 14px, bump xs/sm one step.
+   Scale the MINIMUMS rather than blanket-enlarging every utility. */
+html[lang="ar"] .text-\[11px\],
+html[lang="ar"] .text-\[12px\],
+html[lang="ar"] .text-\[13px\] {
+  font-size: 14px;
+}
+html[lang="ar"] .text-xs { font-size: 14px; }
+html[lang="ar"] .text-sm { font-size: 15px; }
 
 /* Display / font utilities */
 .font-display-en { font-family: var(--font-display); }

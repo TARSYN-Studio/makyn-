@@ -52,7 +52,7 @@ const config: Config = {
         ar: ["var(--font-arabic)"]
       },
       boxShadow: {
-        card: "0 1px 2px rgba(26,26,20,0.04), 0 2px 8px rgba(26,26,20,0.04)",
+        card: "0 1px 2px rgba(26,26,20,0.03), 0 1px 4px rgba(26,26,20,0.03)",
         modal: "0 2px 8px rgba(26,26,20,0.08), 0 20px 40px rgba(26,26,20,0.08)",
         popover: "0 4px 16px rgba(26,26,20,0.08)"
       }
