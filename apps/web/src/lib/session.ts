@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 
 import { prisma } from "@makyn/db";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 const SESSION_COOKIE = "makyn_session";
 const SESSION_TTL_DAYS = 30;
@@ -102,6 +103,6 @@ export async function getCurrentUser() {
 
 export async function requireUser() {
   const user = await getCurrentUser();
-  if (!user) throw new Error("UNAUTHENTICATED");
+  if (!user) redirect("/login");
   return user;
 }
