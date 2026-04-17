@@ -9,8 +9,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@google-cloud/vision": "^4.3.2",
     "@makyn/db": "workspace:*",
     "openai": "^6.3.0",
+    "pdf-to-img": "^6.0.0",
     "pino": "^9.7.0",
     "zod": "^3.24.4"
   },

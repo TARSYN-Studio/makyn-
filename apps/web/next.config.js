@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     serverActions: {
-      bodySizeLimit: "2mb"
+      bodySizeLimit: "11mb"
     }
   },
   transpilePackages: ["@makyn/core", "@makyn/db"]
