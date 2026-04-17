@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 
 import { ReviewFieldGroup, type ReviewField } from "./ReviewFieldGroup";
-import { mergeExtractedFields } from "@makyn/core/ai/document-extractors";
+import { mergeExtractedFields } from "@makyn/core/ai/extracted-fields";
 import type { Lang } from "@/lib/i18n";
 
 type ExtractedResult = {
