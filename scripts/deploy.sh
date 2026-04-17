@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /opt/makyn
+APP_DIR="/opt/makyn"
+APP_USER="makyn"
+
+cd "$APP_DIR"
 
 git pull
-npm ci
-npx prisma migrate deploy
-npm run build
-runuser -u makyn -- pm2 restart makyn-bot
+
+runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" install --frozen-lockfile
+runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" --filter @makyn/db run prisma:generate
+runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" --filter @makyn/db run prisma:deploy
+runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" run build
+runuser -u "$APP_USER" -- pm2 reload "$APP_DIR/ecosystem.config.js"

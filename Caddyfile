@@ -1,4 +1,16 @@
+api.makyn.site {
+    reverse_proxy /webhook/* localhost:8080
+    encode gzip
+}
+
+app.makyn.site {
+    reverse_proxy localhost:3000
+    encode gzip
+
+    @static path /_next/static/*
+    header @static Cache-Control "public, max-age=31536000, immutable"
+}
+
 makyn.site {
-  reverse_proxy /webhook/* localhost:8080
-  encode gzip
+    redir https://app.makyn.site{uri} permanent
 }
