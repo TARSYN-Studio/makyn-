@@ -1,0 +1,33 @@
+{
+  "name": "@makyn/bot",
+  "version": "0.2.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@google-cloud/vision": "^4.3.2",
+    "@makyn/channels": "workspace:*",
+    "@makyn/core": "workspace:*",
+    "@makyn/db": "workspace:*",
+    "@prisma/client": "^6.7.0",
+    "dotenv": "^16.5.0",
+    "grammy": "^1.35.0",
+    "pdf-parse": "^1.1.1",
+    "pino": "^9.7.0",
+    "pino-http": "^10.4.0",
+    "pino-pretty": "^13.0.0",
+    "rotating-file-stream": "^3.2.7",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/pdf-parse": "^1.1.5",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@makyn/web",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'web placeholder — scaffolded in Part 6'",
+    "dev": "echo 'web placeholder'",
+    "typecheck": "echo 'web placeholder'"
+  }
+}
