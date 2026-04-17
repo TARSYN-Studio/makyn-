@@ -164,6 +164,126 @@ const governmentBodies: GovernmentBodySeed[] = [
     typicalUrgency: 2
   },
   {
+    code: "CHAMBER",
+    nameEn: "Chamber of Commerce",
+    nameAr: "غرفة التجارة",
+    description: "غرفة التجارة والصناعة الإقليمية المعنية بتسجيل المنشآت التجارية وإصدار شهادات العضوية وتوثيق الأنشطة التجارية.",
+    commonNoticeTypes: ["membership_renewal", "certificate_expiry"],
+    typicalUrgency: 2
+  },
+  {
+    code: "CIVIL_DEFENSE",
+    nameEn: "Civil Defense",
+    nameAr: "الدفاع المدني",
+    description: "الجهة المختصة بمتطلبات السلامة والحرائق للمنشآت التجارية والصناعية وإصدار شهادات السلامة وأوامر الإغلاق.",
+    commonNoticeTypes: ["safety_cert_renewal", "inspection_notice", "closure_order"],
+    typicalUrgency: 4
+  },
+  {
+    code: "INDUSTRY",
+    nameEn: "Ministry of Industry",
+    nameAr: "وزارة الصناعة",
+    description: "وزارة الصناعة والثروة المعدنية المختصة بتراخيص الأنشطة الصناعية وتنظيم المصانع والرقابة على الامتثال الصناعي.",
+    commonNoticeTypes: ["license_renewal", "inspection_notice", "violation_notice"],
+    typicalUrgency: 3
+  },
+  {
+    code: "MOH",
+    nameEn: "Ministry of Health",
+    nameAr: "وزارة الصحة",
+    description: "الجهة المشرفة على القطاع الصحي وترخيص المرافق الطبية والصيدليات والمختبرات وضمان جودة الخدمات الصحية.",
+    commonNoticeTypes: ["license_renewal", "inspection_notice", "compliance_notice"],
+    typicalUrgency: 4
+  },
+  {
+    code: "TOURISM",
+    nameEn: "Ministry of Tourism",
+    nameAr: "وزارة السياحة",
+    description: "الجهة المشرفة على قطاع السياحة وترخيص الفنادق والشقق المفروشة ووكالات السياحة والسفر.",
+    commonNoticeTypes: ["license_renewal", "classification_update", "compliance_notice"],
+    typicalUrgency: 3
+  },
+  {
+    code: "SFDA",
+    nameEn: "Saudi Food and Drug Authority",
+    nameAr: "هيئة الغذاء والدواء",
+    description: "الهيئة المختصة بتنظيم ومراقبة جودة المنتجات الغذائية والدوائية ومستحضرات التجميل والأجهزة الطبية.",
+    commonNoticeTypes: ["license_renewal", "product_recall", "inspection_notice", "compliance_breach"],
+    typicalUrgency: 4
+  },
+  {
+    code: "SASO",
+    nameEn: "Saudi Standards, Metrology and Quality Organization",
+    nameAr: "هيئة المواصفات والمقاييس",
+    description: "الجهة المختصة بالمواصفات القياسية الوطنية وبرنامج SABER وشهادات المطابقة للمنتجات المستوردة والمحلية.",
+    commonNoticeTypes: ["saber_renewal", "certificate_expiry", "compliance_notice"],
+    typicalUrgency: 3
+  },
+  {
+    code: "CST",
+    nameEn: "Communications, Space and Technology Commission",
+    nameAr: "هيئة الاتصالات والفضاء والتقنية",
+    description: "الجهة المنظمة لقطاع الاتصالات والفضاء والتقنية وتراخيص شبكات الاتصالات وخدمات الإنترنت والحوسبة السحابية.",
+    commonNoticeTypes: ["license_renewal", "compliance_notice", "spectrum_fee"],
+    typicalUrgency: 3
+  },
+  {
+    code: "MISA",
+    nameEn: "Ministry of Investment",
+    nameAr: "وزارة الاستثمار",
+    description: "الوزارة المعنية بتراخيص الاستثمار الأجنبي وشركات الملكية الأجنبية الكاملة أو المختلطة في المملكة العربية السعودية.",
+    commonNoticeTypes: ["license_renewal", "compliance_notice", "reporting_due"],
+    typicalUrgency: 3
+  },
+  {
+    code: "SOCPA",
+    nameEn: "Saudi Organization for Chartered and Professional Accountants",
+    nameAr: "هيئة المحاسبين القانونيين السعوديين",
+    description: "الجهة المنظمة لمهنة المحاسبة والمراجعة في المملكة وإصدار تراخيص المحاسبين القانونيين المعتمدين.",
+    commonNoticeTypes: ["membership_renewal", "cpe_requirement", "license_notice"],
+    typicalUrgency: 2
+  },
+  {
+    code: "SCE",
+    nameEn: "Saudi Council of Engineers",
+    nameAr: "هيئة المهندسين السعوديين",
+    description: "الجهة المنظمة لمهنة الهندسة في المملكة وترخيص المهندسين وتصنيف شركات الاستشارات الهندسية.",
+    commonNoticeTypes: ["membership_renewal", "classification_update"],
+    typicalUrgency: 2
+  },
+  {
+    code: "ZAKAT",
+    nameEn: "Zakat Authority",
+    nameAr: "هيئة الزكاة",
+    description: "تقييمات الزكاة المستقلة عن إجراءات ZATCA الضريبية، تشمل الربط الزكوي السنوي والاعتراضات.",
+    commonNoticeTypes: ["zakat_assessment", "objection_response"],
+    typicalUrgency: 3
+  },
+  {
+    code: "ENVIRONMENT",
+    nameEn: "Ministry of Environment",
+    nameAr: "وزارة البيئة",
+    description: "الوزارة المختصة بالتراخيص البيئية ومتطلبات الامتثال البيئي للمنشآت الصناعية والزراعية.",
+    commonNoticeTypes: ["permit_renewal", "compliance_notice", "inspection_notice"],
+    typicalUrgency: 3
+  },
+  {
+    code: "CULTURE",
+    nameEn: "Ministry of Culture",
+    nameAr: "وزارة الثقافة",
+    description: "الوزارة المختصة بتراخيص الأنشطة الثقافية والإبداعية والمسارح ودور العرض والمتاحف.",
+    commonNoticeTypes: ["license_renewal", "event_permit"],
+    typicalUrgency: 2
+  },
+  {
+    code: "SPORTS",
+    nameEn: "Ministry of Sports",
+    nameAr: "وزارة الرياضة",
+    description: "الوزارة المختصة بتراخيص الأنشطة الرياضية والأندية الرياضية والمرافق الترفيهية.",
+    commonNoticeTypes: ["license_renewal", "event_permit"],
+    typicalUrgency: 2
+  },
+  {
     code: "OTHER",
     nameEn: "Other",
     nameAr: "جهة أخرى",
