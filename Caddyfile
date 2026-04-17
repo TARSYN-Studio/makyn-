@@ -1,4 +1,4 @@
-<your-domain> {
+makyn.site {
   reverse_proxy /webhook/* localhost:8080
   encode gzip
 }
