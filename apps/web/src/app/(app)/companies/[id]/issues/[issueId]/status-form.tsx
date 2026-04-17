@@ -47,7 +47,7 @@ export function StatusChangeForm({
       <select
         value={status}
         onChange={(e) => setStatus(e.target.value as IssueStatus)}
-        className="w-full h-10 rounded-lg border border-slate-300 px-3 text-sm bg-white"
+        className="w-full h-10 rounded-md border border-[var(--border)] px-3 text-[13px] bg-[var(--card)] text-[var(--text)]"
       >
         {STATUSES.map((s) => (
           <option key={s} value={s}>
@@ -67,5 +67,35 @@ export function StatusChangeForm({
         {t("common.save", lang)}
       </Button>
     </div>
+  );
+}
+
+export function QuickStatusButton({
+  issueId,
+  target,
+  variant,
+  label,
+  confirm
+}: {
+  issueId: string;
+  target: IssueStatus;
+  variant: "primary" | "secondary" | "ghost" | "danger";
+  label: string;
+  confirm?: string;
+}) {
+  const [isPending, start] = useTransition();
+  const submit = () => {
+    if (confirm && typeof window !== "undefined" && !window.confirm(confirm)) return;
+    start(() => {
+      const fd = new FormData();
+      fd.set("status", target);
+      fd.set("resolutionNotes", "");
+      void updateIssueStatusAction(issueId, fd);
+    });
+  };
+  return (
+    <Button variant={variant} onClick={submit} disabled={isPending} className="w-full">
+      {label}
+    </Button>
   );
 }

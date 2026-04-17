@@ -21,10 +21,10 @@ export function CopyHandlerBrief({ text, lang }: { text: string; lang: Lang }) {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700 p-3 whitespace-pre-wrap">
+      <div className="rounded-md bg-[var(--surface)] border border-[var(--border)] text-[13px] text-[var(--text)] p-3 whitespace-pre-wrap">
         {text}
       </div>
-      <Button variant="gold" size="sm" onClick={copy}>
+      <Button variant="primary" size="sm" onClick={copy}>
         {copied ? <Check className="h-3.5 w-3.5 me-1" /> : <ClipboardCopy className="h-3.5 w-3.5 me-1" />}
         {t("issue.sendToHandler", lang)}
       </Button>

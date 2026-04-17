@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { IssueStatus, prisma } from "@makyn/db";
 import { hoursUntil } from "@makyn/core";
 
-import { StatusChangeForm } from "./status-form";
+import { StatusChangeForm, QuickStatusButton } from "./status-form";
 import { AssignHandlerForm } from "./assign-handler";
 import { AddNoteForm } from "./add-note";
 import { CopyHandlerBrief } from "./copy-handler";
@@ -15,12 +15,12 @@ import { requireUser } from "@/lib/session";
 
 type PageProps = { params: { id: string; issueId: string } };
 
-const urgencyBadge: Record<number, "neutral" | "yellow" | "red"> = {
+const urgencyBadge: Record<number, "neutral" | "waiting" | "urgent"> = {
   1: "neutral",
   2: "neutral",
-  3: "yellow",
-  4: "red",
-  5: "red"
+  3: "waiting",
+  4: "urgent",
+  5: "urgent"
 };
 
 function formatDate(d: Date | null): string {
@@ -39,6 +39,11 @@ function deadlineLabel(d: Date | null, lang: Lang): string {
   return `${formatDate(d)} — ${lang === "ar" ? `خلال ${days} يوم` : `in ${days}d`}`;
 }
 
+function truncate(s: string, max: number): string {
+  if (s.length <= max) return s;
+  return s.slice(0, max).trimEnd() + "…";
+}
+
 export default async function IssueDetailPage({ params }: PageProps) {
   const user = await requireUser();
   const lang: Lang = user.preferredLanguage === "en" ? "en" : "ar";
@@ -49,7 +54,16 @@ export default async function IssueDetailPage({ params }: PageProps) {
       messages: {
         orderBy: { createdAt: "asc" },
         take: 50,
-        select: { id: true, direction: true, contentType: true, rawContent: true, extractedText: true, createdAt: true }
+        select: {
+          id: true,
+          direction: true,
+          contentType: true,
+          rawContent: true,
+          extractedText: true,
+          createdAt: true,
+          mediaLocalPath: true,
+          mediaFileId: true
+        }
       },
       notes: {
         orderBy: { createdAt: "desc" },
@@ -61,84 +75,134 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
   if (!issue) notFound();
 
+  const originalInbound = issue.messages.find((m) => m.direction === "INBOUND") ?? null;
+  const conversation = issue.messages;
+
+  const sep = " / ";
+  const markResolvedConfirm =
+    lang === "ar" ? "وضع علامة محلولة؟" : "Mark this issue as resolved?";
+  const escalateConfirm = lang === "ar" ? "تصعيد القضية؟" : "Escalate this issue?";
+  const archiveConfirm = lang === "ar" ? "أرشفة القضية؟" : "Archive this issue?";
+
   return (
-    <div className="max-w-6xl">
-      <div className="mb-2">
-        <Link href={`/companies/${issue.company.id}`} className="text-sm text-slate-500 hover:text-navy-500">
-          ← {issue.company.legalNameAr}
+    <div className="max-w-7xl">
+      {/* Breadcrumb */}
+      <div className="mb-4 text-[12px] text-[var(--text-dim)]">
+        <Link href="/companies" className="hover:text-[var(--accent)]">
+          {lang === "ar" ? "شركاتي" : "Companies"}
         </Link>
+        <span>{sep}</span>
+        <Link
+          href={`/companies/${issue.company.id}`}
+          className="hover:text-[var(--accent)]"
+        >
+          {issue.company.legalNameAr}
+        </Link>
+        <span>{sep}</span>
+        <span className="text-[var(--text-mid)]">{truncate(issue.titleAr, 60)}</span>
       </div>
 
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-navy-800 leading-tight">{issue.titleAr}</h1>
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <Badge variant={urgencyBadge[issue.urgencyLevel]}>U{issue.urgencyLevel}</Badge>
-            <Badge variant="navy">{issue.governmentBody}</Badge>
-            <Badge>{t(`issue.status.${issue.status}`, lang)}</Badge>
-            {issue.detectedDeadline && (
-              <span className="text-sm text-slate-600">
-                {t("issue.deadline", lang)}: {deadlineLabel(issue.detectedDeadline, lang)}
-              </span>
-            )}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,65%)_minmax(0,35%)] gap-6">
+        {/* LEFT */}
+        <div className="space-y-6">
+          <div>
+            <h1
+              className="font-display-en text-[28px] leading-tight text-[var(--text)]"
+              style={{ fontWeight: 400 }}
+            >
+              {issue.titleAr}
+            </h1>
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <Badge variant="accent">{issue.governmentBody}</Badge>
+              <Badge variant={urgencyBadge[issue.urgencyLevel]}>
+                U{issue.urgencyLevel}
+              </Badge>
+              <Badge>{t(`issue.status.${issue.status}`, lang)}</Badge>
+              {issue.detectedDeadline && (
+                <span className="num text-[12px] text-[var(--text-mid)]">
+                  {deadlineLabel(issue.detectedDeadline, lang)}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+          <p className="text-[15px] leading-relaxed text-[var(--text)]">
+            {issue.summaryAr}
+          </p>
+
+          {/* Original Notice */}
           <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-navy-800">{t("issue.classification", lang)}</h2>
-            </CardHeader>
-            <CardBody>
-              <p className="text-sm text-slate-700 leading-relaxed">{issue.summaryAr}</p>
-            </CardBody>
+            <details>
+              <summary className="cursor-pointer px-5 py-4 border-b border-[var(--border)] text-[13px] font-medium text-[var(--text)]">
+                {t("issue.originalNotice", lang)}
+              </summary>
+              <div className="px-5 py-4 space-y-3 text-[13px] text-[var(--text-mid)]">
+                {originalInbound ? (
+                  <>
+                    <div className="num text-[11px] text-[var(--text-dim)]">
+                      {originalInbound.createdAt
+                        .toISOString()
+                        .slice(0, 16)
+                        .replace("T", " ")}
+                    </div>
+                    <div className="whitespace-pre-wrap text-[var(--text)]">
+                      {originalInbound.rawContent || "—"}
+                    </div>
+                    {originalInbound.extractedText && (
+                      <div className="mt-2 p-3 rounded-md bg-[var(--surface)] border border-[var(--border)] whitespace-pre-wrap">
+                        <div className="text-[11px] text-[var(--text-dim)] mb-1 uppercase tracking-wider">
+                          OCR
+                        </div>
+                        {originalInbound.extractedText}
+                      </div>
+                    )}
+                    {originalInbound.contentType === "PHOTO" && (
+                      <div className="text-[12px] text-[var(--text-dim)]">
+                        {lang === "ar"
+                          ? "صورة مرفقة — اطلعي عليها في Telegram"
+                          : "Image attached — view in Telegram"}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-[var(--text-dim)]">—</p>
+                )}
+              </div>
+            </details>
           </Card>
 
+          {/* Conversation */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-navy-800">{t("issue.extractedData", lang)}</h2>
-            </CardHeader>
-            <CardBody className="text-sm text-slate-700 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <div className="text-xs text-slate-500">{t("issue.reference", lang)}</div>
-                <div>{issue.referenceNumber ?? "—"}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500">{t("issue.amount", lang)}</div>
-                <div>{issue.detectedAmountSar ? `SAR ${Number(issue.detectedAmountSar).toLocaleString()}` : "—"}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500">{t("issue.deadline", lang)}</div>
-                <div>{formatDate(issue.detectedDeadline)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500">Notice type</div>
-                <div>{issue.noticeType ?? "—"}</div>
-              </div>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <h2 className="font-semibold text-navy-800">{t("issue.originalNotice", lang)}</h2>
+              <h2 className="font-semibold text-[var(--text)]">
+                {t("issue.conversation", lang)}
+              </h2>
             </CardHeader>
             <CardBody>
-              {issue.messages.length === 0 && <p className="text-sm text-slate-500">—</p>}
-              <div className="space-y-4">
-                {issue.messages.map((m) => (
+              {conversation.length === 0 && (
+                <p className="text-[13px] text-[var(--text-dim)]">—</p>
+              )}
+              <div className="space-y-3">
+                {conversation.map((m) => (
                   <div
                     key={m.id}
-                    className={`rounded-lg p-3 text-sm border ${
-                      m.direction === "INBOUND" ? "bg-slate-50 border-slate-200" : "bg-navy-50 border-navy-100"
+                    className={`rounded-md p-3 text-[13px] border ${
+                      m.direction === "INBOUND"
+                        ? "bg-[var(--surface)] border-[var(--border)]"
+                        : "bg-[var(--accent-xl)] border-[var(--accent-l)]"
                     }`}
                   >
-                    <div className="text-xs text-slate-500 mb-1">
-                      {m.direction === "INBOUND" ? (lang === "ar" ? "من المستخدم" : "Inbound") : (lang === "ar" ? "من مكين" : "Outbound")} ·{" "}
-                      {m.createdAt.toISOString().slice(0, 16).replace("T", " ")}
+                    <div className="num text-[11px] text-[var(--text-dim)] mb-1">
+                      {m.direction === "INBOUND"
+                        ? lang === "ar"
+                          ? "من المستخدم"
+                          : "Inbound"
+                        : lang === "ar"
+                          ? "من مكين"
+                          : "Outbound"}{" "}
+                      · {m.createdAt.toISOString().slice(0, 16).replace("T", " ")}
                     </div>
-                    <div className="whitespace-pre-wrap text-slate-800">
+                    <div className="whitespace-pre-wrap text-[var(--text)]">
                       {m.rawContent || m.extractedText || "—"}
                     </div>
                   </div>
@@ -147,19 +211,27 @@ export default async function IssueDetailPage({ params }: PageProps) {
             </CardBody>
           </Card>
 
+          {/* Notes */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-navy-800">{t("issue.notes", lang)}</h2>
+              <h2 className="font-semibold text-[var(--text)]">
+                {t("issue.notes", lang)}
+              </h2>
             </CardHeader>
             <CardBody className="space-y-4">
-              {issue.notes.length === 0 && <p className="text-sm text-slate-500">—</p>}
+              {issue.notes.length === 0 && (
+                <p className="text-[13px] text-[var(--text-dim)]">—</p>
+              )}
               <ul className="space-y-3">
                 {issue.notes.map((n) => (
-                  <li key={n.id} className="text-sm">
-                    <div className="text-xs text-slate-500">
-                      {n.author.fullName} · {n.createdAt.toISOString().slice(0, 16).replace("T", " ")}
+                  <li key={n.id} className="text-[13px]">
+                    <div className="num text-[11px] text-[var(--text-dim)]">
+                      {n.author.fullName} ·{" "}
+                      {n.createdAt.toISOString().slice(0, 16).replace("T", " ")}
                     </div>
-                    <div className="text-slate-700 whitespace-pre-wrap">{n.content}</div>
+                    <div className="text-[var(--text)] whitespace-pre-wrap">
+                      {n.content}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -168,37 +240,116 @@ export default async function IssueDetailPage({ params }: PageProps) {
           </Card>
         </div>
 
-        <aside className="space-y-4">
+        {/* RIGHT */}
+        <aside className="lg:sticky lg:top-6 self-start space-y-4">
+          {/* Recommended Action */}
+          <div className="bg-[var(--accent-xl)] border border-[var(--accent-l)] rounded-[10px] p-4 space-y-3">
+            <div className="text-[11px] uppercase tracking-wider text-[var(--accent)] font-semibold">
+              {t("issue.recommendedAction", lang)}
+            </div>
+            <p className="text-[14px] text-[var(--text)] leading-relaxed">
+              {issue.recommendedAction}
+            </p>
+            {issue.recommendedHandler && (
+              <Badge variant="accent">
+                {t("issue.handler", lang)}: {issue.recommendedHandler}
+              </Badge>
+            )}
+            {issue.whatToTellHandlerAr && (
+              <CopyHandlerBrief text={issue.whatToTellHandlerAr} lang={lang} />
+            )}
+            <AssignHandlerForm
+              issueId={issue.id}
+              initial={issue.assignedHandlerName ?? ""}
+              lang={lang}
+            />
+          </div>
+
+          {/* Penalty */}
+          {issue.penaltyIfIgnored && (
+            <div className="bg-[var(--red-l)] border border-[rgba(185,28,28,0.2)] rounded-[10px] p-4">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--red)] font-semibold mb-2">
+                {t("issue.penalty", lang)}
+              </div>
+              <p className="text-[13px] text-[var(--red)]">{issue.penaltyIfIgnored}</p>
+            </div>
+          )}
+
+          {/* Extracted Data */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-navy-800">{t("issue.recommendedAction", lang)}</h2>
+              <h2 className="font-semibold text-[var(--text)]">
+                {t("issue.extractedData", lang)}
+              </h2>
             </CardHeader>
-            <CardBody className="space-y-3">
-              <p className="text-sm text-slate-800 leading-relaxed">{issue.recommendedAction}</p>
-              {issue.recommendedHandler && (
-                <Badge variant="gold">{t("issue.handler", lang)}: {issue.recommendedHandler}</Badge>
-              )}
-              {issue.whatToTellHandlerAr && (
-                <CopyHandlerBrief text={issue.whatToTellHandlerAr} lang={lang} />
-              )}
-              <AssignHandlerForm issueId={issue.id} initial={issue.assignedHandlerName ?? ""} lang={lang} />
+            <CardBody className="space-y-3 text-[13px]">
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)]">
+                  {t("issue.reference", lang)}
+                </div>
+                <div className="num text-[var(--text)]">
+                  {issue.referenceNumber ?? "—"}
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)]">
+                  {t("issue.amount", lang)}
+                </div>
+                <div className="num text-[var(--text)]">
+                  {issue.detectedAmountSar
+                    ? `SAR ${Number(issue.detectedAmountSar).toLocaleString()}`
+                    : "—"}
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)]">
+                  {t("issue.deadline", lang)}
+                </div>
+                <div className="num text-[var(--text)]">
+                  {formatDate(issue.detectedDeadline)}
+                </div>
+              </div>
             </CardBody>
           </Card>
 
-          {issue.penaltyIfIgnored && (
-            <Card className="border-red-200 bg-red-50/50">
-              <CardHeader>
-                <h3 className="font-semibold text-red-700">{t("issue.penalty", lang)}</h3>
-              </CardHeader>
-              <CardBody>
-                <p className="text-sm text-red-700/90">{issue.penaltyIfIgnored}</p>
-              </CardBody>
-            </Card>
-          )}
-
+          {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-navy-800">{t("issue.status", lang)}</h2>
+              <h2 className="font-semibold text-[var(--text)]">
+                {lang === "ar" ? "إجراءات سريعة" : "Quick actions"}
+              </h2>
+            </CardHeader>
+            <CardBody className="space-y-2">
+              <QuickStatusButton
+                issueId={issue.id}
+                target={IssueStatus.RESOLVED}
+                variant="primary"
+                label={t("issue.markResolved", lang)}
+                confirm={markResolvedConfirm}
+              />
+              <QuickStatusButton
+                issueId={issue.id}
+                target={IssueStatus.ESCALATED}
+                variant="secondary"
+                label={t("issue.escalate", lang)}
+                confirm={escalateConfirm}
+              />
+              <QuickStatusButton
+                issueId={issue.id}
+                target={IssueStatus.ARCHIVED}
+                variant="ghost"
+                label={t("issue.archive", lang)}
+                confirm={archiveConfirm}
+              />
+            </CardBody>
+          </Card>
+
+          {/* Full status form */}
+          <Card>
+            <CardHeader>
+              <h2 className="font-semibold text-[var(--text)]">
+                {t("issue.status", lang)}
+              </h2>
             </CardHeader>
             <CardBody>
               <StatusChangeForm issueId={issue.id} current={issue.status} lang={lang} />
