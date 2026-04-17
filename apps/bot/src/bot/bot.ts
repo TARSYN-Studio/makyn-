@@ -4,12 +4,19 @@ import { Bot, Context, webhookCallback } from "grammy";
 
 import { config } from "../config";
 import { logger } from "../utils/logger";
+import { handleStartCommand } from "./handlers/start";
+import { handleInboundMessage } from "./handlers/message";
+import { handleDisambiguateCallback } from "./handlers/disambiguate";
+import { handleUnconnectedMessage } from "./handlers/unconnected";
+import { channelContextMiddleware } from "./middleware/channel-context";
 import { loggingMiddleware } from "./middleware/logging";
 
 export type AppContext = Context & {
   state: {
-    channelUserId?: string;
+    channelId?: string;
     connectedUserId?: string;
+    connectedFullName?: string;
+    connectedLanguage?: string;
     pendingEditMessageId?: string;
   };
 };
@@ -23,10 +30,21 @@ export function createBot(): Bot<AppContext> {
   });
 
   bot.use(loggingMiddleware);
+  bot.use(channelContextMiddleware);
 
-  bot.on("message", async (ctx) => {
-    await ctx.reply("MAKYN تحت الترقية للإصدار v1. سيعود قريباً.");
-  });
+  bot.command("start", handleStartCommand);
+
+  bot.callbackQuery(/^dis:([^:]+):([^:]+)$/, handleDisambiguateCallback);
+
+  const connectedOnly = async (ctx: AppContext, next: () => Promise<void>) => {
+    if (!ctx.state.connectedUserId) {
+      await handleUnconnectedMessage(ctx);
+      return;
+    }
+    await next();
+  };
+
+  bot.on(["message:text", "message:photo", "message:document", "message:voice"], connectedOnly, handleInboundMessage);
 
   bot.catch((error) => {
     logger.error({ error }, "telegram_bot_error");
