@@ -9,6 +9,7 @@ export type DocStatus = {
   documentId: string | null;
   status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "PARTIAL";
   fileName?: string;
+  extractionError?: string | null;
 };
 
 type Props = {
@@ -27,6 +28,34 @@ type Props = {
   onSkippedChange: (skipped: boolean) => void;
   onRemove?: () => void;
 };
+
+function friendlyError(raw: string | null | undefined, isAr: boolean): string {
+  const msg = (raw ?? "").toString();
+  if (!msg) {
+    return isAr
+      ? "تعذّر استخراج النص من هذا الملف — جرّب ملفاً مختلفاً أو أدخل البيانات يدوياً."
+      : "Could not extract text from this file — try a different file or enter data manually.";
+  }
+  const lower = msg.toLowerCase();
+  if (lower.includes("arabic") || lower.includes("ocr") || lower.includes("text")) {
+    return isAr
+      ? "تعذّر قراءة النص العربي من هذا الملف — جرّب صورة أوضح أو ملف PDF مختلف."
+      : "Arabic text could not be parsed from this file — try a clearer scan or different PDF.";
+  }
+  if (lower.includes("timeout") || lower.includes("timed out")) {
+    return isAr
+      ? "انتهت مهلة المعالجة — جرّب مرة أخرى أو استخدم ملفاً أصغر."
+      : "Processing timed out — try again or use a smaller file.";
+  }
+  if (lower.includes("pdf") && (lower.includes("corrupt") || lower.includes("invalid"))) {
+    return isAr
+      ? "ملف PDF غير صالح أو تالف — جرّب تصدير الملف مرة أخرى."
+      : "Invalid or corrupt PDF — try re-exporting the file.";
+  }
+  return isAr
+    ? `تعذّر التحليل: ${msg}`
+    : `Extraction failed: ${msg}`;
+}
 
 export function DocumentUploadCard({
   docType,
@@ -49,6 +78,8 @@ export function DocumentUploadCard({
   const [error, setError] = useState<string | null>(null);
 
   const isAr = lang === "ar";
+  const status = docStatus?.status;
+  const failed = status === "FAILED";
 
   async function handleFile(file: File) {
     setError(null);
@@ -93,10 +124,10 @@ export function DocumentUploadCard({
       className={`relative border rounded-lg p-4 transition-colors ${
         skipped
           ? "border-gray-200 bg-gray-50 opacity-60"
-          : docStatus?.status === "COMPLETED"
+          : status === "COMPLETED"
             ? "border-green-200 bg-green-50"
-            : docStatus?.status === "FAILED"
-              ? "border-red-200 bg-red-50"
+            : failed
+              ? "border-amber-300 bg-amber-50"
               : "border-navy-200 bg-white"
       }`}
     >
@@ -119,7 +150,7 @@ export function DocumentUploadCard({
           </p>
           <p className="text-xs text-gray-500 mt-0.5">{isAr ? descriptionAr : nameEn}</p>
         </div>
-        {docStatus && (
+        {docStatus && !failed && (
           <div className="flex-shrink-0">
             <ExtractionStatusBadge status={docStatus.status} lang={lang} />
           </div>
@@ -128,15 +159,45 @@ export function DocumentUploadCard({
 
       {!skipped && (
         <div className="mt-3">
-          {docStatus?.documentId ? (
+          {docStatus?.documentId && !failed ? (
             <p className="text-xs text-gray-600 truncate">
               <span className="text-green-600">✓</span> {docStatus.fileName ?? "uploaded"}
-              {docStatus.status === "FAILED" && (
-                <span className="text-red-600 ms-2">
-                  {isAr ? "فشل التحليل" : "Extraction failed"}
-                </span>
-              )}
             </p>
+          ) : failed && docStatus?.documentId ? (
+            <div className="space-y-2">
+              <p className="text-xs text-amber-900">
+                {friendlyError(docStatus.extractionError, isAr)}
+              </p>
+              <div className="flex items-center gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={() => inputRef.current?.click()}
+                  className="font-medium text-amber-900 underline underline-offset-2 hover:text-amber-700"
+                >
+                  {isAr ? "إعادة المحاولة" : "Retry"}
+                </button>
+                <span className="text-amber-700/60">·</span>
+                {skippable && !required && (
+                  <button
+                    type="button"
+                    onClick={() => onSkippedChange(true)}
+                    className="font-medium text-amber-900 hover:text-amber-700"
+                  >
+                    {isAr ? "إدخال يدوي لاحقاً" : "Enter manually"}
+                  </button>
+                )}
+              </div>
+              {docStatus.extractionError && (
+                <details className="text-[11px] text-amber-900/70">
+                  <summary className="cursor-pointer hover:text-amber-900">
+                    {isAr ? "عرض التفاصيل التقنية" : "See technical details"}
+                  </summary>
+                  <pre className="mt-1 whitespace-pre-wrap break-words font-mono bg-amber-100/60 rounded p-2">
+                    {docStatus.extractionError}
+                  </pre>
+                </details>
+              )}
+            </div>
           ) : (
             <div
               role="button"
@@ -173,11 +234,11 @@ export function DocumentUploadCard({
         </div>
       )}
 
-      {skippable && !required && !docStatus?.documentId && (
+      {skippable && !required && !docStatus?.documentId && !skipped && (
         <label className="flex items-center gap-2 mt-2 cursor-pointer">
           <input
             type="checkbox"
-            checked={skipped}
+            checked={false}
             onChange={(e) => onSkippedChange(e.target.checked)}
             className="w-3.5 h-3.5 rounded accent-navy-600"
           />
@@ -188,14 +249,16 @@ export function DocumentUploadCard({
       )}
 
       {skipped && (
-        <p className="mt-2 text-xs text-gray-400">
-          {isAr ? "سأضيفه لاحقاً" : "Add later"}{" "}
+        <p className="mt-2 text-xs text-gray-500 flex items-center gap-2">
+          <span className="text-gray-400">✓</span>
+          {isAr ? "سيُضاف لاحقاً" : "Skipping"}
+          <span className="text-gray-300">·</span>
           <button
             type="button"
-            className="text-navy-600 underline"
+            className="text-navy-600 hover:text-navy-800 underline underline-offset-2"
             onClick={() => onSkippedChange(false)}
           >
-            {isAr ? "إضافة الآن" : "Add now"}
+            {isAr ? "تغيير" : "change"}
           </button>
         </p>
       )}

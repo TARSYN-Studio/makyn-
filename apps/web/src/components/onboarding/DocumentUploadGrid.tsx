@@ -302,7 +302,8 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
               ? {
                   documentId: up.documentId,
                   fileName: up.fileName,
-                  status: (st?.extractionStatus as DocStatus["status"]) ?? "PENDING"
+                  status: (st?.extractionStatus as DocStatus["status"]) ?? "PENDING",
+                  extractionError: st?.extractionError ?? null
                 }
               : null;
 
