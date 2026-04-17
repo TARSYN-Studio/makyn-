@@ -77,6 +77,10 @@ fi
 chown "$APP_USER:$APP_USER" "$APP_DIR/.env"
 chmod 640 "$APP_DIR/.env"
 
+# Prisma CLI / tsx load .env from the working directory — symlink the
+# single root .env into packages/db so prisma:deploy + seed see it.
+runuser -u "$APP_USER" -- ln -sfn "$APP_DIR/.env" "$APP_DIR/packages/db/.env"
+
 runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" install --frozen-lockfile
 runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" --filter @makyn/db run prisma:generate
 runuser -u "$APP_USER" -- pnpm --dir "$APP_DIR" --filter @makyn/db run prisma:deploy
