@@ -290,7 +290,7 @@ export default async function DashboardPage() {
 
       {/* Urgent banner */}
       {urgentBanner && (
-        <div className="bg-[var(--red-l)] border-s-4 border-[var(--red)] urgent-pulse rounded-md p-4">
+        <div className="bg-[var(--red-l)] border-s-4 border-[var(--red)] urgent-pulse rounded-lg p-4">
           <div className="text-[14px] font-semibold text-[var(--red)] mb-2">
             {urgentBanner}
           </div>
@@ -395,7 +395,7 @@ export default async function DashboardPage() {
           })}
           <Link
             href="/companies/new"
-            className="flex items-center justify-center h-full min-h-[140px] rounded-[10px] border border-dashed border-[var(--border-s)] text-[13px] font-medium text-[var(--text-mid)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+            className="flex items-center justify-center h-full min-h-[140px] rounded-lg border border-dashed border-[var(--border-s)] text-[13px] font-medium text-[var(--text-mid)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
           >
             + {t("dashboard.addCompany", lang)}
           </Link>
@@ -473,7 +473,7 @@ export default async function DashboardPage() {
                   <Link
                     key={i.id}
                     href={`/companies/${i.companyId}/issues/${i.id}`}
-                    className={`min-w-[280px] shrink-0 rounded-[10px] border p-4 shadow-card ${tint}`}
+                    className={`min-w-[280px] shrink-0 rounded-lg border p-4 shadow-card ${tint}`}
                   >
                     <div className="num text-[12px] font-medium text-[var(--text-mid)] mb-2">
                       {deadlineLabel(i.detectedDeadline, lang)}

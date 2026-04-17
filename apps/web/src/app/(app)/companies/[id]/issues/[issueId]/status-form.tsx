@@ -47,7 +47,7 @@ export function StatusChangeForm({
       <select
         value={status}
         onChange={(e) => setStatus(e.target.value as IssueStatus)}
-        className="w-full h-10 rounded-md border border-[var(--border)] px-3 text-[13px] bg-[var(--card)] text-[var(--text)]"
+        className="w-full h-10 rounded-lg border border-[var(--border)] px-3 text-[13px] bg-[var(--card)] text-[var(--text)]"
       >
         {STATUSES.map((s) => (
           <option key={s} value={s}>

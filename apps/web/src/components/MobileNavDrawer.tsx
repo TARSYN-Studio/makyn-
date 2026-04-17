@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { List, X } from "@phosphor-icons/react";
 
 import { logoutAction } from "@/actions/auth";
 import type { Lang } from "@/lib/i18n";
@@ -30,7 +30,7 @@ export function MobileNavDrawer({
         onClick={() => setOpen(true)}
         className="md:hidden p-2 -me-2 text-[var(--text-mid)]"
       >
-        <Menu className="h-5 w-5" />
+        <List className="h-5 w-5" />
       </button>
       {open && (
         <div
@@ -66,7 +66,7 @@ export function MobileNavDrawer({
                     key={href}
                     href={href}
                     onClick={() => setOpen(false)}
-                    className={`px-3 py-2 rounded-md text-[14px] font-medium ${
+                    className={`px-3 py-2 rounded-lg text-[14px] font-medium ${
                       active
                         ? "bg-[var(--accent-l)] text-[var(--accent)]"
                         : "text-[var(--text-mid)] hover:bg-[var(--surface)]"
@@ -81,7 +81,7 @@ export function MobileNavDrawer({
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="w-full text-start px-3 py-2 rounded-md text-[14px] text-[var(--text-mid)] hover:bg-[var(--surface)]"
+                  className="w-full text-start px-3 py-2 rounded-lg text-[14px] text-[var(--text-mid)] hover:bg-[var(--surface)]"
                 >
                   {logoutLabel}
                 </button>

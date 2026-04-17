@@ -149,7 +149,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                       {originalInbound.rawContent || "—"}
                     </div>
                     {originalInbound.extractedText && (
-                      <div className="mt-2 p-3 rounded-md bg-[var(--surface)] border border-[var(--border)] whitespace-pre-wrap">
+                      <div className="mt-2 p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] whitespace-pre-wrap">
                         <div className="text-[11px] text-[var(--text-dim)] mb-1 uppercase tracking-wider">
                           OCR
                         </div>
@@ -186,7 +186,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                 {conversation.map((m) => (
                   <div
                     key={m.id}
-                    className={`rounded-md p-3 text-[13px] border ${
+                    className={`rounded-lg p-3 text-[13px] border ${
                       m.direction === "INBOUND"
                         ? "bg-[var(--surface)] border-[var(--border)]"
                         : "bg-[var(--accent-xl)] border-[var(--accent-l)]"
@@ -243,7 +243,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
         {/* RIGHT */}
         <aside className="lg:sticky lg:top-6 self-start space-y-4">
           {/* Recommended Action */}
-          <div className="bg-[var(--accent-xl)] border border-[var(--accent-l)] rounded-[10px] p-4 space-y-3">
+          <div className="bg-[var(--accent-xl)] border border-[var(--accent-l)] rounded-lg p-4 space-y-3">
             <div className="text-[11px] uppercase tracking-wider text-[var(--accent)] font-semibold">
               {t("issue.recommendedAction", lang)}
             </div>
@@ -267,7 +267,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
           {/* Penalty */}
           {issue.penaltyIfIgnored && (
-            <div className="bg-[var(--red-l)] border border-[rgba(185,28,28,0.2)] rounded-[10px] p-4">
+            <div className="bg-[var(--red-l)] border border-[rgba(185,28,28,0.2)] rounded-lg p-4">
               <div className="text-[11px] uppercase tracking-wider text-[var(--red)] font-semibold mb-2">
                 {t("issue.penalty", lang)}
               </div>
