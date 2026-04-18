@@ -69,6 +69,10 @@ export async function PUT(
     return NextResponse.json({ error: "allowedDomains must be an array" }, { status: 400 });
   }
 
+  if (body.allowedDomains.length > 20) {
+    return NextResponse.json({ error: "too_many_domains", max: 20 }, { status: 400 });
+  }
+
   const domains: string[] = [];
   for (const item of body.allowedDomains) {
     const d = normalizeDomain(item);

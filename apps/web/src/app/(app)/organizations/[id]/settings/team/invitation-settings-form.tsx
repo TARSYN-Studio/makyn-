@@ -16,6 +16,8 @@ type Status =
 const DOMAIN_RE =
   /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
 
+const MAX_DOMAINS = 20;
+
 function isValidDomain(raw: string): boolean {
   return DOMAIN_RE.test(raw.trim().toLowerCase());
 }
@@ -32,21 +34,27 @@ export function InvitationSettingsForm({
   const [restrict, setRestrict] = useState(initialDomains.length > 0);
   const [domains, setDomains] = useState<string[]>(initialDomains);
   const [draft, setDraft] = useState("");
-  const [draftError, setDraftError] = useState(false);
+  const [draftError, setDraftError] = useState<"invalid" | "tooMany" | null>(null);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [isPending, start] = useTransition();
 
+  const atCap = domains.length >= MAX_DOMAINS;
+
   const addDomain = () => {
+    if (domains.length >= MAX_DOMAINS) {
+      setDraftError("tooMany");
+      return;
+    }
     const d = draft.trim().toLowerCase();
     if (!isValidDomain(d)) {
-      setDraftError(true);
+      setDraftError("invalid");
       return;
     }
     if (!domains.includes(d)) {
       setDomains([...domains, d]);
     }
     setDraft("");
-    setDraftError(false);
+    setDraftError(null);
   };
 
   const removeDomain = (d: string) => {
@@ -127,7 +135,7 @@ export function InvitationSettingsForm({
                   value={draft}
                   onChange={(e) => {
                     setDraft(e.target.value);
-                    if (draftError) setDraftError(false);
+                    if (draftError) setDraftError(null);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -136,20 +144,26 @@ export function InvitationSettingsForm({
                     }
                   }}
                   placeholder={t("team.settings.domain.placeholder", lang)}
-                  error={draftError}
+                  error={draftError !== null}
+                  disabled={atCap}
                 />
               </div>
               <Button
                 variant="secondary"
                 onClick={addDomain}
-                disabled={!draft.trim()}
+                disabled={!draft.trim() || atCap}
               >
                 {t("team.settings.domain.add", lang)}
               </Button>
             </div>
-            {draftError && (
+            {draftError === "invalid" && (
               <div className="text-[12px] text-[var(--red)]">
                 {t("team.settings.domain.invalid", lang)}
+              </div>
+            )}
+            {(draftError === "tooMany" || atCap) && (
+              <div className="text-[12px] text-[var(--red)]">
+                {t("team.settings.domain.tooMany", lang)}
               </div>
             )}
           </div>

@@ -111,6 +111,10 @@ export async function updateInvitationSettingsAction(
     throw err;
   }
 
+  if (allowedDomains.length > 20) {
+    return { ok: false, error: "too_many_domains" };
+  }
+
   const domains: string[] = [];
   for (const item of allowedDomains) {
     const d = normalizeDomain(item);
