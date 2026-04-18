@@ -20,3 +20,4 @@ ca-certificate.crt
 *.key
 
 /.claude/worktrees/
+.DS_Store
