@@ -32,6 +32,7 @@ export class MicrosoftGraphEmailService implements EmailService {
   private readonly clientSecret: string;
   private readonly tenantId: string;
   private readonly senderUpn: string;
+  private readonly devOverride: string | null;
   private cachedToken: { token: string; expiresAt: number } | null = null;
 
   constructor(env?: NodeJS.ProcessEnv) {
@@ -46,18 +47,34 @@ export class MicrosoftGraphEmailService implements EmailService {
     this.clientSecret = e.GRAPH_CLIENT_SECRET!;
     this.tenantId = e.GRAPH_TENANT_ID!;
     this.senderUpn = e.GRAPH_SENDER_UPN!;
+    const override = (e.DEV_EMAIL_OVERRIDE ?? "").trim();
+    this.devOverride = override.length > 0 ? override : null;
+    if (this.devOverride) {
+      logger.warn(
+        { override: this.devOverride },
+        "dev_email_override_active_all_outbound_rewritten"
+      );
+    }
   }
 
   async sendInvitation(params: SendInvitationParams): Promise<void> {
     const rendered = renderInvitationEmail(params);
     const token = await this.getAccessToken();
 
+    const actualTo = this.devOverride ?? params.to;
+    if (this.devOverride && this.devOverride !== params.to) {
+      logger.warn(
+        { intended: params.to, actual: this.devOverride },
+        "dev_email_override_rewrite"
+      );
+    }
+
     const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(this.senderUpn)}/sendMail`;
     const body = {
       message: {
         subject: rendered.subject,
         body: { contentType: "HTML", content: rendered.html },
-        toRecipients: [{ emailAddress: { address: params.to } }],
+        toRecipients: [{ emailAddress: { address: actualTo } }],
         from: { emailAddress: { address: this.senderUpn, name: "MAKYN" } },
         replyTo: [{ emailAddress: { address: params.inviterEmail, name: params.inviterName } }]
       },
