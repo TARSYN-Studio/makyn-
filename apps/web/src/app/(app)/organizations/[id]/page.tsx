@@ -286,6 +286,9 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <Link href={`/organizations/${company.id}?tab=details`}>
           <Button variant="secondary">{t("company.editDetails", lang)}</Button>
         </Link>
+        <Link href={`/organizations/${company.id}/settings/team`}>
+          <Button variant="secondary">{t("team.nav.link", lang)}</Button>
+        </Link>
       </div>
 
       {/* Stat summary */}
