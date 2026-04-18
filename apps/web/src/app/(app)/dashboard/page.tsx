@@ -19,6 +19,7 @@ import { PageFrame } from "@/components/PageFrame";
 import { NoCompanies } from "@/components/illustrations/NoCompanies";
 import { NoIssues } from "@/components/illustrations/NoIssues";
 import { NoDeadlines } from "@/components/illustrations/NoDeadlines";
+import { listUserOrgIds } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -82,6 +83,13 @@ export default async function DashboardPage() {
   const lang: Lang = user.preferredLanguage === "en" ? "en" : "ar";
   const now = new Date();
 
+  // Aggregate scope per v1.4 Q5 answer: show metrics across every org the
+  // user is a member of. Active-org switcher lands in v1.4.1 — when it
+  // does, this single call reads the activeOrgId from a cookie/header
+  // and the rest of the page unchanged.
+  const userOrgIds = await listUserOrgIds(user.id);
+  const orgScope = { in: userOrgIds };
+
   // Time windows
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   const in30d = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -104,8 +112,8 @@ export default async function DashboardPage() {
     recentDocsExtracted,
     recentMessages
   ] = await Promise.all([
-    prisma.company.findMany({
-      where: { ownerId: user.id, isActive: true },
+    prisma.organization.findMany({
+      where: { id: orgScope, isActive: true, deletedAt: null },
       include: {
         issues: {
           where: { status: { in: OPEN_STATUSES } },
@@ -116,7 +124,7 @@ export default async function DashboardPage() {
     }),
     prisma.issue.count({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: {
           in: [
             IssueStatus.OPEN,
@@ -128,91 +136,86 @@ export default async function DashboardPage() {
     }),
     prisma.issue.count({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: { notIn: [IssueStatus.RESOLVED, IssueStatus.ARCHIVED] },
         detectedDeadline: { gte: now, lte: in7d }
       }
     }),
     prisma.issue.count({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: IssueStatus.RESOLVED,
         resolvedAt: { gte: minus30d }
       }
     }),
     prisma.issue.count({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: IssueStatus.RESOLVED,
         resolvedAt: { gte: minus7d }
       }
     }),
     prisma.issue.count({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: IssueStatus.RESOLVED,
         resolvedAt: { gte: minus14d, lt: minus7d }
       }
     }),
     prisma.issue.findMany({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         urgencyLevel: 5,
         status: { in: OPEN_STATUSES }
       },
-      include: { company: { select: { id: true, legalNameAr: true } } },
+      include: { organization: { select: { id: true, legalNameAr: true } } },
       orderBy: { detectedDeadline: "asc" },
       take: 10
     }),
     prisma.issue.findMany({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: { notIn: [IssueStatus.RESOLVED, IssueStatus.ARCHIVED] },
         detectedDeadline: { gte: now, lte: in30d }
       },
-      include: { company: { select: { id: true, legalNameAr: true } } },
+      include: { organization: { select: { id: true, legalNameAr: true } } },
       orderBy: { detectedDeadline: "asc" },
       take: 20
     }),
     prisma.issue.findMany({
-      where: { ownerId: user.id, createdAt: { gte: minus30d } },
-      include: { company: { select: { id: true, legalNameAr: true } } },
+      where: { organizationId: orgScope, createdAt: { gte: minus30d } },
+      include: { organization: { select: { id: true, legalNameAr: true } } },
       orderBy: { createdAt: "desc" },
       take: 10
     }),
     prisma.issue.findMany({
       where: {
-        ownerId: user.id,
+        organizationId: orgScope,
         status: IssueStatus.RESOLVED,
         resolvedAt: { gte: minus30d, not: null }
       },
-      include: { company: { select: { id: true, legalNameAr: true } } },
+      include: { organization: { select: { id: true, legalNameAr: true } } },
       orderBy: { resolvedAt: "desc" },
       take: 10
     }),
     prisma.companyDocument.findMany({
       where: {
-        userId: user.id,
+        organizationId: orgScope,
         extractionStatus: ExtractionStatus.COMPLETED,
         extractionCompletedAt: { not: null, gte: minus30d }
       },
-      include: { company: { select: { id: true, legalNameAr: true } } },
+      include: { organization: { select: { id: true, legalNameAr: true } } },
       orderBy: { extractionCompletedAt: "desc" },
       take: 10
-    }) as Promise<Array<{
-      id: string;
-      originalName: string;
-      extractionCompletedAt: Date | null;
-      company: { id: string; legalNameAr: string } | null;
-    }>>,
+    }),
     prisma.message.findMany({
       where: {
-        userId: user.id,
+        organizationId: orgScope,
         channelType: ChannelType.TELEGRAM,
         direction: "INBOUND",
         createdAt: { gte: minus30d }
       },
-      include: { company: { select: { id: true, legalNameAr: true } } },
+      include: { organization: { select: { id: true, legalNameAr: true } } },
       orderBy: { createdAt: "desc" },
       take: 10
     })
@@ -229,8 +232,8 @@ export default async function DashboardPage() {
       at: i.createdAt,
       kind: "newIssue",
       label: i.titleAr,
-      company: i.company.legalNameAr,
-      href: `/companies/${i.companyId}/issues/${i.id}`
+      company: i.organization?.legalNameAr ?? "",
+      href: `/organizations/${i.organizationId}/issues/${i.id}`
     });
   }
   for (const i of recentResolved) {
@@ -239,18 +242,18 @@ export default async function DashboardPage() {
       at: i.resolvedAt,
       kind: "resolved",
       label: i.titleAr,
-      company: i.company.legalNameAr,
-      href: `/companies/${i.companyId}/issues/${i.id}`
+      company: i.organization?.legalNameAr ?? "",
+      href: `/organizations/${i.organizationId}/issues/${i.id}`
     });
   }
   for (const d of recentDocsExtracted) {
-    if (!d.extractionCompletedAt || !d.company) continue;
+    if (!d.extractionCompletedAt || !d.organization) continue;
     activity.push({
       at: d.extractionCompletedAt,
       kind: "docExtracted",
       label: d.originalName,
-      company: d.company.legalNameAr,
-      href: `/companies/${d.company.id}`
+      company: d.organization?.legalNameAr ?? "",
+      href: `/organizations/${d.organization?.id ?? ""}`
     });
   }
   for (const i of upcomingDeadlines) {
@@ -260,8 +263,8 @@ export default async function DashboardPage() {
       at: i.detectedDeadline,
       kind: "deadlineSoon",
       label: i.titleAr,
-      company: i.company.legalNameAr,
-      href: `/companies/${i.companyId}/issues/${i.id}`
+      company: i.organization?.legalNameAr ?? "",
+      href: `/organizations/${i.organizationId}/issues/${i.id}`
     });
   }
   for (const m of recentMessages) {
@@ -269,8 +272,8 @@ export default async function DashboardPage() {
       at: m.createdAt,
       kind: "noticeReceived",
       label: (m.rawContent ?? "").slice(0, 80) || "—",
-      company: m.company?.legalNameAr ?? (lang === "ar" ? "غير مطابقة" : "Unmatched"),
-      href: m.companyId ? `/companies/${m.companyId}` : "/companies"
+      company: m.organization?.legalNameAr ?? (lang === "ar" ? "غير مطابقة" : "Unmatched"),
+      href: m.organizationId ? `/organizations/${m.organizationId}` : "/organizations"
     });
   }
   activity.sort((a, b) => b.at.getTime() - a.at.getTime());
@@ -293,8 +296,8 @@ export default async function DashboardPage() {
           : "";
       return {
         prefix: lang === "ar" ? "التالي" : "Next",
-        label: `${top.titleAr} — ${top.company.legalNameAr}${due}`,
-        href: `/companies/${top.companyId}/issues/${top.id}`
+        label: `${top.titleAr} — ${top.organization?.legalNameAr ?? ""}${due}`,
+        href: `/organizations/${top.organizationId}/issues/${top.id}`
       };
     }
     const soonest = upcomingDeadlines.find((i) => i.detectedDeadline && i.detectedDeadline <= in7d);
@@ -302,7 +305,7 @@ export default async function DashboardPage() {
       return {
         prefix: lang === "ar" ? "أقرب موعد" : "Next deadline",
         label: `${soonest.titleAr} — ${deadlineLabel(soonest.detectedDeadline, lang)}`,
-        href: `/companies/${soonest.companyId}/issues/${soonest.id}`
+        href: `/organizations/${soonest.organizationId}/issues/${soonest.id}`
       };
     }
     if (recent.length > 0) {
@@ -375,10 +378,10 @@ export default async function DashboardPage() {
               {urgentIssues.slice(0, 3).map((i) => (
                 <li key={i.id}>
                   <Link
-                    href={`/companies/${i.companyId}/issues/${i.id}`}
+                    href={`/organizations/${i.organizationId}/issues/${i.id}`}
                     className="hover:underline"
                   >
-                    <span className="font-medium">{i.company.legalNameAr}</span>
+                    <span className="font-medium">{i.organization?.legalNameAr ?? ""}</span>
                     <span className="text-[var(--text-mid)]"> · </span>
                     <span>{i.titleAr}</span>
                     {i.detectedDeadline && (
@@ -392,7 +395,7 @@ export default async function DashboardPage() {
             </ul>
             {urgentIssues.length > 3 && (
               <Link
-                href="/companies?filter=urgent"
+                href="/organizations?filter=urgent"
                 className="inline-block mt-2 text-[12px] font-medium text-[var(--red)] hover:underline"
               >
                 {t("dashboard.viewAllUrgent", lang)} →
@@ -450,7 +453,7 @@ export default async function DashboardPage() {
                   {t("companies.empty.desc", lang)}
                 </p>
                 <Link
-                  href="/companies/new"
+                  href="/organizations/new"
                   className="text-[13px] font-medium text-[var(--accent)] hover:underline"
                 >
                   + {t("dashboard.addCompany", lang)}
@@ -470,7 +473,7 @@ export default async function DashboardPage() {
                   status === "RED" ? "red" : status === "YELLOW" ? "yellow" : "green";
                 const top = c.issues[0];
                 return (
-                  <Link key={c.id} href={`/companies/${c.id}`}>
+                  <Link key={c.id} href={`/organizations/${c.id}`}>
                     <Card interactive className="h-full cursor-pointer">
                       <CardBody className="space-y-3">
                         <div className="flex items-start justify-between gap-2">
@@ -501,7 +504,7 @@ export default async function DashboardPage() {
                 );
               })}
               <Link
-                href="/companies/new"
+                href="/organizations/new"
                 className="flex items-center justify-center h-full min-h-[140px] rounded-lg border border-dashed border-[var(--border-s)] text-[13px] font-medium text-[var(--text-mid)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
               >
                 + {t("dashboard.addCompany", lang)}
@@ -586,14 +589,14 @@ export default async function DashboardPage() {
                   return (
                     <Link
                       key={i.id}
-                      href={`/companies/${i.companyId}/issues/${i.id}`}
+                      href={`/organizations/${i.organizationId}/issues/${i.id}`}
                       className={`min-w-[280px] shrink-0 rounded-lg border p-4 shadow-card ${tint}`}
                     >
                       <div className="num text-[12px] font-medium text-[var(--text-mid)] mb-2">
                         {deadlineLabel(i.detectedDeadline, lang)}
                       </div>
                       <div className="text-[13px] text-[var(--text-dim)] mb-1">
-                        {i.company.legalNameAr}
+                        {i.organization?.legalNameAr ?? ""}
                       </div>
                       <div className="text-[14px] font-medium text-[var(--text)] line-clamp-2 mb-3">
                         {i.titleAr}

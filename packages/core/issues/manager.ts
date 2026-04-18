@@ -13,21 +13,43 @@ export type IssueOutcome = {
   created: boolean;
 };
 
+/**
+ * Create or update an Issue for an inbound notice.
+ *
+ * v1.4 Commit A: Issue ownership moved off Company.ownerId onto the
+ * polymorphic membership edge. The user whose inbound channel received
+ * this notice is the `createdByUserId` (creator for audit/provenance);
+ * `detectedBy` records the channel. Permission to VIEW the issue comes
+ * from Organization membership, not from Issue.createdByUserId.
+ *
+ * `sourceUserId` + `sourceChannel` carry the full source trace (see
+ * Issue model docs). Matcher writes those too.
+ */
 export async function createOrUpdateIssue(
   processed: ProcessedNotice,
   messageId: string,
-  companyId: string
+  organizationId: string,
+  options?: {
+    createdByUserId?: string | null;
+    sourceChannel?: string | null;
+    sourceUserId?: string | null;
+    matchedByIdentifier?: string | null;
+    matchConfidence?: number | null;
+  }
 ): Promise<IssueOutcome> {
-  const company = await prisma.company.findUniqueOrThrow({
-    where: { id: companyId },
-    select: { id: true, ownerId: true }
+  // Confirm the org exists and is live; we do not gate on the user here —
+  // callers (apps/bot matcher) have already authenticated the source user
+  // and decided routing. Permission surface lives in apps/web.
+  await prisma.organization.findUniqueOrThrow({
+    where: { id: organizationId },
+    select: { id: true }
   });
 
   const thirtyDaysAgo = addDays(new Date(), -30);
 
   const existing = await prisma.issue.findFirst({
     where: {
-      companyId,
+      organizationId,
       governmentBody: processed.governmentBody ?? undefined,
       noticeType: processed.classification.notice_type_code,
       status: { in: [IssueStatus.OPEN, IssueStatus.ACKNOWLEDGED, IssueStatus.WITH_PROFESSIONAL] },
@@ -51,7 +73,7 @@ export async function createOrUpdateIssue(
       }),
       prisma.message.update({
         where: { id: messageId },
-        data: { issueId: existing.id, companyId }
+        data: { issueId: existing.id, organizationId }
       })
     ]);
 
@@ -61,8 +83,14 @@ export async function createOrUpdateIssue(
   const created = await prisma.$transaction(async (tx) => {
     const issue = await tx.issue.create({
       data: {
-        companyId,
-        ownerId: company.ownerId,
+        organizationId,
+        detectedBy: options?.sourceChannel === "TELEGRAM" ? "INBOUND_TELEGRAM" : "BOT",
+        createdByUserId: options?.createdByUserId ?? null,
+        sourceChannel: options?.sourceChannel ?? null,
+        sourceUserId: options?.sourceUserId ?? null,
+        matchedByIdentifier: options?.matchedByIdentifier ?? null,
+        matchedToOrganizationId: organizationId,
+        matchConfidence: options?.matchConfidence ?? null,
         titleAr: processed.titleAr,
         summaryAr: processed.summaryAr,
         governmentBody: processed.governmentBody ?? "OTHER",
@@ -83,7 +111,7 @@ export async function createOrUpdateIssue(
 
     await tx.message.update({
       where: { id: messageId },
-      data: { issueId: issue.id, companyId }
+      data: { issueId: issue.id, organizationId }
     });
 
     return issue;

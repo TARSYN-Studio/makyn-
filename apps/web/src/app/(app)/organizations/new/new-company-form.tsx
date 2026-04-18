@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
 
-import { createCompanyAction, type CompanyMutationState } from "@/actions/companies";
+import { createCompanyAction, type CompanyMutationState } from "@/actions/organizations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,7 +120,7 @@ export function NewCompanyForm({ lang }: { lang: Lang }) {
 
       <div className="flex items-center gap-3">
         <SubmitBtn lang={lang} />
-        <Link href="/companies">
+        <Link href="/organizations">
           <Button variant="ghost">{t("companyNew.cancel", lang)}</Button>
         </Link>
       </div>

@@ -34,8 +34,17 @@ export type PipelineRunOutcome =
   | { kind: "no_companies"; messageId: string };
 
 async function loadUserCompanies(userId: string): Promise<CompanyForMatching[]> {
-  const rows = await prisma.company.findMany({
-    where: { ownerId: userId, isActive: true },
+  // v1.4: scope to every live org the user is a member of (any role).
+  // No DB-level gate on matcher beyond membership; same-org members
+  // share the match set. Matcher output must still be rejected when the
+  // source user isn't a member of the winning org (Q2 manual-routing
+  // queue — enforced one level up).
+  const rows = await prisma.organization.findMany({
+    where: {
+      isActive: true,
+      deletedAt: null,
+      memberships: { some: { userId, acceptedAt: { not: null } } }
+    },
     select: {
       id: true,
       legalNameAr: true,

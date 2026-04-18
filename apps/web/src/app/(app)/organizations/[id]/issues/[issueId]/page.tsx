@@ -11,6 +11,7 @@ import { CopyHandlerBrief } from "./copy-handler";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageFrame } from "@/components/PageFrame";
+import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -49,8 +50,15 @@ export default async function IssueDetailPage({ params }: PageProps) {
   const user = await requireUser();
   const lang: Lang = user.preferredLanguage === "en" ? "en" : "ar";
 
+  try {
+    await requireOrgAccess(user.id, params.id, "issue.read");
+  } catch (e) {
+    if (e instanceof OrgAccessError) notFound();
+    throw e;
+  }
+
   const issue = await prisma.issue.findFirst({
-    where: { id: params.issueId, ownerId: user.id, companyId: params.id },
+    where: { id: params.issueId, organizationId: params.id },
     include: {
       messages: {
         orderBy: { createdAt: "asc" },
@@ -70,7 +78,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
         orderBy: { createdAt: "desc" },
         include: { author: { select: { fullName: true } } }
       },
-      company: { select: { id: true, legalNameAr: true } }
+      organization: { select: { id: true, legalNameAr: true } }
     }
   });
 
@@ -89,15 +97,15 @@ export default async function IssueDetailPage({ params }: PageProps) {
     <PageFrame className="max-w-7xl">
       {/* Breadcrumb */}
       <div className="mb-4 text-[12px] text-[var(--text-dim)]">
-        <Link href="/companies" className="hover:text-[var(--accent)]">
+        <Link href="/organizations" className="hover:text-[var(--accent)]">
           {lang === "ar" ? "شركاتي" : "Companies"}
         </Link>
         <span>{sep}</span>
         <Link
-          href={`/companies/${issue.company.id}`}
+          href={`/organizations/${issue.organization?.id}`}
           className="hover:text-[var(--accent)]"
         >
-          {issue.company.legalNameAr}
+          {issue.organization?.legalNameAr ?? ""}
         </Link>
         <span>{sep}</span>
         <span className="text-[var(--text-mid)]">{truncate(issue.titleAr, 60)}</span>
