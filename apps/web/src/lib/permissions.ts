@@ -10,6 +10,8 @@ export type PermAction =
   | "member.invite"
   | "member.remove"
   | "member.change_role"
+  | "invitation.revoke"
+  | "organization.invite_domain_restriction"
   // Data read
   | "issue.read"
   | "document.read"
@@ -29,6 +31,7 @@ const ALLOW: Record<OrgRole, ReadonlySet<PermAction>> = {
   OWNER: new Set<PermAction>([
     "org.read", "org.update", "org.delete", "org.transfer_ownership",
     "member.invite", "member.remove", "member.change_role",
+    "invitation.revoke", "organization.invite_domain_restriction",
     "issue.read", "document.read",
     "issue.create", "issue.update", "issue.delete",
     "document.upload", "document.delete", "note.create"
@@ -36,6 +39,7 @@ const ALLOW: Record<OrgRole, ReadonlySet<PermAction>> = {
   ADMIN: new Set<PermAction>([
     "org.read", "org.update",
     "member.invite", "member.remove", "member.change_role",
+    "invitation.revoke",
     "issue.read", "document.read",
     "issue.create", "issue.update", "issue.delete",
     "document.upload", "document.delete", "note.create"
