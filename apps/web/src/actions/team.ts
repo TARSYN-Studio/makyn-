@@ -30,6 +30,14 @@ export type InviteResult =
 const ASSIGNABLE_ROLES: ReadonlySet<OrgRole> = new Set(["ADMIN", "MEMBER", "VIEWER"]);
 const INVITABLE_ROLES: ReadonlySet<OrgRole> = new Set(["ADMIN", "MEMBER", "VIEWER"]);
 
+function normalizeDomain(raw: string): string | null {
+  const d = raw.trim().toLowerCase();
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(d)) {
+    return null;
+  }
+  return d;
+}
+
 function normalizeEmail(raw: string): string | null {
   const v = raw.trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return null;
@@ -82,6 +90,53 @@ export async function changeRoleAction(
     entityType: "membership",
     entityId: updated.id,
     action: "membership.role_change"
+  });
+
+  revalidatePath(`/organizations/${orgId}/settings/team`);
+  return { ok: true };
+}
+
+export async function updateInvitationSettingsAction(
+  orgId: string,
+  allowedDomains: string[]
+): Promise<ActionResult> {
+  const user = await requireUser();
+
+  try {
+    await requireOrgAccess(user.id, orgId, "organization.invite_domain_restriction");
+  } catch (err) {
+    if (err instanceof OrgAccessError) {
+      return { ok: false, error: err.kind === "forbidden" ? "forbidden" : "not_found" };
+    }
+    throw err;
+  }
+
+  const domains: string[] = [];
+  for (const item of allowedDomains) {
+    const d = normalizeDomain(item);
+    if (!d) return { ok: false, error: "invalid_domain" };
+    if (!domains.includes(d)) domains.push(d);
+  }
+
+  const before = await prisma.organization.findFirst({
+    where: { id: orgId, deletedAt: null },
+    select: { inviteDomainRestriction: true }
+  });
+  if (!before) return { ok: false, error: "org_not_found" };
+
+  await prisma.organization.update({
+    where: { id: orgId },
+    data: { inviteDomainRestriction: domains }
+  });
+
+  await writeAudit({
+    actorUserId: user.id,
+    organizationId: orgId,
+    entityType: "organization",
+    entityId: orgId,
+    action: "organization.invite_domain_restriction_changed",
+    before: { allowedDomains: before.inviteDomainRestriction },
+    after: { allowedDomains: domains }
   });
 
   revalidatePath(`/organizations/${orgId}/settings/team`);

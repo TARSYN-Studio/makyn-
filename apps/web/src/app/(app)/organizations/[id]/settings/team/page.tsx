@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@makyn/db";
 
+import { InvitationSettingsForm } from "./invitation-settings-form";
 import { InvitationsTable, type PendingInvitation } from "./invitations-table";
 import { InviteForm } from "./invite-form";
 import { MembersTable } from "./members-table";
@@ -28,7 +29,12 @@ export default async function TeamSettingsPage({ params }: PageProps) {
   const [org, memberships] = await Promise.all([
     prisma.organization.findFirst({
       where: { id: params.id, deletedAt: null },
-      select: { id: true, legalNameAr: true, legalNameEn: true }
+      select: {
+        id: true,
+        legalNameAr: true,
+        legalNameEn: true,
+        inviteDomainRestriction: true
+      }
     }),
     prisma.membership.findMany({
       where: { organizationId: params.id, acceptedAt: { not: null } },
@@ -123,6 +129,14 @@ export default async function TeamSettingsPage({ params }: PageProps) {
       )}
 
       {canManageInvites && <InviteForm orgId={params.id} lang={lang} />}
+
+      {access.role === "OWNER" && (
+        <InvitationSettingsForm
+          orgId={params.id}
+          initialDomains={org.inviteDomainRestriction}
+          lang={lang}
+        />
+      )}
     </PageFrame>
   );
 }
