@@ -17,8 +17,17 @@ function SubmitButton({ lang }: { lang: Lang }) {
   );
 }
 
-export function SignupForm({ lang }: { lang: Lang }) {
+export function SignupForm({
+  lang,
+  next,
+  presetEmail
+}: {
+  lang: Lang;
+  next?: string;
+  presetEmail?: string;
+}) {
   const [state, action] = useFormState<SignupState, FormData>(signupAction, {});
+  const emailLocked = Boolean(presetEmail);
 
   return (
     <form action={action} className="space-y-4">
@@ -28,12 +37,21 @@ export function SignupForm({ lang }: { lang: Lang }) {
       </div>
       <div>
         <Label htmlFor="email">{t("signup.email", lang)}</Label>
-        <Input name="email" id="email" type="email" required autoComplete="email" />
+        <Input
+          name="email"
+          id="email"
+          type="email"
+          required
+          autoComplete="email"
+          defaultValue={presetEmail ?? ""}
+          readOnly={emailLocked}
+        />
       </div>
       <div>
         <Label htmlFor="password">{t("signup.password", lang)}</Label>
         <Input name="password" id="password" type="password" required minLength={8} autoComplete="new-password" />
       </div>
+      {next && <input type="hidden" name="next" value={next} />}
       {state?.error === "email_in_use" && (
         <p className="text-sm text-[var(--red)]">
           {lang === "ar" ? "البريد الإلكتروني مستخدم بالفعل." : "This email is already in use."}

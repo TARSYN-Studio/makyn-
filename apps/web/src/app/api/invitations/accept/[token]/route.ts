@@ -63,6 +63,17 @@ export async function POST(
         where: { id: invitation.id },
         data: { acceptedAt: now, acceptedByUserId: session.user.id }
       });
+      // The Invitation row transitions pending → accepted even when the
+      // user was already a member. Audit the state change; do not audit
+      // membership.accept — the Membership itself did not change.
+      await writeAudit({
+        actorUserId: session.user.id,
+        organizationId: invitation.organizationId,
+        entityType: "invitation",
+        entityId: invitation.id,
+        action: "invitation.accept",
+        after: { emailHash: hashEmail(invitation.email), role: invitation.role }
+      });
     }
     return NextResponse.json(
       { organizationId: invitation.organizationId, status: "already_member" },

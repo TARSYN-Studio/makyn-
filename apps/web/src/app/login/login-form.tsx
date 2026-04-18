@@ -17,7 +17,7 @@ function SubmitButton({ lang }: { lang: Lang }) {
   );
 }
 
-export function LoginForm({ lang }: { lang: Lang }) {
+export function LoginForm({ lang, next }: { lang: Lang; next?: string }) {
   const [state, action] = useFormState<LoginState, FormData>(loginAction, {});
   return (
     <form action={action} className="space-y-4">
@@ -29,6 +29,7 @@ export function LoginForm({ lang }: { lang: Lang }) {
         <Label htmlFor="password">{t("login.password", lang)}</Label>
         <Input name="password" id="password" type="password" required autoComplete="current-password" />
       </div>
+      {next && <input type="hidden" name="next" value={next} />}
       {state?.error === "invalid_credentials" && (
         <p className="text-[13px] text-[var(--red)]">
           {lang === "ar" ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password."}

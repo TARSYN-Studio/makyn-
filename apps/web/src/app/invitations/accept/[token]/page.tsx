@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@makyn/db";
 
+import { logoutAction } from "@/actions/auth";
 import { Wordmark } from "@/components/LogoMark";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/session";
@@ -154,9 +155,24 @@ export default async function AcceptInvitationPage({ params }: Props) {
                 )}
 
                 {user && user.email.toLowerCase() !== invitation.email.toLowerCase() && (
-                  <p className="text-[13px] text-[var(--danger,#c0392b)]">
-                    {c.mismatchPrompt(invitation.email, user.email)}
-                  </p>
+                  <>
+                    <p className="text-[13px] text-[var(--danger,#c0392b)] mb-3">
+                      {c.mismatchPrompt(invitation.email, user.email)}
+                    </p>
+                    <form action={logoutAction}>
+                      <input
+                        type="hidden"
+                        name="next"
+                        value={`/login?next=${encodeURIComponent(`/invitations/accept/${token}`)}`}
+                      />
+                      <button
+                        type="submit"
+                        className="text-[var(--accent)] hover:underline text-[13px]"
+                      >
+                        {c.logout}
+                      </button>
+                    </form>
+                  </>
                 )}
 
                 {user && user.email.toLowerCase() === invitation.email.toLowerCase() && (
