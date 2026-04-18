@@ -83,7 +83,7 @@ function renderArabic(p: SendInvitationParams): RenderedEmail {
             <td style="padding:16px 32px 8px 32px;font-size:17px;line-height:1.9;">
               <p style="margin:0 0 16px 0;">أهلاً،</p>
               <p style="margin:0 0 16px 0;">
-                دعاك <strong>${inviterName}</strong> للانضمام إلى شركة
+                دعاك <strong>${inviterName}</strong> للانضمام إلى
                 <strong>${orgName}</strong> على منصة مكين بصلاحية
                 <strong>${roleLabel}</strong>.
               </p>
@@ -124,7 +124,7 @@ function renderArabic(p: SendInvitationParams): RenderedEmail {
   const text = [
     `أهلاً،`,
     ``,
-    `دعاك ${p.inviterName} للانضمام إلى شركة ${p.organizationName} على منصة مكين بصلاحية ${roleLabel}.`,
+    `دعاك ${p.inviterName} للانضمام إلى ${p.organizationName} على منصة مكين بصلاحية ${roleLabel}.`,
     ``,
     `لقبول الدعوة افتح الرابط التالي:`,
     acceptUrl,
