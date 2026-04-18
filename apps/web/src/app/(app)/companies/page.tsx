@@ -12,6 +12,7 @@ import { Wordmark } from "@/components/LogoMark";
 import { NoCompanies } from "@/components/illustrations/NoCompanies";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
+import { SortSelect } from "./SortSelect";
 
 type FilterKey = "all" | "urgent" | "pending" | "clean";
 type SortKey = "activity" | "name" | "issues" | "newest";
@@ -178,28 +179,11 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
         </form>
 
         {/* Sort */}
-        <form method="get" className="flex items-center gap-2">
-          {filter !== "all" && <input type="hidden" name="filter" value={filter} />}
-          {view !== "grid" && <input type="hidden" name="view" value={view} />}
-          {q && <input type="hidden" name="q" value={q} />}
-          <select
-            name="sort"
-            defaultValue={sort}
-            className="rounded-lg bg-[var(--card)] border border-[var(--border)] px-2 py-1.5 text-[13px] text-[var(--text-mid)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
-          >
-            {sorts.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className="text-[12px] text-[var(--text-mid)] hover:text-[var(--text)]"
-          >
-            {lang === "ar" ? "تطبيق" : "Apply"}
-          </button>
-        </form>
+        <SortSelect
+          value={sort}
+          options={sorts}
+          carry={{ filter, view, q }}
+        />
 
         {/* View toggle */}
         <div className="ms-auto flex items-center rounded-lg border border-[var(--border)] bg-[var(--card)] p-0.5">

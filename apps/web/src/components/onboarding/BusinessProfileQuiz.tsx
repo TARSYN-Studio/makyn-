@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import type { Lang } from "@/lib/i18n";
 
 export type BusinessProfile = {
@@ -61,10 +62,10 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
   return (
     <div className="max-w-xl mx-auto space-y-8">
       <div>
-        <h1 className="text-xl font-bold text-navy-900">
+        <h1 className="text-[20px] font-semibold text-[var(--text)]">
           {isAr ? "بعض الأسئلة السريعة" : "A few quick questions"}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-[13px] text-[var(--text-mid)] mt-1">
           {isAr
             ? "لنعرف المستندات الصحيحة لشركتك"
             : "So we can show you the right document slots"}
@@ -73,7 +74,7 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q1 */}
       <div className="space-y-2">
-        <p className="font-medium text-navy-800 text-sm">
+        <p className="font-medium text-[var(--text)] text-[13px]">
           {isAr ? "هل لديك موظفون؟" : "Do you have employees?"}
         </p>
         <div className="flex gap-3">
@@ -92,7 +93,7 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q2 */}
       <div className="space-y-2">
-        <p className="font-medium text-navy-800 text-sm">
+        <p className="font-medium text-[var(--text)] text-[13px]">
           {isAr ? "هل لديك موقع فعلي أو مقر؟" : "Do you have physical premises?"}
         </p>
         <div className="flex gap-3">
@@ -111,9 +112,9 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q3 */}
       <div className="space-y-2">
-        <p className="font-medium text-navy-800 text-sm">
+        <p className="font-medium text-[var(--text)] text-[13px]">
           {isAr ? "ما نشاط شركتك الرئيسي؟" : "What's your primary business activity?"}
-          <span className="text-gray-400 font-normal ms-1 text-xs">
+          <span className="text-[var(--text-dim)] font-normal ms-1 text-[11px]">
             {isAr ? "(اختر كل ما ينطبق)" : "(select all that apply)"}
           </span>
         </p>
@@ -124,9 +125,9 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
                 type="checkbox"
                 checked={activities.includes(opt.value)}
                 onChange={() => toggleActivity(opt.value)}
-                className="w-4 h-4 rounded accent-navy-600"
+                className="w-4 h-4 rounded accent-[var(--accent)]"
               />
-              <span className="text-sm text-navy-700">
+              <span className="text-[13px] text-[var(--text)]">
                 {isAr ? opt.ar : opt.en}
               </span>
             </label>
@@ -136,7 +137,7 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q4 */}
       <div className="space-y-2">
-        <p className="font-medium text-navy-800 text-sm">
+        <p className="font-medium text-[var(--text)] text-[13px]">
           {isAr
             ? "هل الشركة ذات ملكية أجنبية كاملة أو جزئية؟"
             : "Does the company have foreign ownership?"}
@@ -155,14 +156,14 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
         </div>
       </div>
 
-      <button
-        type="button"
+      <Button
         disabled={!canContinue}
         onClick={handleContinue}
-        className="w-full py-2.5 rounded-lg bg-navy-700 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-navy-800 transition-colors"
+        size="lg"
+        className="w-full"
       >
         {isAr ? "التالي — رفع المستندات" : "Next — Upload documents"}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -180,10 +181,10 @@ function ToggleBtn({
     <button
       type="button"
       onClick={onClick}
-      className={`px-5 py-2 rounded-lg border text-sm font-medium transition-colors ${
+      className={`px-5 py-2 rounded-lg border text-[13px] font-medium transition-colors ${
         active
-          ? "bg-navy-700 text-white border-navy-700"
-          : "bg-white text-navy-700 border-navy-300 hover:border-navy-500"
+          ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+          : "bg-[var(--card)] text-[var(--text)] border-[var(--border)] hover:border-[var(--border-s)]"
       }`}
     >
       {label}

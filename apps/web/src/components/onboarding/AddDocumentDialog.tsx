@@ -85,35 +85,35 @@ export function AddDocumentDialog({ open, lang, existingTypes, onSelect, onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[80vh]">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="font-semibold text-navy-800 text-sm">
+      <div className="relative bg-[var(--card)] rounded-lg shadow-modal w-full max-w-md flex flex-col max-h-[80vh]">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+          <h2 className="font-semibold text-[var(--text)] text-[14px]">
             {isAr ? "ما نوع المستند الذي تريد إضافته؟" : "Which document type?"}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            className="text-[var(--text-dim)] hover:text-[var(--text)] text-xl leading-none"
           >
             ×
           </button>
         </div>
 
-        <div className="p-3 border-b">
+        <div className="p-3 border-b border-[var(--border)]">
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isAr ? "ابحث عن نوع المستند..." : "Search document type..."}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-400"
+            className="w-full border border-[var(--border)] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[rgba(30,58,138,0.15)] focus:border-[var(--accent)]"
             dir={isAr ? "rtl" : "ltr"}
           />
         </div>
 
         <ul className="overflow-y-auto flex-1 py-1">
           {filtered.length === 0 ? (
-            <li className="px-4 py-3 text-sm text-gray-400 text-center">
+            <li className="px-4 py-3 text-[13px] text-[var(--text-dim)] text-center">
               {isAr ? "لا توجد نتائج" : "No results"}
             </li>
           ) : (
@@ -125,13 +125,13 @@ export function AddDocumentDialog({ open, lang, existingTypes, onSelect, onClose
                     onSelect(opt);
                     onClose();
                   }}
-                  className="w-full text-start px-4 py-2.5 text-sm hover:bg-navy-50 transition-colors"
+                  className="w-full text-start px-4 py-2.5 text-[13px] hover:bg-[var(--accent-xl)] transition-colors"
                 >
-                  <span className="font-medium text-navy-800">
+                  <span className="font-medium text-[var(--text)]">
                     {isAr ? opt.labelAr : opt.labelEn}
                   </span>
                   {isAr && (
-                    <span className="block text-xs text-gray-400">{opt.labelEn}</span>
+                    <span className="block text-[11px] text-[var(--text-dim)]">{opt.labelEn}</span>
                   )}
                 </button>
               </li>

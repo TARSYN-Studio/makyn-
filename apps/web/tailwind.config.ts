@@ -24,26 +24,7 @@ const config: Config = {
         amber: "var(--amber)",
         "amber-l": "var(--amber-l)",
         teal: "var(--teal)",
-        "teal-l": "var(--teal-l)",
-        // Legacy aliases — kept so untouched pages keep compiling.
-        // New code should use the token-backed colors above.
-        navy: {
-          50: "var(--accent-xl)",
-          100: "var(--accent-l)",
-          200: "var(--accent-l)",
-          300: "var(--border-s)",
-          400: "var(--accent-mid)",
-          500: "var(--accent)",
-          600: "var(--accent-mid)",
-          700: "var(--accent)",
-          800: "var(--text)",
-          900: "var(--text)"
-        },
-        gold: {
-          400: "var(--accent-mid)",
-          500: "var(--accent)",
-          600: "var(--accent-mid)"
-        }
+        "teal-l": "var(--teal-l)"
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

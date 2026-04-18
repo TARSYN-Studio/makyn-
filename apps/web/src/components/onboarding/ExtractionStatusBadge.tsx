@@ -13,16 +13,16 @@ const LABELS: Record<Status, Record<Lang, string>> = {
 };
 
 const COLORS: Record<Status, string> = {
-  PENDING: "bg-gray-100 text-gray-600",
-  PROCESSING: "bg-blue-50 text-blue-700 animate-pulse",
-  COMPLETED: "bg-green-50 text-green-700",
-  FAILED: "bg-red-50 text-red-700",
-  PARTIAL: "bg-yellow-50 text-yellow-700"
+  PENDING: "bg-[var(--surface)] text-[var(--text-mid)]",
+  PROCESSING: "bg-[var(--accent-xl)] text-[var(--accent)] animate-pulse",
+  COMPLETED: "bg-[var(--green-l)] text-[var(--green)]",
+  FAILED: "bg-[var(--red-l)] text-[var(--red)]",
+  PARTIAL: "bg-[var(--amber-l)] text-[var(--amber)]"
 };
 
 export function ExtractionStatusBadge({ status, lang }: { status: Status; lang: Lang }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${COLORS[status]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${COLORS[status]}`}>
       {status === "PROCESSING" && (
         <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

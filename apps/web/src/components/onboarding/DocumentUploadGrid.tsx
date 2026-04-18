@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AddDocumentDialog, ALL_DOC_TYPES, type DocTypeOption } from "./AddDocumentDialog";
 import { DocumentUploadCard, type DocStatus } from "./DocumentUploadCard";
 import type { BusinessProfile } from "./BusinessProfileQuiz";
+import { Button } from "@/components/ui/button";
 import type { Lang } from "@/lib/i18n";
 
 // Metadata for every document type
@@ -276,13 +277,13 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <button type="button" onClick={onBack} className="text-sm text-navy-600 hover:underline mb-3 block">
+        <button type="button" onClick={onBack} className="text-[13px] text-[var(--accent)] hover:underline mb-3 block">
           {isAr ? "→ رجوع" : "← Back"}
         </button>
-        <h1 className="text-xl font-bold text-navy-900">
+        <h1 className="text-[20px] font-semibold text-[var(--text)]">
           {isAr ? "رفع المستندات" : "Upload Documents"}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-[13px] text-[var(--text-mid)] mt-1">
           {isAr
             ? "ارفع ما لديك — سيستخرج الذكاء الاصطناعي البيانات تلقائياً"
             : "Upload what you have — AI will extract the data automatically"}
@@ -291,7 +292,7 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
 
       {/* Required section */}
       <section className="space-y-3">
-        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <h2 className="text-[11px] font-semibold text-[var(--text-dim)] uppercase tracking-wider">
           {isAr ? "المستندات المطلوبة" : "Required Documents"}
         </h2>
         <div className="space-y-3">
@@ -336,27 +337,26 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
 
       {/* Add more section */}
       <section>
-        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+        <h2 className="text-[11px] font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-3">
           {isAr ? "إضافة مستندات أخرى" : "Add Other Documents"}
         </h2>
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="w-full border-2 border-dashed border-navy-200 rounded-lg py-3 text-sm text-navy-600 hover:border-navy-400 hover:bg-navy-50 transition-colors font-medium"
+          className="w-full border border-dashed border-[var(--border-s)] rounded-lg py-3 text-[13px] text-[var(--text-mid)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors font-medium"
         >
           + {isAr ? "إضافة مستند آخر" : "Add Another Document"}
         </button>
       </section>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-2 border-t">
-        <div className="text-xs text-gray-400">
+      <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+        <div className="text-[11px] text-[var(--text-dim)]">
           {isAr
             ? "السجل التجاري مطلوب للمتابعة"
             : "Commercial Registration required to continue"}
         </div>
-        <button
-          type="button"
+        <Button
           disabled={!canContinue}
           onClick={handleContinue}
           title={
@@ -366,10 +366,9 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
                 : "CR required to continue"
               : undefined
           }
-          className="px-5 py-2.5 rounded-lg bg-navy-700 text-white font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-navy-800 transition-colors"
         >
           {isAr ? "التالي — مراجعة البيانات" : "Next — Review data"}
-        </button>
+        </Button>
       </div>
 
       <AddDocumentDialog

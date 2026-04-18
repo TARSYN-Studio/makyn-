@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 
 import { ReviewFieldGroup, type ReviewField } from "./ReviewFieldGroup";
 import { mergeExtractedFields } from "@makyn/core/ai/extracted-fields";
+import { Button } from "@/components/ui/button";
 import type { Lang } from "@/lib/i18n";
 
 type ExtractedResult = {
@@ -238,13 +239,13 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <button type="button" onClick={onBack} className="text-sm text-navy-600 hover:underline mb-3 block">
+        <button type="button" onClick={onBack} className="text-[13px] text-[var(--accent)] hover:underline mb-3 block">
           {isAr ? "→ رجوع لتعديل المستندات" : "← Back to edit documents"}
         </button>
-        <h1 className="text-xl font-bold text-navy-900">
+        <h1 className="text-[20px] font-semibold text-[var(--text)]">
           {isAr ? "راجع وأكد البيانات" : "Review and confirm"}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-[13px] text-[var(--text-mid)] mt-1">
           {isAr
             ? "البيانات مستخرجة تلقائياً — راجعها وعدّل ما يلزم"
             : "Data extracted automatically — review and edit as needed"}
@@ -296,15 +297,15 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
         />
 
         {skippedDocs.length > 0 && (
-          <div className="border border-gray-200 rounded-lg p-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          <div className="border border-[var(--border)] rounded-lg p-4">
+            <p className="text-[11px] font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-2">
               {isAr ? "مستندات لاحقة" : "Skipped Documents"}
             </p>
             <ul className="space-y-1">
               {skippedDocs.map((dt) => (
-                <li key={dt} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">○ {dt.replace(/_/g, " ")}</span>
-                  <span className="text-xs text-gray-400">
+                <li key={dt} className="flex items-center justify-between text-[13px]">
+                  <span className="text-[var(--text-mid)]">○ {dt.replace(/_/g, " ")}</span>
+                  <span className="text-[11px] text-[var(--text-dim)]">
                     {isAr ? "سأضيفه لاحقاً" : "Add later"}
                   </span>
                 </li>
@@ -315,29 +316,28 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+        <p className="text-[13px] text-[var(--red)] bg-[var(--red-l)] border border-[var(--red)]/30 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
 
-      <div className="flex items-center gap-3 pt-2 border-t">
-        <button
-          type="button"
+      <div className="flex items-center gap-3 pt-2 border-t border-[var(--border)]">
+        <Button
           disabled={isPending}
           onClick={handleSave}
-          className="px-6 py-2.5 rounded-lg bg-navy-700 text-white font-semibold text-sm disabled:opacity-40 hover:bg-navy-800 transition-colors"
+          size="lg"
         >
           {isPending
             ? isAr ? "جاري الحفظ..." : "Saving..."
             : isAr ? "حفظ الشركة" : "Save Company"}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
           onClick={onBack}
-          className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 transition-colors"
         >
           {isAr ? "رجوع لتعديل المستندات" : "Back to documents"}
-        </button>
+        </Button>
       </div>
     </div>
   );
