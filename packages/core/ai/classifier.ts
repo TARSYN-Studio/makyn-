@@ -133,7 +133,7 @@ export async function classifyNotice(
   const classification = classificationSchema.parse(JSON.parse(raw));
   const latencyMs = Date.now() - startedAt;
 
-  await prisma.auditLog.create({
+  await prisma.aiEventLog.create({
     data: {
       eventType: "ai_stage_2",
       eventData: {

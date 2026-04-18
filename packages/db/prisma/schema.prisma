@@ -26,15 +26,16 @@ model User {
   updatedAt         DateTime  @updatedAt
   lastLoginAt       DateTime?
 
-  companies     Company[]             @relation("UserCompanies")
-  channels      MessagingChannel[]
-  channelTokens ChannelConnectToken[]
-  sessions      Session[]
-  conversations Conversation[]
-  messages      Message[]
-  issues        Issue[]
-  issueNotes    IssueNote[]
-  documents     CompanyDocument[]
+  memberships      Membership[]
+  channels         MessagingChannel[]
+  channelTokens    ChannelConnectToken[]
+  sessions         Session[]
+  conversations    Conversation[]
+  messages         Message[]
+  issuesCreated    Issue[]               @relation("IssueCreator")
+  issueNotes       IssueNote[]
+  documents        CompanyDocument[]
+  auditLogActions  AuditLog[]            @relation("AuditActor")
 
   @@index([email])
   @@index([phoneNumber])
@@ -49,13 +50,13 @@ enum UserRole {
 }
 
 // ==========================================================================
-//  COMPANIES
+//  ORGANIZATIONS (DB table stays "companies" for one release cycle —
+//  URL + model + code surface renamed to Organization; v1.4 app-layer
+//  rename with deferred DB-level rename)
 // ==========================================================================
 
-model Company {
-  id      String @id @default(uuid())
-  ownerId String
-  owner   User   @relation("UserCompanies", fields: [ownerId], references: [id])
+model Organization {
+  id String @id @default(uuid())
 
   legalNameAr    String
   legalNameEn    String?
@@ -152,15 +153,17 @@ model Company {
   // Free-form for misc documents
   otherDocuments Json?
 
-  issues    Issue[]
-  messages  Message[]
-  documents CompanyDocument[]
+  memberships Membership[]
+  issues      Issue[]
+  messages    Message[]
+  documents   CompanyDocument[]
+  auditLogs   AuditLog[]
 
-  @@index([ownerId])
   @@index([crNumber])
   @@index([zatcaTin])
   @@index([gosiEmployerNumber])
   @@index([qiwaEstablishmentId])
+  @@map("companies")
 }
 
 // ==========================================================================
@@ -168,11 +171,11 @@ model Company {
 // ==========================================================================
 
 model Issue {
-  id        String  @id @default(uuid())
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id])
-  ownerId   String
-  owner     User    @relation(fields: [ownerId], references: [id])
+  id             String       @id @default(uuid())
+  organizationId String       @map("company_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdById    String       @map("owner_id")
+  createdBy      User         @relation("IssueCreator", fields: [createdById], references: [id])
 
   titleAr   String
   titleEn   String?
@@ -204,8 +207,8 @@ model Issue {
   messages Message[]
   notes    IssueNote[]
 
-  @@index([companyId])
-  @@index([ownerId])
+  @@index([organizationId])
+  @@index([createdById])
   @@index([status])
   @@index([urgencyLevel])
   @@index([detectedDeadline])
@@ -329,11 +332,11 @@ model Message {
   userId         String
   user           User         @relation(fields: [userId], references: [id])
 
-  companyId   String?
-  company     Company?    @relation(fields: [companyId], references: [id])
-  issueId     String?
-  issue       Issue?      @relation(fields: [issueId], references: [id])
-  channelType ChannelType @default(TELEGRAM)
+  organizationId String?       @map("company_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  issueId        String?
+  issue          Issue?        @relation(fields: [issueId], references: [id])
+  channelType    ChannelType   @default(TELEGRAM)
 
   identifierMatchAttempted  Boolean @default(false)
   identifierMatchConfidence Float?
@@ -368,7 +371,7 @@ model Message {
   @@index([detectedGovernmentBody])
   @@index([detectedUrgency])
   @@index([createdAt])
-  @@index([companyId])
+  @@index([organizationId])
   @@index([issueId])
 }
 
@@ -396,11 +399,11 @@ enum FounderAction {
 // ==========================================================================
 
 model CompanyDocument {
-  id        String   @id @default(uuid())
-  companyId String?
-  company   Company? @relation(fields: [companyId], references: [id])
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id             String        @id @default(uuid())
+  organizationId String?       @map("company_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
 
   docType      DocumentType
   originalName String
@@ -423,7 +426,7 @@ model CompanyDocument {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
-  @@index([companyId])
+  @@index([organizationId])
   @@index([docType])
   @@index([sessionId])
 }
@@ -501,15 +504,78 @@ model NoticeTypeTemplate {
   @@index([governmentBodyCode])
 }
 
+// ==========================================================================
+//  MEMBERSHIPS — v1.4 multi-user: User ↔ Organization join with role.
+//  Every existing (companies.owner_id → users.id) pair is backfilled as
+//  one Membership row with role=OWNER in the accompanying migration.
+// ==========================================================================
+
+model Membership {
+  id             String       @id @default(uuid())
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id])
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  role           OrgRole      @default(MEMBER)
+  invitedById    String?      @map("invited_by")
+  invitedAt      DateTime     @default(now()) @map("invited_at")
+  acceptedAt     DateTime?    @map("accepted_at")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("memberships")
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// ==========================================================================
+//  AUDIT LOG (v1.4) — polymorphic tier-2: sensitive actions + data writes.
+//  `diff` stores {before, after} for writes, null for sensitive-only events
+//  (invite sent, role changed, ownership transferred, org deleted).
+//  Index supports "show audit events for this org newest-first".
+// ==========================================================================
+
 model AuditLog {
+  id             String        @id @default(uuid())
+  actorUserId    String?       @map("actor_user_id")
+  actorUser      User?         @relation("AuditActor", fields: [actorUserId], references: [id])
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  entityType     String        @map("entity_type")
+  entityId       String?       @map("entity_id")
+  action         String
+  diff           Json?
+  ip             String?
+  userAgent      String?       @map("user_agent")
+  timestamp      DateTime      @default(now())
+
+  @@index([organizationId, timestamp(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@map("audit_log")
+}
+
+// Prior AI-pipeline debug log (old `AuditLog` table).
+// Renamed to preserve historical rows; extractor writes should migrate
+// to this model (rename-only, no SQL destructive op).
+model AiEventLog {
   id         String   @id @default(uuid())
-  eventType  String
-  eventData  Json
-  userId     String?
-  occurredAt DateTime @default(now())
+  eventType  String   @map("event_type")
+  eventData  Json     @map("event_data")
+  userId     String?  @map("user_id")
+  occurredAt DateTime @default(now()) @map("occurred_at")
 
   @@index([eventType])
   @@index([occurredAt])
+  @@map("ai_event_log")
 }
 
 // Idempotency ledger for Telegram webhook updates. We write a row on first
