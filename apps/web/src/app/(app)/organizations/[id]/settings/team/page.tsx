@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@makyn/db";
 
 import { InvitationsTable, type PendingInvitation } from "./invitations-table";
+import { InviteForm } from "./invite-form";
 import { MembersTable } from "./members-table";
 import { PageFrame } from "@/components/PageFrame";
 import { canDo, OrgAccessError, requireOrgAccess } from "@/lib/permissions";
@@ -120,6 +121,8 @@ export default async function TeamSettingsPage({ params }: PageProps) {
           lang={lang}
         />
       )}
+
+      {canManageInvites && <InviteForm orgId={params.id} lang={lang} />}
     </PageFrame>
   );
 }
