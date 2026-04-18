@@ -98,7 +98,7 @@ export async function generateAction(
   const action = actionSchema.parse(JSON.parse(raw));
   const latencyMs = Date.now() - startedAt;
 
-  await prisma.auditLog.create({
+  await prisma.aiEventLog.create({
     data: {
       eventType: "ai_stage_3",
       eventData: {

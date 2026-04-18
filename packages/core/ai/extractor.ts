@@ -221,7 +221,7 @@ export async function extractNotice(rawText: string): Promise<ExtractorResult> {
   const extraction = extractionSchema.parse(JSON.parse(raw));
   const latencyMs = Date.now() - startedAt;
 
-  await prisma.auditLog.create({
+  await prisma.aiEventLog.create({
     data: {
       eventType: "ai_stage_1",
       eventData: {
