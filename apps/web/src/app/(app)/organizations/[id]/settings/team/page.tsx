@@ -8,6 +8,7 @@ import { InvitationsTable, type PendingInvitation } from "./invitations-table";
 import { InviteForm } from "./invite-form";
 import { MembersTable } from "./members-table";
 import { PageFrame } from "@/components/PageFrame";
+import { RoleBadge } from "@/components/ui/role-badge";
 import { canDo, OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
@@ -105,9 +106,12 @@ export default async function TeamSettingsPage({ params }: PageProps) {
         </Link>
       </div>
 
-      <h1 className="text-2xl font-semibold text-[var(--text)] mb-1">
-        {t("team.title", lang)}
-      </h1>
+      <div className="flex items-center gap-3 flex-wrap mb-1">
+        <h1 className="text-2xl font-semibold text-[var(--text)]">
+          {t("team.title", lang)}
+        </h1>
+        <RoleBadge role={access.role} lang={lang} />
+      </div>
       <p className="text-[13px] text-[var(--text-dim)] mb-6">
         {t("team.subtitle", lang, { orgName })}
       </p>
