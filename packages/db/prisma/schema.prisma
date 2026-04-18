@@ -52,9 +52,9 @@ enum UserRole {
 }
 
 // ==========================================================================
-//  ORGANIZATIONS (DB table stays "companies" for one release cycle —
-//  URL + model + code surface renamed to Organization; v1.4 app-layer
-//  rename with deferred DB-level rename)
+//  ORGANIZATIONS (DB table stays "Company" PascalCase for one release
+//  cycle — URL + model + code surface renamed to Organization; v1.4 is
+//  an app-layer rename with deferred DB-level rename)
 // ==========================================================================
 
 model Organization {
@@ -95,8 +95,8 @@ model Organization {
   // Soft-delete — only OWNER role can set. `deletedAt IS NULL` means
   // the org is live. Delete does NOT cascade to related orgs;
   // parent_subsidiary edges flip to status='stale' (v1.5 scope).
-  deletedAt        DateTime? @map("deleted_at")
-  deletedByUserId  String?   @map("deleted_by_user_id")
+  deletedAt        DateTime?
+  deletedByUserId  String?
   deletedBy        User?     @relation("OrgDeleter", fields: [deletedByUserId], references: [id])
 
   createdAt DateTime @default(now())
@@ -174,7 +174,7 @@ model Organization {
   @@index([gosiEmployerNumber])
   @@index([qiwaEstablishmentId])
   @@index([deletedAt])
-  @@map("companies")
+  @@map("Company")
 }
 
 // ==========================================================================
@@ -187,17 +187,17 @@ model Issue {
   // (matched identifier ≠ any org the source user is a member of) have
   // no organization until a human routes them. Matcher sets this when
   // confidence is high and membership allows it.
-  organizationId String?       @map("company_id")
+  organizationId String?       @map("companyId")
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Provenance — replaces the former single `ownerId`.
   // `createdByUserId` is the human who created the row via a forward,
   // a direct add, or a note. Null when purely bot-detected from an
   // inbound channel (the `detectedBy` field carries that signal).
-  detectedBy        DetectedBy  @default(HUMAN) @map("detected_by")
-  createdByUserId   String?     @map("owner_id")
+  detectedBy        DetectedBy  @default(HUMAN)
+  createdByUserId   String?     @map("ownerId")
   createdBy         User?       @relation("IssueCreator", fields: [createdByUserId], references: [id])
-  assignedToUserId  String?     @map("assigned_to_user_id")
+  assignedToUserId  String?
   assignedTo        User?       @relation("IssueAssignee", fields: [assignedToUserId], references: [id])
 
   // Source + matcher trace for cross-org routing.
@@ -207,12 +207,12 @@ model Issue {
   // matchedToOrganizationId records the matcher's output even if the
   // match was rejected (user not a member) so manual routing can see
   // the proposed link.
-  sourceChannel              String?      @map("source_channel")
-  sourceUserId               String?      @map("source_user_id")
-  matchedByIdentifier        String?      @map("matched_by_identifier")
-  matchedToOrganizationId    String?      @map("matched_to_organization_id")
-  matchConfidence            Float?       @map("match_confidence")
-  needsManualRouting         Boolean      @default(false) @map("needs_manual_routing")
+  sourceChannel              String?
+  sourceUserId               String?
+  matchedByIdentifier        String?
+  matchedToOrganizationId    String?
+  matchConfidence            Float?
+  needsManualRouting         Boolean      @default(false)
 
   titleAr   String
   titleEn   String?
@@ -379,7 +379,7 @@ model Message {
   userId         String
   user           User         @relation(fields: [userId], references: [id])
 
-  organizationId String?       @map("company_id")
+  organizationId String?       @map("companyId")
   organization   Organization? @relation(fields: [organizationId], references: [id])
   issueId        String?
   issue          Issue?        @relation(fields: [issueId], references: [id])
@@ -447,7 +447,7 @@ enum FounderAction {
 
 model CompanyDocument {
   id             String        @id @default(uuid())
-  organizationId String?       @map("company_id")
+  organizationId String?       @map("companyId")
   organization   Organization? @relation(fields: [organizationId], references: [id])
   userId         String
   user           User          @relation(fields: [userId], references: [id])
@@ -559,21 +559,20 @@ model NoticeTypeTemplate {
 
 model Membership {
   id             String       @id @default(uuid())
-  userId         String       @map("user_id")
+  userId         String
   user           User         @relation(fields: [userId], references: [id])
-  organizationId String       @map("organization_id")
+  organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   role           OrgRole      @default(MEMBER)
-  invitedById    String?      @map("invited_by")
-  invitedAt      DateTime     @default(now()) @map("invited_at")
-  acceptedAt     DateTime?    @map("accepted_at")
+  invitedById    String?
+  invitedAt      DateTime     @default(now())
+  acceptedAt     DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   @@unique([userId, organizationId])
   @@index([userId])
   @@index([organizationId])
-  @@map("memberships")
 }
 
 enum OrgRole {
@@ -592,37 +591,35 @@ enum OrgRole {
 
 model AuditLog {
   id             String        @id @default(uuid())
-  actorUserId    String?       @map("actor_user_id")
+  actorUserId    String?
   actorUser      User?         @relation("AuditActor", fields: [actorUserId], references: [id])
-  organizationId String?       @map("organization_id")
+  organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
-  entityType     String        @map("entity_type")
-  entityId       String?       @map("entity_id")
+  entityType     String
+  entityId       String?
   action         String
   diff           Json?
   ip             String?
-  userAgent      String?       @map("user_agent")
+  userAgent      String?
   timestamp      DateTime      @default(now())
 
   @@index([organizationId, timestamp(sort: Desc)])
   @@index([entityType, entityId])
   @@index([actorUserId])
-  @@map("audit_log")
 }
 
-// Prior AI-pipeline debug log (old `AuditLog` table).
-// Renamed to preserve historical rows; extractor writes should migrate
-// to this model (rename-only, no SQL destructive op).
+// Prior AI-pipeline debug log (previously named `AuditLog`). Table
+// renamed to `AiEventLog` so the name frees up for the new polymorphic
+// AuditLog. Historical rows preserved via ALTER TABLE RENAME.
 model AiEventLog {
   id         String   @id @default(uuid())
-  eventType  String   @map("event_type")
-  eventData  Json     @map("event_data")
-  userId     String?  @map("user_id")
-  occurredAt DateTime @default(now()) @map("occurred_at")
+  eventType  String
+  eventData  Json
+  userId     String?
+  occurredAt DateTime @default(now())
 
   @@index([eventType])
   @@index([occurredAt])
-  @@map("ai_event_log")
 }
 
 // Idempotency ledger for Telegram webhook updates. We write a row on first
