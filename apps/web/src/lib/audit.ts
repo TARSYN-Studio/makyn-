@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { headers } from "next/headers";
 
 import { prisma } from "@makyn/db";
@@ -6,9 +8,12 @@ export type AuditAction =
   // Organization lifecycle
   | "organization.create" | "organization.update" | "organization.delete"
   | "organization.transfer_ownership"
+  | "organization.invite_domain_restriction_changed"
   // Memberships
   | "membership.invite" | "membership.accept"
   | "membership.remove" | "membership.role_change"
+  // Invitations (Commit B). Diff carries hashed email + role, never raw.
+  | "invitation.create" | "invitation.revoke" | "invitation.accept"
   // Data writes (tier 2)
   | "issue.create" | "issue.update" | "issue.status_change" | "issue.delete"
   | "document.upload" | "document.delete"
@@ -19,6 +24,15 @@ const SENSITIVE: ReadonlySet<AuditAction> = new Set([
   "membership.invite", "membership.accept",
   "membership.remove", "membership.role_change"
 ]);
+
+/**
+ * SHA-256 of the lowercased, trimmed email. Use before writing an
+ * email into an AuditLog diff (spec §12 / PDPL). Raw email never
+ * lands in AuditLog.
+ */
+export function hashEmail(email: string): string {
+  return createHash("sha256").update(email.toLowerCase().trim()).digest("hex");
+}
 
 type AuditInput = {
   actorUserId: string | null;
