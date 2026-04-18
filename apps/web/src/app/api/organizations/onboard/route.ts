@@ -130,7 +130,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       where: { id: { in: documentIds }, userId: session.user.id }
     });
 
-    const permanentDir = path.join("/var/makyn/uploads", session.user.id, organization.id);
+    const uploadRoot = process.env.UPLOADS_ROOT || "/var/makyn/uploads";
+    const permanentDir = path.join(uploadRoot, session.user.id, organization.id);
     fs.mkdirSync(permanentDir, { recursive: true });
 
     for (const doc of docs) {
