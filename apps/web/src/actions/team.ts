@@ -3,7 +3,7 @@
 import { prisma, type OrgRole } from "@makyn/db";
 import { revalidatePath } from "next/cache";
 
-import { writeAudit } from "@/lib/audit";
+import { hashEmail, writeAudit } from "@/lib/audit";
 import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { requireUser } from "@/lib/session";
 
@@ -50,6 +50,50 @@ export async function changeRoleAction(
     entityType: "membership",
     entityId: updated.id,
     action: "membership.role_change"
+  });
+
+  revalidatePath(`/organizations/${orgId}/settings/team`);
+  return { ok: true };
+}
+
+export async function revokeInvitationAction(
+  orgId: string,
+  invitationId: string
+): Promise<ActionResult> {
+  const user = await requireUser();
+
+  try {
+    await requireOrgAccess(user.id, orgId, "invitation.revoke");
+  } catch (err) {
+    if (err instanceof OrgAccessError) {
+      return { ok: false, error: err.kind === "forbidden" ? "forbidden" : "not_found" };
+    }
+    throw err;
+  }
+
+  const invitation = await prisma.invitation.findFirst({
+    where: { id: invitationId, organizationId: orgId },
+    select: { id: true, email: true, role: true, acceptedAt: true, revokedAt: true }
+  });
+  if (!invitation) return { ok: false, error: "invitation_not_found" };
+  if (invitation.acceptedAt) return { ok: false, error: "already_accepted" };
+  if (invitation.revokedAt) {
+    revalidatePath(`/organizations/${orgId}/settings/team`);
+    return { ok: true };
+  }
+
+  await prisma.invitation.update({
+    where: { id: invitationId },
+    data: { revokedAt: new Date(), revokedByUserId: user.id }
+  });
+
+  await writeAudit({
+    actorUserId: user.id,
+    organizationId: orgId,
+    entityType: "invitation",
+    entityId: invitationId,
+    action: "invitation.revoke",
+    after: { emailHash: hashEmail(invitation.email), role: invitation.role }
   });
 
   revalidatePath(`/organizations/${orgId}/settings/team`);

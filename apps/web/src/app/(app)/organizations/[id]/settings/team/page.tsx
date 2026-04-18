@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@makyn/db";
 
+import { InvitationsTable, type PendingInvitation } from "./invitations-table";
 import { MembersTable } from "./members-table";
 import { PageFrame } from "@/components/PageFrame";
-import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
+import { canDo, OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -55,6 +56,37 @@ export default async function TeamSettingsPage({ params }: PageProps) {
     joinedAt: m.acceptedAt!.toISOString()
   }));
 
+  const canManageInvites = canDo(access.role, "member.invite");
+  let invitations: PendingInvitation[] = [];
+  if (canManageInvites) {
+    const now = new Date();
+    const rows = await prisma.invitation.findMany({
+      where: {
+        organizationId: params.id,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: now }
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        expiresAt: true,
+        invitedBy: { select: { fullName: true, email: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    invitations = rows.map((inv) => ({
+      id: inv.id,
+      email: inv.email,
+      role: inv.role,
+      createdAt: inv.createdAt.toISOString(),
+      expiresAt: inv.expiresAt.toISOString(),
+      invitedBy: inv.invitedBy.fullName || inv.invitedBy.email
+    }));
+  }
+
   return (
     <PageFrame className="max-w-5xl">
       <div className="mb-2">
@@ -80,6 +112,14 @@ export default async function TeamSettingsPage({ params }: PageProps) {
         currentUserRole={access.role}
         lang={lang}
       />
+
+      {canManageInvites && (
+        <InvitationsTable
+          orgId={params.id}
+          invitations={invitations}
+          lang={lang}
+        />
+      )}
     </PageFrame>
   );
 }
