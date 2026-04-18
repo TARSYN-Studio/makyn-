@@ -1,24 +1,35 @@
 -- ============================================================================
---  v1.4 Commit A — multi-user per organization (app-layer Organization rename
---  + memberships + polymorphic AuditLog).
+--  v1.4 Commit A — multi-user per organization (app-layer Organization
+--  rename + memberships + polymorphic AuditLog + Issue provenance +
+--  soft-delete).
 --
---  DB-layer strategy: keep the physical table name `companies` for one
---  release cycle. The Prisma model is renamed to Organization; field
---  rename from `ownerId` → `createdById` on Issue is @map only (no SQL).
---  The `owner_id` column on `companies` is DROPPED after Memberships are
---  backfilled, since permissions now go through the join table.
+--  DB-layer strategy: keep the physical table `companies` for one release
+--  cycle. Prisma model is `Organization`. Issue.ownerId (column name
+--  `owner_id`) stays as the column but is renamed at the Prisma layer to
+--  `createdByUserId` and made nullable. New Issue + Organization columns
+--  land as ADD COLUMN (non-destructive).
+--
+--  Schema absorbs spec-update Q1 (Issue provenance split into detectedBy /
+--  createdByUserId / assignedToUserId + source/match trace fields) and
+--  Q3 (Organization soft-delete). Q5 active-org switcher is a code-layer
+--  behavior of listUserOrgIds — no SQL needed.
 --
 --  Safety order:
---    1. Create `memberships` (empty)
---    2. Create `audit_log` (new, polymorphic)
---    3. Create `OrgRole` enum
---    4. Backfill one owner-role Membership per existing (user, company)
---    5. Rename old `AuditLog` → `ai_event_log` to preserve AI pipeline logs
---    6. Drop `companies.owner_id` (now redundant)
+--    1. Create OrgRole + DetectedBy enums
+--    2. Create `memberships` + backfill from companies.owner_id
+--    3. Rename old AuditLog → ai_event_log
+--    4. Create new polymorphic `audit_log`
+--    5. Add new Issue columns (detected_by, assigned_to_user_id, source/
+--       match trace fields, needs_manual_routing) — ADD COLUMN, safe
+--    6. Make Issue.owner_id nullable + add Issue.organization_id nullable
+--       (was company_id NOT NULL — now nullable for manual-routing queue)
+--    7. Add Organization soft-delete columns (deleted_at, deleted_by_user_id)
+--    8. Drop companies.owner_id (permissions now via memberships)
 -- ============================================================================
 
--- 1. OrgRole enum
+-- 1. OrgRole + DetectedBy enums
 CREATE TYPE "OrgRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER');
+CREATE TYPE "DetectedBy" AS ENUM ('HUMAN', 'BOT', 'INBOUND_TELEGRAM', 'INBOUND_EMAIL', 'SYSTEM');
 
 -- 2. memberships
 CREATE TABLE "memberships" (
@@ -97,15 +108,51 @@ CREATE INDEX "audit_log_entity_type_entity_id_idx"
   ON "audit_log"("entity_type", "entity_id");
 CREATE INDEX "audit_log_actor_user_id_idx" ON "audit_log"("actor_user_id");
 
--- 6. Drop the now-redundant `companies.owner_id` column.
---    FK companies.ownerId → User no longer referenced; permissions go
---    through memberships.
+-- 6. Issue provenance — new columns for detectedBy / assignedTo / source-
+--    channel + matcher-trace. All nullable so backfill is trivial (every
+--    existing Issue keeps detected_by='HUMAN' by default).
+ALTER TABLE "Issue" ADD COLUMN "detected_by" "DetectedBy" NOT NULL DEFAULT 'HUMAN';
+ALTER TABLE "Issue" ADD COLUMN "assigned_to_user_id" TEXT;
+ALTER TABLE "Issue" ADD COLUMN "source_channel" TEXT;
+ALTER TABLE "Issue" ADD COLUMN "source_user_id" TEXT;
+ALTER TABLE "Issue" ADD COLUMN "matched_by_identifier" TEXT;
+ALTER TABLE "Issue" ADD COLUMN "matched_to_organization_id" TEXT;
+ALTER TABLE "Issue" ADD COLUMN "match_confidence" DOUBLE PRECISION;
+ALTER TABLE "Issue" ADD COLUMN "needs_manual_routing" BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Relax existing NOT NULLs on Issue.owner_id (creator now nullable — bot
+-- detection has no human creator) and Issue.company_id (manual-routing
+-- queue holds issues not yet bound to an org).
+ALTER TABLE "Issue" ALTER COLUMN "owner_id"   DROP NOT NULL;
+ALTER TABLE "Issue" ALTER COLUMN "company_id" DROP NOT NULL;
+
+-- FKs + indexes for the new Issue columns. Existing companies_id_fkey is
+-- unchanged (still points at companies.id); we only re-create as
+-- deferrable-friendly if needed later.
+ALTER TABLE "Issue"
+  ADD CONSTRAINT "Issue_assigned_to_user_id_fkey"
+    FOREIGN KEY ("assigned_to_user_id") REFERENCES "User"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE INDEX "Issue_assigned_to_user_id_idx" ON "Issue"("assigned_to_user_id");
+CREATE INDEX "Issue_needs_manual_routing_idx" ON "Issue"("needs_manual_routing");
+
+-- 7. Organization soft-delete columns.
+ALTER TABLE "companies" ADD COLUMN "deleted_at" TIMESTAMP(3);
+ALTER TABLE "companies" ADD COLUMN "deleted_by_user_id" TEXT;
+ALTER TABLE "companies"
+  ADD CONSTRAINT "companies_deleted_by_user_id_fkey"
+    FOREIGN KEY ("deleted_by_user_id") REFERENCES "User"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE;
+CREATE INDEX "companies_deleted_at_idx" ON "companies"("deleted_at");
+
+-- 8. Drop the now-redundant `companies.owner_id` column. Permissions go
+--    through memberships from here on.
 ALTER TABLE "companies" DROP CONSTRAINT IF EXISTS "companies_ownerId_fkey";
 DROP INDEX IF EXISTS "companies_ownerId_idx";
 ALTER TABLE "companies" DROP COLUMN "ownerId";
 
 -- Field rename summary (Prisma @map only, no SQL needed):
---   Issue.ownerId (DB col: owner_id)        → Issue.createdById
---   Issue.companyId (DB col: company_id)    → Issue.organizationId
---   Message.companyId (DB col: company_id)  → Message.organizationId
---   CompanyDocument.companyId (DB col: company_id) → CompanyDocument.organizationId
+--   Issue.company_id (NOT NULL)  → Issue.organizationId (nullable, see step 6)
+--   Issue.owner_id (NOT NULL)    → Issue.createdByUserId (nullable, see step 6)
+--   Message.company_id           → Message.organizationId
+--   CompanyDocument.company_id   → CompanyDocument.organizationId

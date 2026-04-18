@@ -26,16 +26,18 @@ model User {
   updatedAt         DateTime  @updatedAt
   lastLoginAt       DateTime?
 
-  memberships      Membership[]
-  channels         MessagingChannel[]
-  channelTokens    ChannelConnectToken[]
-  sessions         Session[]
-  conversations    Conversation[]
-  messages         Message[]
-  issuesCreated    Issue[]               @relation("IssueCreator")
-  issueNotes       IssueNote[]
-  documents        CompanyDocument[]
-  auditLogActions  AuditLog[]            @relation("AuditActor")
+  memberships         Membership[]
+  channels            MessagingChannel[]
+  channelTokens       ChannelConnectToken[]
+  sessions            Session[]
+  conversations       Conversation[]
+  messages            Message[]
+  issuesCreated       Issue[]               @relation("IssueCreator")
+  issuesAssigned      Issue[]               @relation("IssueAssignee")
+  issueNotes          IssueNote[]
+  documents           CompanyDocument[]
+  auditLogActions     AuditLog[]            @relation("AuditActor")
+  orgsSoftDeleted     Organization[]        @relation("OrgDeleter")
 
   @@index([email])
   @@index([phoneNumber])
@@ -89,6 +91,14 @@ model Organization {
 
   notes     String?  @db.Text
   isActive  Boolean  @default(true)
+
+  // Soft-delete — only OWNER role can set. `deletedAt IS NULL` means
+  // the org is live. Delete does NOT cascade to related orgs;
+  // parent_subsidiary edges flip to status='stale' (v1.5 scope).
+  deletedAt        DateTime? @map("deleted_at")
+  deletedByUserId  String?   @map("deleted_by_user_id")
+  deletedBy        User?     @relation("OrgDeleter", fields: [deletedByUserId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -163,6 +173,7 @@ model Organization {
   @@index([zatcaTin])
   @@index([gosiEmployerNumber])
   @@index([qiwaEstablishmentId])
+  @@index([deletedAt])
   @@map("companies")
 }
 
@@ -171,11 +182,37 @@ model Organization {
 // ==========================================================================
 
 model Issue {
-  id             String       @id @default(uuid())
-  organizationId String       @map("company_id")
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  createdById    String       @map("owner_id")
-  createdBy      User         @relation("IssueCreator", fields: [createdById], references: [id])
+  id             String        @id @default(uuid())
+  // Nullable — bot-detected issues in the "needs manual routing" queue
+  // (matched identifier ≠ any org the source user is a member of) have
+  // no organization until a human routes them. Matcher sets this when
+  // confidence is high and membership allows it.
+  organizationId String?       @map("company_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  // Provenance — replaces the former single `ownerId`.
+  // `createdByUserId` is the human who created the row via a forward,
+  // a direct add, or a note. Null when purely bot-detected from an
+  // inbound channel (the `detectedBy` field carries that signal).
+  detectedBy        DetectedBy  @default(HUMAN) @map("detected_by")
+  createdByUserId   String?     @map("owner_id")
+  createdBy         User?       @relation("IssueCreator", fields: [createdByUserId], references: [id])
+  assignedToUserId  String?     @map("assigned_to_user_id")
+  assignedTo        User?       @relation("IssueAssignee", fields: [assignedToUserId], references: [id])
+
+  // Source + matcher trace for cross-org routing.
+  // sourceChannel is the channel the notice arrived on. sourceUserId
+  // is the owner of that channel. matchedByIdentifier is the key the
+  // matcher keyed on (e.g. "cr_number", "zatca_tin", "unified_number").
+  // matchedToOrganizationId records the matcher's output even if the
+  // match was rejected (user not a member) so manual routing can see
+  // the proposed link.
+  sourceChannel              String?      @map("source_channel")
+  sourceUserId               String?      @map("source_user_id")
+  matchedByIdentifier        String?      @map("matched_by_identifier")
+  matchedToOrganizationId    String?      @map("matched_to_organization_id")
+  matchConfidence            Float?       @map("match_confidence")
+  needsManualRouting         Boolean      @default(false) @map("needs_manual_routing")
 
   titleAr   String
   titleEn   String?
@@ -208,10 +245,20 @@ model Issue {
   notes    IssueNote[]
 
   @@index([organizationId])
-  @@index([createdById])
+  @@index([createdByUserId])
+  @@index([assignedToUserId])
+  @@index([needsManualRouting])
   @@index([status])
   @@index([urgencyLevel])
   @@index([detectedDeadline])
+}
+
+enum DetectedBy {
+  HUMAN
+  BOT
+  INBOUND_TELEGRAM
+  INBOUND_EMAIL
+  SYSTEM
 }
 
 enum IssueStatus {

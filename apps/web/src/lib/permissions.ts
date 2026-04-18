@@ -102,8 +102,8 @@ export async function requireOrgAccess(
     // Differentiate between "org doesn't exist" and "user isn't a member"
     // only at server-log granularity; to the caller both surface the same
     // way to prevent enumeration.
-    const exists = await prisma.organization.findUnique({
-      where: { id: organizationId },
+    const exists = await prisma.organization.findFirst({
+      where: { id: organizationId, deletedAt: null },
       select: { id: true }
     });
     throw new OrgAccessError(
@@ -112,6 +112,16 @@ export async function requireOrgAccess(
       userId,
       action
     );
+  }
+
+  // Soft-deleted orgs are effectively gone for everyone except a future
+  // restore flow (not built in Commit A).
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { deletedAt: true }
+  });
+  if (org?.deletedAt) {
+    throw new OrgAccessError("org_not_found", organizationId, userId, action);
   }
 
   // Un-accepted invitations (Phase B) shouldn't grant access yet.
@@ -129,14 +139,31 @@ export async function requireOrgAccess(
 }
 
 /**
- * List orgs the user can see (any role). Use for the `/organizations`
- * list page, dashboard queries, etc. — anywhere we need to scope a
- * query to the user's accessible set.
+ * List orgs the user can see (any role). Use for `/organizations`,
+ * dashboard, and any query that must be scoped to the user's
+ * accessible set. Filters out soft-deleted orgs.
+ *
+ * `activeOrgId` implements the v1.4.1 active-org switcher as a one-
+ * line filter: when set, we return just [activeOrgId] if the user is
+ * a member; otherwise an empty list (permissions layer rejects the
+ * query anyway). When null/undefined we return every live org the
+ * user belongs to.
  */
-export async function listUserOrgIds(userId: string): Promise<string[]> {
+export async function listUserOrgIds(
+  userId: string,
+  opts?: { activeOrgId?: string | null }
+): Promise<string[]> {
   const rows = await prisma.membership.findMany({
-    where: { userId, acceptedAt: { not: null } },
+    where: {
+      userId,
+      acceptedAt: { not: null },
+      organization: { deletedAt: null }
+    },
     select: { organizationId: true }
   });
-  return rows.map((r) => r.organizationId);
+  const allIds = rows.map((r) => r.organizationId);
+  if (opts?.activeOrgId) {
+    return allIds.includes(opts.activeOrgId) ? [opts.activeOrgId] : [];
+  }
+  return allIds;
 }
