@@ -191,7 +191,7 @@ const AR: Dict = {
   "team.nav.link": "الفريق",
 
   "team.role.OWNER": "المالك",
-  "team.role.ADMIN": "مسؤول",
+  "team.role.ADMIN": "مشرف",
   "team.role.MEMBER": "عضو",
   "team.role.VIEWER": "مشاهد",
 
@@ -218,7 +218,7 @@ const AR: Dict = {
   "team.invites.title": "الدعوات المعلقة",
   "team.invites.col.email": "البريد الإلكتروني",
   "team.invites.col.role": "الدور",
-  "team.invites.col.invitedBy": "دعاه",
+  "team.invites.col.invitedBy": "الداعي",
   "team.invites.col.sent": "تاريخ الإرسال",
   "team.invites.col.expires": "تنتهي في",
   "team.invites.col.actions": "الإجراءات",
@@ -242,7 +242,7 @@ const AR: Dict = {
 
   "team.settings.title": "إعدادات الدعوات",
   "team.settings.restrictToggle": "تقييد الدعوات إلى نطاقات بريد محددة",
-  "team.settings.restrictHelp": "عند التفعيل، لا تُرسل الدعوات إلا إلى عناوين ضمن النطاقات المسموح بها.",
+  "team.settings.restrictHelp": "عند التفعيل، يمكن إرسال الدعوات فقط إلى العناوين من النطاقات المحددة.",
   "team.settings.domain.placeholder": "example.com",
   "team.settings.domain.add": "إضافة نطاق",
   "team.settings.domain.remove": "إزالة",
