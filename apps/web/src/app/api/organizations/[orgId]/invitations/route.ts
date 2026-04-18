@@ -188,3 +188,52 @@ export async function POST(
     { status: 201 }
   );
 }
+
+export async function GET(
+  _req: NextRequest,
+  ctx: { params: Promise<{ orgId: string }> }
+): Promise<NextResponse> {
+  const { orgId } = await ctx.params;
+  const session = await getSessionFromCookie();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    await requireOrgAccess(session.user.id, orgId, "member.invite");
+  } catch (err) {
+    if (err instanceof OrgAccessError) {
+      const status = err.kind === "forbidden" ? 403 : 404;
+      return NextResponse.json({ error: err.kind }, { status });
+    }
+    throw err;
+  }
+
+  const now = new Date();
+  const invitations = await prisma.invitation.findMany({
+    where: {
+      organizationId: orgId,
+      acceptedAt: null,
+      revokedAt: null,
+      expiresAt: { gt: now }
+    },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      expiresAt: true,
+      invitedBy: { select: { fullName: true, email: true } }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  return NextResponse.json({
+    invitations: invitations.map((inv) => ({
+      id: inv.id,
+      email: inv.email,
+      role: inv.role,
+      createdAt: inv.createdAt.toISOString(),
+      expiresAt: inv.expiresAt.toISOString(),
+      invitedBy: inv.invitedBy.fullName || inv.invitedBy.email
+    }))
+  });
+}
