@@ -308,12 +308,16 @@ export default async function DashboardPage() {
         href: `/organizations/${soonest.organizationId}/issues/${soonest.id}`
       };
     }
-    if (recent.length > 0) {
-      const last = recent[0];
+    // docExtracted events carry the raw PDF filename as label, which
+    // reads as noise in the hero ("Netaj_Industrial_Holding_CR.pdf —
+    // Company"). Skip them here; the activity list below still shows
+    // them with a proper "Document extracted · Company" framing.
+    const lastActionable = recent.find((a) => a.kind !== "docExtracted");
+    if (lastActionable) {
       return {
         prefix: lang === "ar" ? "لا توجد بنود عاجلة. آخر نشاط" : "No urgent items. Last activity",
-        label: `${last.label} — ${last.company}`,
-        href: last.href
+        label: `${lastActionable.label} — ${lastActionable.company}`,
+        href: lastActionable.href
       };
     }
     return null;

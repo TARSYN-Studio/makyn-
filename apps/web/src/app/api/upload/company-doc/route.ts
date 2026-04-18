@@ -83,7 +83,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const safeSessionId = sessionId ? sessionId.replace(/[^a-zA-Z0-9_\-]/g, "").slice(0, 64) : "nosession";
-  const uploadDir = path.join("/var/makyn/uploads", userId, safeSessionId);
+  const uploadRoot = process.env.UPLOADS_ROOT || "/var/makyn/uploads";
+  const uploadDir = path.join(uploadRoot, userId, safeSessionId);
   fs.mkdirSync(uploadDir, { recursive: true });
 
   const ts = Date.now();
