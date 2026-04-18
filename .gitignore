@@ -23,3 +23,11 @@ ca-certificate.crt
 
 /.claude/worktrees/
 .DS_Store
+
+# Env backups (from deploy.sh pre-write snapshots)
+.env.bak*
+.env.*.backup
+.env.backup*
+
+# Local backup dir (deploy snapshots)
+/backups/
