@@ -10,6 +10,7 @@ import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
 import { PageFrame } from "@/components/PageFrame";
 import { Wordmark } from "@/components/LogoMark";
 import { NoCompanies } from "@/components/illustrations/NoCompanies";
+import { listUserOrgIds } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 import { SortSelect } from "./SortSelect";
@@ -43,7 +44,7 @@ function buildHref(params: SearchParams, overrides: Partial<SearchParams>): stri
   if (merged.view && merged.view !== "grid") qs.set("view", merged.view);
   if (merged.q) qs.set("q", merged.q);
   const s = qs.toString();
-  return `/companies${s ? `?${s}` : ""}`;
+  return `/organizations${s ? `?${s}` : ""}`;
 }
 
 export default async function CompaniesPage({ searchParams }: { searchParams: SearchParams }) {
@@ -54,10 +55,13 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   const view: ViewKey = searchParams.view ?? "grid";
   const q = (searchParams.q ?? "").trim();
 
-  const companies = await prisma.company.findMany({
+  const userOrgIds = await listUserOrgIds(user.id);
+
+  const companies = await prisma.organization.findMany({
     where: {
-      ownerId: user.id,
+      id: { in: userOrgIds },
       isActive: true,
+      deletedAt: null,
       ...(q
         ? {
             OR: [
@@ -138,7 +142,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
         >
           {t("companies.title", lang)}
         </h1>
-        <Link href="/companies/new">
+        <Link href="/organizations/new">
           <Button>+ {t("companies.add", lang)}</Button>
         </Link>
       </div>
@@ -220,7 +224,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               <p className="text-[13px] text-[var(--text-mid)]">
                 {t("companies.empty.desc", lang)}
               </p>
-              <Link href="/companies/new">
+              <Link href="/organizations/new">
                 <Button>+ {t("companies.add", lang)}</Button>
               </Link>
             </CardBody>
@@ -241,7 +245,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             const dotColor =
               c.status === "RED" ? "red" : c.status === "YELLOW" ? "yellow" : "green";
             return (
-              <Link key={c.id} href={`/companies/${c.id}`}>
+              <Link key={c.id} href={`/organizations/${c.id}`}>
                 <Card interactive className="h-full cursor-pointer">
                   <CardBody className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -312,7 +316,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                   <Tr key={c.id}>
                     <Td className="font-semibold text-[var(--text)]">
                       <Link
-                        href={`/companies/${c.id}`}
+                        href={`/organizations/${c.id}`}
                         className="hover:text-[var(--accent)]"
                       >
                         {c.legalNameAr}
@@ -335,7 +339,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                     </Td>
                     <Td className="text-end">
                       <Link
-                        href={`/companies/${c.id}`}
+                        href={`/organizations/${c.id}`}
                         className="text-[var(--text-dim)] hover:text-[var(--accent)]"
                       >
                         <span className="inline-block flip-rtl">→</span>

@@ -24,7 +24,7 @@ function buildHref(sort: SortKey, carry: CarryParams): string {
   if (carry.view && carry.view !== "grid") qs.set("view", carry.view);
   if (carry.q) qs.set("q", carry.q);
   const s = qs.toString();
-  return `/companies${s ? `?${s}` : ""}`;
+  return `/organizations${s ? `?${s}` : ""}`;
 }
 
 export function SortSelect({ value, options, carry }: Props) {

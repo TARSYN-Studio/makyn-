@@ -2,7 +2,7 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 
-import { updateCompanyAction, type CompanyMutationState } from "@/actions/companies";
+import { updateCompanyAction, type CompanyMutationState } from "@/actions/organizations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

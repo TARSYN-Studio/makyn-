@@ -19,7 +19,7 @@ export function AppShell({
 }) {
   const nav = [
     { href: "/dashboard", label: t("nav.dashboard", lang) },
-    { href: "/companies", label: t("nav.companies", lang) },
+    { href: "/organizations", label: t("nav.companies", lang) },
     { href: "/channels", label: t("nav.channels", lang) },
     { href: "/settings", label: t("nav.settings", lang) }
   ];

@@ -219,7 +219,7 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/companies/onboard", {
+        const res = await fetch("/api/organizations/onboard", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ values, sessionId, documentIds: uploadedDocs.map((d) => d.documentId) })

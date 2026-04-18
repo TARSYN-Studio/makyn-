@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 
-import { archiveCompanyAction } from "@/actions/companies";
+import { archiveCompanyAction } from "@/actions/organizations";
 import { Button } from "@/components/ui/button";
 import { t, type Lang } from "@/lib/i18n";
 

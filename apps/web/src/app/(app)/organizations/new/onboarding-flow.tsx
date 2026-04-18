@@ -109,7 +109,7 @@ export function OnboardingFlow({ lang }: { lang: Lang }) {
           uploadedDocs={uploadedDocs}
           results={extractedResults}
           onSaved={(companyId) => {
-            router.push(`/companies/${companyId}`);
+            router.push(`/organizations/${companyId}`);
           }}
           onBack={() => setStage("upload")}
         />

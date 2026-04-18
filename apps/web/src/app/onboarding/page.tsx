@@ -12,7 +12,13 @@ export default async function OnboardingPage() {
   const lang: Lang = user.preferredLanguage === "en" ? "en" : "ar";
 
   const [companyCount, telegramChannel] = await Promise.all([
-    prisma.company.count({ where: { ownerId: user.id, isActive: true } }),
+    prisma.organization.count({
+      where: {
+        isActive: true,
+        deletedAt: null,
+        memberships: { some: { userId: user.id, acceptedAt: { not: null } } }
+      }
+    }),
     prisma.messagingChannel.findFirst({
       where: { userId: user.id, channelType: ChannelType.TELEGRAM, isActive: true },
       select: { id: true }
@@ -49,7 +55,7 @@ export default async function OnboardingPage() {
             <CardBody>
               <p className="text-[13px] text-[var(--text-mid)] mb-4">{t("onboarding.step1.desc", lang)}</p>
               {!step1Done && (
-                <Link href="/companies/new">
+                <Link href="/organizations/new">
                   <Button>{t("onboarding.addCompany", lang)}</Button>
                 </Link>
               )}

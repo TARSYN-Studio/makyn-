@@ -17,6 +17,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
 import { PageFrame } from "@/components/PageFrame";
 import { NoIssues } from "@/components/illustrations/NoIssues";
+import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
 
@@ -88,8 +89,14 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   const now = new Date();
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const company = await prisma.company.findFirst({
-    where: { id: params.id, ownerId: user.id },
+  try {
+    await requireOrgAccess(user.id, params.id, "org.read");
+  } catch (e) {
+    if (e instanceof OrgAccessError) notFound();
+    throw e;
+  }
+  const company = await prisma.organization.findFirst({
+    where: { id: params.id, deletedAt: null },
     include: {
       issues: {
         orderBy: [{ urgencyLevel: "desc" }, { createdAt: "desc" }]
@@ -164,7 +171,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   let documents: Awaited<ReturnType<typeof prisma.companyDocument.findMany>> = [];
   if (tab === "documents") {
     documents = await prisma.companyDocument.findMany({
-      where: { companyId: company.id, userId: user.id },
+      where: { organizationId: company.id },
       orderBy: { createdAt: "desc" }
     });
   }
@@ -183,22 +190,21 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         at: i.createdAt,
         kind: "issueCreated",
         label: i.titleAr,
-        href: `/companies/${company.id}/issues/${i.id}`
+        href: `/organizations/${company.id}/issues/${i.id}`
       });
       if (i.resolvedAt) {
         events.push({
           at: i.resolvedAt,
           kind: "issueResolved",
           label: i.titleAr,
-          href: `/companies/${company.id}/issues/${i.id}`
+          href: `/organizations/${company.id}/issues/${i.id}`
         });
       }
     }
     const [docs, msgs] = await Promise.all([
       prisma.companyDocument.findMany({
         where: {
-          companyId: company.id,
-          userId: user.id,
+          organizationId: company.id,
           extractionStatus: ExtractionStatus.COMPLETED
         },
         orderBy: { updatedAt: "desc" },
@@ -206,8 +212,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       }),
       prisma.message.findMany({
         where: {
-          companyId: company.id,
-          userId: user.id,
+          organizationId: company.id,
           channelType: ChannelType.TELEGRAM,
           direction: "INBOUND"
         },
@@ -228,7 +233,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         at: m.createdAt,
         kind: "messageReceived",
         label: (m.rawContent ?? "").slice(0, 80) || "—",
-        href: m.issueId ? `/companies/${company.id}/issues/${m.issueId}` : undefined
+        href: m.issueId ? `/organizations/${company.id}/issues/${m.issueId}` : undefined
       });
     }
     events.sort((a, b) => b.at.getTime() - a.at.getTime());
@@ -239,7 +244,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
     <PageFrame className="max-w-6xl">
       <div className="mb-2">
         <Link
-          href="/companies"
+          href="/organizations"
           className="text-[12px] text-[var(--text-dim)] hover:text-[var(--accent)]"
         >
           <span className="inline-block rtl:scale-x-[-1]">←</span> {t("company.back", lang)}
@@ -278,7 +283,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <Button variant="secondary" disabled title={t("company.comingSoon", lang)}>
           {t("company.addIssue", lang)}
         </Button>
-        <Link href={`/companies/${company.id}?tab=details`}>
+        <Link href={`/organizations/${company.id}?tab=details`}>
           <Button variant="secondary">{t("company.editDetails", lang)}</Button>
         </Link>
       </div>
@@ -299,7 +304,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         {tabs.map((t2) => (
           <Link
             key={t2.key}
-            href={`/companies/${company.id}?tab=${t2.key}`}
+            href={`/organizations/${company.id}?tab=${t2.key}`}
             className={`px-4 py-2 -mb-px text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t2.key
                 ? "border-[var(--accent)] text-[var(--text)]"
@@ -334,7 +339,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                 </h3>
                 <div className="space-y-3">
                   {list.map((issue) => (
-                    <Link key={issue.id} href={`/companies/${company.id}/issues/${issue.id}`}>
+                    <Link key={issue.id} href={`/organizations/${company.id}/issues/${issue.id}`}>
                       <Card interactive>
                         <CardBody className="flex items-start gap-4">
                           <Badge variant={urgencyBadge[issue.urgencyLevel]}>
@@ -389,7 +394,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
             </Card>
           ) : (
             resolvedIssues.map((issue) => (
-              <Link key={issue.id} href={`/companies/${company.id}/issues/${issue.id}`}>
+              <Link key={issue.id} href={`/organizations/${company.id}/issues/${issue.id}`}>
                 <Card interactive>
                   <CardBody className="flex items-start gap-4">
                     <Badge variant="done">
