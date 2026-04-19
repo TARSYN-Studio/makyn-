@@ -31,15 +31,10 @@ const OPEN_STATUSES = [
   IssueStatus.ESCALATED
 ];
 
-function greetingKey(hour: number): string {
-  if (hour < 12) return "dashboard.greeting.morning";
-  if (hour < 18) return "dashboard.greeting.afternoon";
-  return "dashboard.greeting.evening";
-}
-
 function formatHijri(d: Date): string {
   try {
-    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic", {
+    // Force day-month-year order so output reads as "٢ ذو القعدة ١٤٤٧".
+    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic-nu-arab", {
       day: "numeric",
       month: "long",
       year: "numeric"
@@ -50,7 +45,9 @@ function formatHijri(d: Date): string {
 }
 
 function formatGregorian(d: Date, lang: Lang): string {
-  return new Intl.DateTimeFormat(lang === "ar" ? "ar" : "en-GB", {
+  // Arabic: "ar-SA" reliably produces day-month-year with Arabic-Indic numerals.
+  const locale = lang === "ar" ? "ar-SA" : "en-GB";
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric"
@@ -69,13 +66,19 @@ function deadlineLabel(d: Date, lang: Lang): string {
   return t("dashboard.deadline.in", lang, { count: days });
 }
 
+// Intl.RelativeTimeFormat handles Arabic dual/plural correctly:
+// -1 day → "أمس" · -2 days → "قبل يومين" · -5 days → "قبل 5 أيام".
 function relTime(date: Date, lang: Lang): string {
-  const diffMs = Date.now() - date.getTime();
-  const h = Math.round(diffMs / (1000 * 60 * 60));
-  if (h < 1) return lang === "ar" ? "قبل دقائق" : "minutes ago";
-  if (h < 24) return lang === "ar" ? `قبل ${h} س` : `${h}h ago`;
-  const d = Math.round(h / 24);
-  return lang === "ar" ? `قبل ${d} ي` : `${d}d ago`;
+  const rtf = new Intl.RelativeTimeFormat(lang === "ar" ? "ar-SA" : "en-GB", {
+    numeric: "auto"
+  });
+  const diffMs = date.getTime() - Date.now();
+  const mins = Math.round(diffMs / 60000);
+  if (Math.abs(mins) < 60) return rtf.format(mins, "minute");
+  const hours = Math.round(diffMs / 3600000);
+  if (Math.abs(hours) < 24) return rtf.format(hours, "hour");
+  const days = Math.round(diffMs / 86400000);
+  return rtf.format(days, "day");
 }
 
 export default async function DashboardPage() {
@@ -279,7 +282,7 @@ export default async function DashboardPage() {
   activity.sort((a, b) => b.at.getTime() - a.at.getTime());
   const recent = activity.slice(0, 10);
 
-  const greet = t(greetingKey(now.getHours()), lang, { name: user.fullName });
+  const pageTitle = t("dashboard.pageTitle", lang);
   const urgentBanner =
     urgentIssues.length > 0
       ? t("dashboard.urgencyBanner.count", lang, { n: urgentIssues.length })
@@ -348,7 +351,7 @@ export default async function DashboardPage() {
                 className="text-[32px] leading-tight text-[var(--ink)]"
                 style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
               >
-                {greet}
+                {pageTitle}
               </h1>
               {nextAction && (
                 <Link
@@ -416,7 +419,7 @@ export default async function DashboardPage() {
             colorVar="--signal"
             Icon={Buildings}
             delta={0}
-            deltaLabel={lang === "ar" ? "بدون مقارنة" : "no prior data"}
+            deltaLabel={t("dashboard.metrics.noPriorData", lang)}
           />
           <StatCard
             label={t("dashboard.metrics.openIssues", lang)}
@@ -424,7 +427,7 @@ export default async function DashboardPage() {
             colorVar="--state-pending"
             Icon={Warning}
             delta={0}
-            deltaLabel={lang === "ar" ? "بدون مقارنة" : "no prior data"}
+            deltaLabel={t("dashboard.metrics.noPriorData", lang)}
           />
           <StatCard
             label={t("dashboard.metrics.dueThisWeek", lang)}
@@ -432,7 +435,7 @@ export default async function DashboardPage() {
             colorVar="--state-overdue"
             Icon={ClockCountdown}
             delta={0}
-            deltaLabel={lang === "ar" ? "بدون مقارنة" : "no prior data"}
+            deltaLabel={t("dashboard.metrics.noPriorData", lang)}
           />
           <StatCard
             label={t("dashboard.metrics.resolvedThisMonth", lang)}

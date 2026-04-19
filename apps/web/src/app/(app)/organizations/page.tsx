@@ -28,12 +28,16 @@ type SearchParams = {
 
 function relative(date: Date | null | undefined, lang: Lang): string {
   if (!date) return "—";
-  const diffMs = Date.now() - date.getTime();
-  const h = Math.round(diffMs / (1000 * 60 * 60));
-  if (h < 1) return lang === "ar" ? "قبل دقائق" : "minutes ago";
-  if (h < 24) return lang === "ar" ? `قبل ${h} س` : `${h}h ago`;
-  const d = Math.round(h / 24);
-  return lang === "ar" ? `قبل ${d} ي` : `${d}d ago`;
+  const rtf = new Intl.RelativeTimeFormat(lang === "ar" ? "ar-SA" : "en-GB", {
+    numeric: "auto"
+  });
+  const diffMs = date.getTime() - Date.now();
+  const mins = Math.round(diffMs / 60000);
+  if (Math.abs(mins) < 60) return rtf.format(mins, "minute");
+  const hours = Math.round(diffMs / 3600000);
+  if (Math.abs(hours) < 24) return rtf.format(hours, "hour");
+  const days = Math.round(diffMs / 86400000);
+  return rtf.format(days, "day");
 }
 
 function buildHref(params: SearchParams, overrides: Partial<SearchParams>): string {
