@@ -16,7 +16,7 @@ export function PageFrame({ children, className }: { children: ReactNode; classN
       className={className}
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+      transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>

@@ -46,7 +46,7 @@ export function MobileNavDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
             style={{ background: "rgba(14, 22, 40, 0.4)" }}
           >
             <motion.aside
@@ -57,7 +57,7 @@ export function MobileNavDrawer({
               initial={{ x: slideFrom }}
               animate={{ x: 0 }}
               exit={{ x: slideFrom }}
-              transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="flex items-center justify-between mb-6">
                 <span className="text-[11px] uppercase tracking-wider text-[var(--ink-40)]">

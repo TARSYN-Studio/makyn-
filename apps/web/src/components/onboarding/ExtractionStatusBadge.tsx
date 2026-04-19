@@ -14,7 +14,7 @@ const LABELS: Record<Status, Record<Lang, string>> = {
 
 const COLORS: Record<Status, string> = {
   PENDING: "bg-[var(--paper-low)] text-[var(--ink-60)]",
-  PROCESSING: "bg-[var(--signal-tint)] text-[var(--signal)] animate-pulse",
+  PROCESSING: "bg-[var(--signal-tint)] text-[var(--signal)]",
   COMPLETED: "bg-[var(--state-resolved-tint)] text-[var(--state-resolved)]",
   FAILED: "bg-[var(--state-overdue-tint)] text-[var(--state-overdue)]",
   PARTIAL: "bg-[var(--state-pending-tint)] text-[var(--state-pending)]"

@@ -209,7 +209,7 @@ export function DocumentUploadCard({
               className="border border-dashed border-[var(--stone)] hover:border-[var(--signal)] rounded-lg p-3 text-center cursor-pointer transition-colors"
             >
               {uploading ? (
-                <span className="text-[11px] text-[var(--signal)] animate-pulse">
+                <span className="text-[11px] text-[var(--signal)]">
                   {isAr ? "جاري الرفع..." : "Uploading..."}
                 </span>
               ) : (

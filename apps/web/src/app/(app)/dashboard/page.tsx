@@ -374,8 +374,8 @@ export default async function DashboardPage() {
 
         {/* Urgent banner */}
         {urgentBanner && (
-          <div className="bg-[var(--state-overdue-tint)] border-s-4 border-[var(--state-overdue)] urgent-pulse rounded-lg p-4">
-            <div className="text-[14px] font-semibold text-[var(--state-overdue)] mb-2">
+          <div className="bg-[var(--state-overdue-tint)] border-s-[3px] border-[var(--state-overdue)] rounded-[4px] p-4">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--state-overdue)] mb-2">
               {urgentBanner}
             </div>
             <ul className="space-y-1 text-[13px] text-[var(--ink)]">
