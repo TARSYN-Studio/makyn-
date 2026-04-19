@@ -137,8 +137,8 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     <PageFrame className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <h1
-          className="font-display-en text-[32px] leading-none text-[var(--ink)]"
-          style={{ fontWeight: 400 }}
+          className="text-[32px] leading-none text-[var(--ink)]"
+          style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
         >
           {t("companies.title", lang)}
         </h1>

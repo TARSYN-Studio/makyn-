@@ -19,8 +19,8 @@ export default async function LandingPage() {
         </div>
 
         <h1
-          className="font-display-en text-[32px] md:text-[40px] text-[var(--ink)] mb-4 leading-tight"
-          style={{ fontWeight: 400 }}
+          className="text-[32px] md:text-[40px] text-[var(--ink)] mb-4 leading-tight"
+          style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
         >
           {t("landing.headline", lang)}
         </h1>

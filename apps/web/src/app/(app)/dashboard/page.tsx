@@ -345,8 +345,8 @@ export default async function DashboardPage() {
           <div className="relative flex items-start justify-between gap-4 flex-wrap">
             <div className="min-w-0">
               <h1
-                className="font-display-en text-[32px] leading-tight text-[var(--ink)]"
-                style={{ fontWeight: 400 }}
+                className="text-[32px] leading-tight text-[var(--ink)]"
+                style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
               >
                 {greet}
               </h1>

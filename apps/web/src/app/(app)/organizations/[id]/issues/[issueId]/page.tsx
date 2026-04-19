@@ -116,8 +116,8 @@ export default async function IssueDetailPage({ params }: PageProps) {
         <div className="space-y-6">
           <div>
             <h1
-              className="font-display-en text-[28px] leading-tight text-[var(--ink)]"
-              style={{ fontWeight: 400 }}
+              className="text-[28px] leading-tight text-[var(--ink)]"
+              style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
             >
               {issue.titleAr}
             </h1>

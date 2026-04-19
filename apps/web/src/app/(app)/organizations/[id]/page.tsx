@@ -255,8 +255,8 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div className="min-w-0">
           <h1
-            className="font-display-en text-[32px] leading-tight text-[var(--ink)]"
-            style={{ fontWeight: 400 }}
+            className="text-[32px] leading-tight text-[var(--ink)]"
+            style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
           >
             {company.legalNameAr}
           </h1>
@@ -547,8 +547,8 @@ function StatMini({ label, value }: { label: string; value: number | string }) {
           {label}
         </div>
         <div
-          className="font-display-en text-[20px] leading-none mt-1.5 text-[var(--ink)]"
-          style={{ fontWeight: 400 }}
+          className="text-[20px] leading-none mt-1.5 text-[var(--ink)]"
+          style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
         >
           <span className="num">{value}</span>
         </div>
