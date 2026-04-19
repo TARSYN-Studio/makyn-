@@ -35,12 +35,12 @@ export function SignupForm({ lang }: { lang: Lang }) {
         <Input name="password" id="password" type="password" required minLength={8} autoComplete="new-password" />
       </div>
       {state?.error === "email_in_use" && (
-        <p className="text-sm text-[var(--red)]">
+        <p className="text-sm text-[var(--state-overdue)]">
           {lang === "ar" ? "البريد الإلكتروني مستخدم بالفعل." : "This email is already in use."}
         </p>
       )}
       {state?.error === "invalid" && (
-        <p className="text-sm text-[var(--red)]">
+        <p className="text-sm text-[var(--state-overdue)]">
           {lang === "ar" ? "يرجى مراجعة البيانات والمحاولة مرة أخرى." : "Please check your input and try again."}
         </p>
       )}

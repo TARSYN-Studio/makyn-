@@ -28,8 +28,8 @@ export function AppShell({
   const otherLang: Lang = lang === "ar" ? "en" : "ar";
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] flex flex-col">
-      <header className="h-14 bg-[var(--card)] border-b border-[var(--border)] flex items-center px-4 md:px-6">
+    <div className="min-h-screen bg-[var(--paper)] flex flex-col">
+      <header className="h-14 bg-[var(--paper-low)] border-b border-[var(--stone-light)] flex items-center px-4 md:px-6">
         {/* Left: logo + wordmark */}
         <Link href="/dashboard" className="flex items-center me-6 shrink-0">
           <Wordmark size="sm" />
@@ -45,14 +45,14 @@ export function AppShell({
                 href={href}
                 className={`relative h-full flex items-center px-3 text-[13px] font-medium transition-colors ${
                   active
-                    ? "text-[var(--text)]"
-                    : "text-[var(--text-mid)] hover:text-[var(--text)]"
+                    ? "text-[var(--ink)]"
+                    : "text-[var(--ink-60)] hover:text-[var(--ink)]"
                 }`}
               >
                 {label}
                 {active && (
                   <span
-                    className="absolute left-0 right-0 bottom-0 h-[2px] bg-[var(--accent)]"
+                    className="absolute left-0 right-0 bottom-0 h-[2px] bg-[var(--signal)]"
                     aria-hidden
                   />
                 )}
@@ -67,7 +67,7 @@ export function AppShell({
             <input type="hidden" name="lang" value={otherLang} />
             <button
               type="submit"
-              className="text-[12px] font-medium text-[var(--text-mid)] hover:text-[var(--text)]"
+              className="text-[12px] font-medium text-[var(--ink-60)] hover:text-[var(--ink)]"
               aria-label="Change language"
             >
               {otherLang === "ar" ? "العربية" : "EN"}
@@ -76,13 +76,13 @@ export function AppShell({
           <form action={logoutAction} className="hidden md:block">
             <button
               type="submit"
-              className="text-[12px] font-medium text-[var(--text-mid)] hover:text-[var(--text)]"
+              className="text-[12px] font-medium text-[var(--ink-60)] hover:text-[var(--ink)]"
             >
               {t("nav.logout", lang)}
             </button>
           </form>
           <div
-            className="h-8 w-8 rounded-full bg-[var(--accent)] text-white grid place-items-center text-[13px] font-semibold"
+            className="h-8 w-8 rounded-full bg-[var(--signal)] text-white grid place-items-center text-[13px] font-semibold"
             aria-label={userName}
             title={userName}
           >

@@ -334,7 +334,7 @@ export default async function DashboardPage() {
             className="pointer-events-none absolute inset-x-0 top-0 h-[140px] -z-0"
             style={{
               backgroundImage:
-                "repeating-linear-gradient(0deg, var(--border) 0 1px, transparent 1px 12px)",
+                "repeating-linear-gradient(0deg, var(--stone-light) 0 1px, transparent 1px 12px)",
               opacity: 0.4,
               WebkitMaskImage:
                 "radial-gradient(ellipse 70% 60% at 50% 50%, black 40%, transparent 100%)",
@@ -345,7 +345,7 @@ export default async function DashboardPage() {
           <div className="relative flex items-start justify-between gap-4 flex-wrap">
             <div className="min-w-0">
               <h1
-                className="font-display-en text-[32px] leading-tight text-[var(--text)]"
+                className="font-display-en text-[32px] leading-tight text-[var(--ink)]"
                 style={{ fontWeight: 400 }}
               >
                 {greet}
@@ -353,19 +353,19 @@ export default async function DashboardPage() {
               {nextAction && (
                 <Link
                   href={nextAction.href}
-                  className="mt-2 inline-flex items-center gap-1.5 text-[16px] font-medium text-[var(--text-mid)] hover:text-[var(--accent)]"
+                  className="mt-2 inline-flex items-center gap-1.5 text-[16px] font-medium text-[var(--ink-60)] hover:text-[var(--signal)]"
                 >
-                  <span className="text-[var(--text-dim)]">{nextAction.prefix}:</span>
-                  <span className="text-[var(--text)]">{nextAction.label}</span>
+                  <span className="text-[var(--ink-40)]">{nextAction.prefix}:</span>
+                  <span className="text-[var(--ink)]">{nextAction.label}</span>
                   <CaretRight className="h-4 w-4 flip-rtl" weight="regular" />
                 </Link>
               )}
             </div>
             <div className="text-end">
-              <div className="num text-[13px] text-[var(--text-mid)]">
+              <div className="num text-[13px] text-[var(--ink-60)]">
                 {formatGregorian(now, lang)}
               </div>
-              <div className="num text-[12px] text-[var(--text-dim)]">
+              <div className="num text-[12px] text-[var(--ink-40)]">
                 {formatHijri(now)}
               </div>
             </div>
@@ -374,11 +374,11 @@ export default async function DashboardPage() {
 
         {/* Urgent banner */}
         {urgentBanner && (
-          <div className="bg-[var(--red-l)] border-s-4 border-[var(--red)] urgent-pulse rounded-lg p-4">
-            <div className="text-[14px] font-semibold text-[var(--red)] mb-2">
+          <div className="bg-[var(--state-overdue-tint)] border-s-4 border-[var(--state-overdue)] urgent-pulse rounded-lg p-4">
+            <div className="text-[14px] font-semibold text-[var(--state-overdue)] mb-2">
               {urgentBanner}
             </div>
-            <ul className="space-y-1 text-[13px] text-[var(--text)]">
+            <ul className="space-y-1 text-[13px] text-[var(--ink)]">
               {urgentIssues.slice(0, 3).map((i) => (
                 <li key={i.id}>
                   <Link
@@ -386,10 +386,10 @@ export default async function DashboardPage() {
                     className="hover:underline"
                   >
                     <span className="font-medium">{i.organization?.legalNameAr ?? ""}</span>
-                    <span className="text-[var(--text-mid)]"> · </span>
+                    <span className="text-[var(--ink-60)]"> · </span>
                     <span>{i.titleAr}</span>
                     {i.detectedDeadline && (
-                      <span className="text-[var(--text-dim)] num ms-2">
+                      <span className="text-[var(--ink-40)] num ms-2">
                         · {deadlineLabel(i.detectedDeadline, lang)}
                       </span>
                     )}
@@ -400,7 +400,7 @@ export default async function DashboardPage() {
             {urgentIssues.length > 3 && (
               <Link
                 href="/organizations?filter=urgent"
-                className="inline-block mt-2 text-[12px] font-medium text-[var(--red)] hover:underline"
+                className="inline-block mt-2 text-[12px] font-medium text-[var(--state-overdue)] hover:underline"
               >
                 {t("dashboard.viewAllUrgent", lang)} →
               </Link>
@@ -413,7 +413,7 @@ export default async function DashboardPage() {
           <StatCard
             label={t("dashboard.metrics.companies", lang)}
             value={totalCompanies}
-            colorVar="--accent"
+            colorVar="--signal"
             Icon={Buildings}
             delta={0}
             deltaLabel={lang === "ar" ? "بدون مقارنة" : "no prior data"}
@@ -421,7 +421,7 @@ export default async function DashboardPage() {
           <StatCard
             label={t("dashboard.metrics.openIssues", lang)}
             value={openIssuesCount}
-            colorVar="--amber"
+            colorVar="--state-pending"
             Icon={Warning}
             delta={0}
             deltaLabel={lang === "ar" ? "بدون مقارنة" : "no prior data"}
@@ -429,7 +429,7 @@ export default async function DashboardPage() {
           <StatCard
             label={t("dashboard.metrics.dueThisWeek", lang)}
             value={dueThisWeekCount}
-            colorVar="--red"
+            colorVar="--state-overdue"
             Icon={ClockCountdown}
             delta={0}
             deltaLabel={lang === "ar" ? "بدون مقارنة" : "no prior data"}
@@ -437,7 +437,7 @@ export default async function DashboardPage() {
           <StatCard
             label={t("dashboard.metrics.resolvedThisMonth", lang)}
             value={resolvedLast30}
-            colorVar="--green"
+            colorVar="--state-resolved"
             Icon={CheckCircle}
             delta={resolvedDelta}
             deltaLabel={t("dashboard.metrics.comparedToPrev", lang)}
@@ -446,19 +446,19 @@ export default async function DashboardPage() {
 
         {/* Companies snapshot */}
         <section>
-          <h2 className="text-[20px] font-semibold text-[var(--text)] mb-4">
+          <h2 className="text-[20px] font-semibold text-[var(--ink)] mb-4">
             {t("dashboard.companiesSection", lang)}
           </h2>
           {companies.length === 0 ? (
             <Card>
               <CardBody className="py-10 flex flex-col items-center text-center gap-3">
                 <NoCompanies />
-                <p className="text-[13px] text-[var(--text-mid)]">
+                <p className="text-[13px] text-[var(--ink-60)]">
                   {t("companies.empty.desc", lang)}
                 </p>
                 <Link
                   href="/organizations/new"
-                  className="text-[13px] font-medium text-[var(--accent)] hover:underline"
+                  className="text-[13px] font-medium text-[var(--signal)] hover:underline"
                 >
                   + {t("dashboard.addCompany", lang)}
                 </Link>
@@ -481,25 +481,25 @@ export default async function DashboardPage() {
                     <Card interactive className="h-full cursor-pointer">
                       <CardBody className="space-y-3">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-[15px] font-semibold text-[var(--text)] leading-snug">
+                          <h3 className="text-[15px] font-semibold text-[var(--ink)] leading-snug">
                             {c.legalNameAr}
                           </h3>
                           <StatusDot color={dotColor} />
                         </div>
-                        <div className="text-[13px] text-[var(--text-mid)]">
+                        <div className="text-[13px] text-[var(--ink-60)]">
                           <span className="num">{c.issues.length}</span>{" "}
                           {t("companies.openIssues", lang)}
                         </div>
                         {top ? (
-                          <div className="text-[13px] text-[var(--text)] line-clamp-2">
+                          <div className="text-[13px] text-[var(--ink)] line-clamp-2">
                             {top.titleAr}
                           </div>
                         ) : (
-                          <div className="text-[12px] text-[var(--text-dim)]">
+                          <div className="text-[12px] text-[var(--ink-40)]">
                             {t("companies.noIssues", lang)}
                           </div>
                         )}
-                        <div className="text-[12px] text-[var(--text-dim)] num">
+                        <div className="text-[12px] text-[var(--ink-40)] num">
                           {relTime(top?.updatedAt ?? c.updatedAt, lang)}
                         </div>
                       </CardBody>
@@ -509,7 +509,7 @@ export default async function DashboardPage() {
               })}
               <Link
                 href="/organizations/new"
-                className="flex items-center justify-center h-full min-h-[140px] rounded-lg border border-dashed border-[var(--border-s)] text-[13px] font-medium text-[var(--text-mid)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+                className="flex items-center justify-center h-full min-h-[140px] rounded-lg border border-dashed border-[var(--stone)] text-[13px] font-medium text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors"
               >
                 + {t("dashboard.addCompany", lang)}
               </Link>
@@ -520,7 +520,7 @@ export default async function DashboardPage() {
         {/* Activity + Deadlines */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <section>
-            <h2 className="text-[20px] font-semibold text-[var(--text)] mb-4">
+            <h2 className="text-[20px] font-semibold text-[var(--ink)] mb-4">
               {t("dashboard.activitySection", lang)}
             </h2>
             <Card>
@@ -528,7 +528,7 @@ export default async function DashboardPage() {
                 {recent.length === 0 ? (
                   <div className="px-5 py-10 flex flex-col items-center text-center gap-3">
                     <NoIssues />
-                    <p className="text-[13px] text-[var(--text-dim)]">
+                    <p className="text-[13px] text-[var(--ink-40)]">
                       {t("dashboard.noActivity", lang)}
                     </p>
                   </div>
@@ -537,24 +537,24 @@ export default async function DashboardPage() {
                     {recent.map((a, idx) => (
                       <li
                         key={idx}
-                        className="px-5 py-3 border-b last:border-b-0 border-[var(--border)]"
+                        className="px-5 py-3 border-b last:border-b-0 border-[var(--stone-light)]"
                       >
                         <Link
                           href={a.href}
-                          className="flex items-center justify-between gap-3 hover:text-[var(--accent)]"
+                          className="flex items-center justify-between gap-3 hover:text-[var(--signal)]"
                         >
                           <div className="min-w-0 flex-1">
-                            <div className="text-[12px] text-[var(--text-dim)]">
+                            <div className="text-[12px] text-[var(--ink-40)]">
                               {t(`dashboard.activity.${a.kind}`, lang)} ·{" "}
-                              <span className="text-[var(--text-mid)]">
+                              <span className="text-[var(--ink-60)]">
                                 {a.company}
                               </span>
                             </div>
-                            <div className="text-[13px] text-[var(--text)] truncate">
+                            <div className="text-[13px] text-[var(--ink)] truncate">
                               {a.label}
                             </div>
                           </div>
-                          <span className="num text-[12px] text-[var(--text-dim)] shrink-0">
+                          <span className="num text-[12px] text-[var(--ink-40)] shrink-0">
                             {relTime(a.at, lang)}
                           </span>
                         </Link>
@@ -567,14 +567,14 @@ export default async function DashboardPage() {
           </section>
 
           <section>
-            <h2 className="text-[20px] font-semibold text-[var(--text)] mb-4">
+            <h2 className="text-[20px] font-semibold text-[var(--ink)] mb-4">
               {t("dashboard.deadlinesSection", lang)}
             </h2>
             {upcomingDeadlines.length === 0 ? (
               <Card>
                 <CardBody className="py-10 flex flex-col items-center text-center gap-3">
                   <NoDeadlines />
-                  <p className="text-[13px] text-[var(--text-dim)]">
+                  <p className="text-[13px] text-[var(--ink-40)]">
                     {t("dashboard.noDeadlines", lang)}
                   </p>
                 </CardBody>
@@ -586,23 +586,23 @@ export default async function DashboardPage() {
                   const days = relativeDays(i.detectedDeadline);
                   const tint =
                     days <= 2
-                      ? "bg-[var(--red-l)] border-[var(--red)]/30"
+                      ? "bg-[var(--state-overdue-tint)] border-[var(--state-overdue)]/30"
                       : days <= 7
-                        ? "bg-[var(--amber-l)] border-[var(--amber)]/30"
-                        : "bg-[var(--card)] border-[var(--border)]";
+                        ? "bg-[var(--state-pending-tint)] border-[var(--state-pending)]/30"
+                        : "bg-[var(--paper-low)] border-[var(--stone-light)]";
                   return (
                     <Link
                       key={i.id}
                       href={`/organizations/${i.organizationId}/issues/${i.id}`}
                       className={`min-w-[280px] shrink-0 rounded-lg border p-4 shadow-card ${tint}`}
                     >
-                      <div className="num text-[12px] font-medium text-[var(--text-mid)] mb-2">
+                      <div className="num text-[12px] font-medium text-[var(--ink-60)] mb-2">
                         {deadlineLabel(i.detectedDeadline, lang)}
                       </div>
-                      <div className="text-[13px] text-[var(--text-dim)] mb-1">
+                      <div className="text-[13px] text-[var(--ink-40)] mb-1">
                         {i.organization?.legalNameAr ?? ""}
                       </div>
-                      <div className="text-[14px] font-medium text-[var(--text)] line-clamp-2 mb-3">
+                      <div className="text-[14px] font-medium text-[var(--ink)] line-clamp-2 mb-3">
                         {i.titleAr}
                       </div>
                       <Badge variant="neutral">{i.governmentBody}</Badge>
@@ -632,41 +632,42 @@ function StatCard({
   value: number;
   delta: number;
   deltaLabel?: string;
-  colorVar: "--accent" | "--amber" | "--red" | "--green";
+  colorVar: "--signal" | "--state-pending" | "--state-overdue" | "--state-resolved";
   Icon: StatIcon;
 }) {
-  // Inline style lets us drive icon tint + tinted container off a CSS var,
-  // avoiding a per-color Tailwind class explosion.
-  const containerStyle = {
-    background: `color-mix(in srgb, var(${colorVar}) 10%, transparent)`
-  } as React.CSSProperties;
-  const iconColor = `var(${colorVar})`;
+  // Single-rule accent on the inline-start edge. No tinted container; the
+  // tile sits flat on paper-low so the numeral carries the weight.
+  const accentColor = `var(${colorVar})`;
 
   const TrendIcon = delta > 0 ? CaretUp : delta < 0 ? CaretDown : Minus;
   const trendColor =
     delta > 0
-      ? "var(--green)"
+      ? "var(--state-resolved)"
       : delta < 0
-        ? "var(--red)"
-        : "var(--text-dim)";
+        ? "var(--state-overdue)"
+        : "var(--ink-40)";
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <span
+        aria-hidden
+        className="absolute inset-y-0 start-0 w-[3px]"
+        style={{ background: accentColor }}
+      />
       <CardBody>
         <div className="flex items-start justify-between gap-3">
-          <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)] font-medium">
+          <div className="text-[11px] uppercase tracking-[0.1em] text-[var(--ink-40)] font-medium">
             {label}
           </div>
-          <div
-            className="h-10 w-10 rounded-lg grid place-items-center shrink-0"
-            style={containerStyle}
-          >
-            <Icon className="h-5 w-5" weight="duotone" style={{ color: iconColor }} />
-          </div>
+          <Icon
+            className="h-5 w-5 shrink-0"
+            weight="regular"
+            style={{ color: "var(--ink-60)" }}
+          />
         </div>
         <div
-          className="font-display-en text-[40px] leading-none mt-2 text-[var(--text)] num"
-          style={{ fontWeight: 400, fontVariantNumeric: "tabular-nums" }}
+          className="text-[40px] leading-none mt-3 text-[var(--ink)] num"
+          style={{ fontWeight: 500, fontVariantNumeric: "tabular-nums" }}
         >
           {value}
         </div>
@@ -676,7 +677,7 @@ function StatCard({
             {delta === 0 ? "—" : delta > 0 ? `+${delta}` : `${delta}`}
           </span>
           {deltaLabel && (
-            <span className="text-[var(--text-dim)] truncate">{deltaLabel}</span>
+            <span className="text-[var(--ink-40)] truncate">{deltaLabel}</span>
           )}
         </div>
       </CardBody>

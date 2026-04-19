@@ -11,20 +11,20 @@ export default async function SignupPage() {
   const lang: Lang = user?.preferredLanguage === "en" ? "en" : "ar";
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 bg-[var(--bg)]">
+    <div className="min-h-screen grid place-items-center px-4 bg-[var(--paper)]">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <Wordmark size="lg" />
         </div>
         <Card>
         <CardHeader>
-          <h1 className="text-xl font-semibold text-[var(--text)]">{t("signup.title", lang)}</h1>
+          <h1 className="text-xl font-semibold text-[var(--ink)]">{t("signup.title", lang)}</h1>
         </CardHeader>
         <CardBody>
           <SignupForm lang={lang} />
-          <p className="text-[13px] text-[var(--text-mid)] mt-6 text-center">
+          <p className="text-[13px] text-[var(--ink-60)] mt-6 text-center">
             {t("signup.haveAccount", lang)}{" "}
-            <Link href="/login" className="text-[var(--accent)] hover:underline">
+            <Link href="/login" className="text-[var(--signal)] hover:underline">
               {t("signup.login", lang)}
             </Link>
           </p>

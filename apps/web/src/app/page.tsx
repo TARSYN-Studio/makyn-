@@ -12,19 +12,19 @@ export default async function LandingPage() {
   const lang: Lang = "ar";
 
   return (
-    <main className="min-h-screen bg-[var(--bg)]">
+    <main className="min-h-screen bg-[var(--paper)]">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pt-24 pb-12 text-center">
         <div className="mb-8 inline-flex items-center">
           <Wordmark size="lg" />
         </div>
 
         <h1
-          className="font-display-en text-[32px] md:text-[40px] text-[var(--text)] mb-4 leading-tight"
+          className="font-display-en text-[32px] md:text-[40px] text-[var(--ink)] mb-4 leading-tight"
           style={{ fontWeight: 400 }}
         >
           {t("landing.headline", lang)}
         </h1>
-        <p className="text-[var(--text-mid)] md:text-[16px] max-w-2xl mb-10">
+        <p className="text-[var(--ink-60)] md:text-[16px] max-w-2xl mb-10">
           {t("landing.sub", lang)}
         </p>
 

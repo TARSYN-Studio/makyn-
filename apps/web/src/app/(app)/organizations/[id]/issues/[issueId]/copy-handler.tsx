@@ -21,7 +21,7 @@ export function CopyHandlerBrief({ text, lang }: { text: string; lang: Lang }) {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[13px] text-[var(--text)] p-3 whitespace-pre-wrap">
+      <div className="rounded-lg bg-[var(--paper-low)] border border-[var(--stone-light)] text-[13px] text-[var(--ink)] p-3 whitespace-pre-wrap">
         {text}
       </div>
       <Button variant="primary" size="sm" onClick={copy}>

@@ -13,11 +13,11 @@ const LABELS: Record<Status, Record<Lang, string>> = {
 };
 
 const COLORS: Record<Status, string> = {
-  PENDING: "bg-[var(--surface)] text-[var(--text-mid)]",
-  PROCESSING: "bg-[var(--accent-xl)] text-[var(--accent)] animate-pulse",
-  COMPLETED: "bg-[var(--green-l)] text-[var(--green)]",
-  FAILED: "bg-[var(--red-l)] text-[var(--red)]",
-  PARTIAL: "bg-[var(--amber-l)] text-[var(--amber)]"
+  PENDING: "bg-[var(--paper-low)] text-[var(--ink-60)]",
+  PROCESSING: "bg-[var(--signal-tint)] text-[var(--signal)] animate-pulse",
+  COMPLETED: "bg-[var(--state-resolved-tint)] text-[var(--state-resolved)]",
+  FAILED: "bg-[var(--state-overdue-tint)] text-[var(--state-overdue)]",
+  PARTIAL: "bg-[var(--state-pending-tint)] text-[var(--state-pending)]"
 };
 
 export function ExtractionStatusBadge({ status, lang }: { status: Status; lang: Lang }) {

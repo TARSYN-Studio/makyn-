@@ -7,7 +7,7 @@ export function Table({ className, ...rest }: TableHTMLAttributes<HTMLTableEleme
     <div className="w-full overflow-x-auto">
       <table
         className={cn(
-          "w-full border-collapse bg-[var(--card)] text-[14px]",
+          "w-full border-collapse bg-[var(--paper-low)] text-[14px]",
           className
         )}
         {...rest}
@@ -19,7 +19,7 @@ export function Table({ className, ...rest }: TableHTMLAttributes<HTMLTableEleme
 export function Thead({ className, ...rest }: HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <thead
-      className={cn("bg-[var(--surface)]", className)}
+      className={cn("bg-[var(--paper-low)]", className)}
       {...rest}
     />
   );
@@ -33,7 +33,7 @@ export function Tr({ className, ...rest }: HTMLAttributes<HTMLTableRowElement>) 
   return (
     <tr
       className={cn(
-        "border-b border-[var(--border)] transition-colors",
+        "border-b border-[var(--stone-light)] transition-colors",
         className
       )}
       {...rest}
@@ -45,7 +45,7 @@ export function Th({ className, ...rest }: ThHTMLAttributes<HTMLTableCellElement
   return (
     <th
       className={cn(
-        "px-3 py-2.5 text-start text-[11px] font-medium uppercase tracking-wider text-[var(--text-dim)]",
+        "px-3 py-2.5 text-start text-[11px] font-medium uppercase tracking-wider text-[var(--ink-40)]",
         className
       )}
       {...rest}
@@ -56,7 +56,7 @@ export function Th({ className, ...rest }: ThHTMLAttributes<HTMLTableCellElement
 export function Td({ className, ...rest }: TdHTMLAttributes<HTMLTableCellElement>) {
   return (
     <td
-      className={cn("px-3 py-3 text-[14px] text-[var(--text)]", className)}
+      className={cn("px-3 py-3 text-[14px] text-[var(--ink)]", className)}
       {...rest}
     />
   );

@@ -62,10 +62,10 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
   return (
     <div className="max-w-xl mx-auto space-y-8">
       <div>
-        <h1 className="text-[20px] font-semibold text-[var(--text)]">
+        <h1 className="text-[20px] font-semibold text-[var(--ink)]">
           {isAr ? "بعض الأسئلة السريعة" : "A few quick questions"}
         </h1>
-        <p className="text-[13px] text-[var(--text-mid)] mt-1">
+        <p className="text-[13px] text-[var(--ink-60)] mt-1">
           {isAr
             ? "لنعرف المستندات الصحيحة لشركتك"
             : "So we can show you the right document slots"}
@@ -74,7 +74,7 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q1 */}
       <div className="space-y-2">
-        <p className="font-medium text-[var(--text)] text-[13px]">
+        <p className="font-medium text-[var(--ink)] text-[13px]">
           {isAr ? "هل لديك موظفون؟" : "Do you have employees?"}
         </p>
         <div className="flex gap-3">
@@ -93,7 +93,7 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q2 */}
       <div className="space-y-2">
-        <p className="font-medium text-[var(--text)] text-[13px]">
+        <p className="font-medium text-[var(--ink)] text-[13px]">
           {isAr ? "هل لديك موقع فعلي أو مقر؟" : "Do you have physical premises?"}
         </p>
         <div className="flex gap-3">
@@ -112,9 +112,9 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q3 */}
       <div className="space-y-2">
-        <p className="font-medium text-[var(--text)] text-[13px]">
+        <p className="font-medium text-[var(--ink)] text-[13px]">
           {isAr ? "ما نشاط شركتك الرئيسي؟" : "What's your primary business activity?"}
-          <span className="text-[var(--text-dim)] font-normal ms-1 text-[11px]">
+          <span className="text-[var(--ink-40)] font-normal ms-1 text-[11px]">
             {isAr ? "(اختر كل ما ينطبق)" : "(select all that apply)"}
           </span>
         </p>
@@ -125,9 +125,9 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
                 type="checkbox"
                 checked={activities.includes(opt.value)}
                 onChange={() => toggleActivity(opt.value)}
-                className="w-4 h-4 rounded accent-[var(--accent)]"
+                className="w-4 h-4 rounded accent-[var(--signal)]"
               />
-              <span className="text-[13px] text-[var(--text)]">
+              <span className="text-[13px] text-[var(--ink)]">
                 {isAr ? opt.ar : opt.en}
               </span>
             </label>
@@ -137,7 +137,7 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
 
       {/* Q4 */}
       <div className="space-y-2">
-        <p className="font-medium text-[var(--text)] text-[13px]">
+        <p className="font-medium text-[var(--ink)] text-[13px]">
           {isAr
             ? "هل الشركة ذات ملكية أجنبية كاملة أو جزئية؟"
             : "Does the company have foreign ownership?"}
@@ -183,8 +183,8 @@ function ToggleBtn({
       onClick={onClick}
       className={`px-5 py-2 rounded-lg border text-[13px] font-medium transition-colors ${
         active
-          ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-          : "bg-[var(--card)] text-[var(--text)] border-[var(--border)] hover:border-[var(--border-s)]"
+          ? "bg-[var(--signal)] text-white border-[var(--signal)]"
+          : "bg-[var(--paper-low)] text-[var(--ink)] border-[var(--stone-light)] hover:border-[var(--stone)]"
       }`}
     >
       {label}

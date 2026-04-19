@@ -44,7 +44,7 @@ export function ProfileForm({ user, lang }: { user: UserInput; lang: Lang }) {
           id="preferredLanguage"
           name="preferredLanguage"
           defaultValue={user.preferredLanguage}
-          className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] text-[var(--text)] px-3 text-[13px]"
+          className="h-10 w-full rounded-lg border border-[var(--stone-light)] bg-[var(--paper-low)] text-[var(--ink)] px-3 text-[13px]"
         >
           <option value="ar">{t("settings.lang.ar", lang)}</option>
           <option value="en">{t("settings.lang.en", lang)}</option>

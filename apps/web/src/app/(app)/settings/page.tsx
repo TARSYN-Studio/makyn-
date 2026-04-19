@@ -25,11 +25,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold text-[var(--text)]">{t("settings.title", lang)}</h1>
+      <h1 className="text-2xl font-semibold text-[var(--ink)]">{t("settings.title", lang)}</h1>
 
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-[var(--text)]">{t("settings.profile", lang)}</h2>
+          <h2 className="font-semibold text-[var(--ink)]">{t("settings.profile", lang)}</h2>
         </CardHeader>
         <CardBody>
           <ProfileForm user={fullUser} lang={lang} />
@@ -38,15 +38,15 @@ export default async function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-[var(--text)]">{t("settings.sessions", lang)}</h2>
+          <h2 className="font-semibold text-[var(--ink)]">{t("settings.sessions", lang)}</h2>
         </CardHeader>
         <CardBody>
-          <ul className="divide-y divide-[var(--border)]">
+          <ul className="divide-y divide-[var(--stone-light)]">
             {sessions.map((s) => (
               <li key={s.id} className="py-3 flex items-center justify-between gap-4">
                 <div className="text-[13px] min-w-0">
-                  <div className="text-[var(--text)] truncate">{s.userAgent ?? "—"}</div>
-                  <div className="text-[12px] text-[var(--text-dim)] num">
+                  <div className="text-[var(--ink)] truncate">{s.userAgent ?? "—"}</div>
+                  <div className="text-[12px] text-[var(--ink-40)] num">
                     {s.ipAddress ?? "—"} · {s.lastUsedAt.toISOString().slice(0, 16).replace("T", " ")}
                   </div>
                 </div>
@@ -57,9 +57,9 @@ export default async function SettingsPage() {
         </CardBody>
       </Card>
 
-      <Card className="border-[rgba(185,28,28,0.2)]">
+      <Card className="border-[rgba(139, 38, 53, 0.2)]">
         <CardHeader>
-          <h2 className="font-semibold text-[var(--red)]">{t("settings.danger", lang)}</h2>
+          <h2 className="font-semibold text-[var(--state-overdue)]">{t("settings.danger", lang)}</h2>
         </CardHeader>
         <CardBody>
           <Button variant="danger" disabled>

@@ -85,35 +85,35 @@ export function AddDocumentDialog({ open, lang, existingTypes, onSelect, onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-[var(--card)] rounded-lg shadow-modal w-full max-w-md flex flex-col max-h-[80vh]">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h2 className="font-semibold text-[var(--text)] text-[14px]">
+      <div className="relative bg-[var(--paper-low)] rounded-lg shadow-modal w-full max-w-md flex flex-col max-h-[80vh]">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--stone-light)]">
+          <h2 className="font-semibold text-[var(--ink)] text-[14px]">
             {isAr ? "ما نوع المستند الذي تريد إضافته؟" : "Which document type?"}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-[var(--text-dim)] hover:text-[var(--text)] text-xl leading-none"
+            className="text-[var(--ink-40)] hover:text-[var(--ink)] text-xl leading-none"
           >
             ×
           </button>
         </div>
 
-        <div className="p-3 border-b border-[var(--border)]">
+        <div className="p-3 border-b border-[var(--stone-light)]">
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={isAr ? "ابحث عن نوع المستند..." : "Search document type..."}
-            className="w-full border border-[var(--border)] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[rgba(30,58,138,0.15)] focus:border-[var(--accent)]"
+            className="w-full border border-[var(--stone-light)] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-2 focus:ring-[rgba(30,58,138,0.15)] focus:border-[var(--signal)]"
             dir={isAr ? "rtl" : "ltr"}
           />
         </div>
 
         <ul className="overflow-y-auto flex-1 py-1">
           {filtered.length === 0 ? (
-            <li className="px-4 py-3 text-[13px] text-[var(--text-dim)] text-center">
+            <li className="px-4 py-3 text-[13px] text-[var(--ink-40)] text-center">
               {isAr ? "لا توجد نتائج" : "No results"}
             </li>
           ) : (
@@ -125,13 +125,13 @@ export function AddDocumentDialog({ open, lang, existingTypes, onSelect, onClose
                     onSelect(opt);
                     onClose();
                   }}
-                  className="w-full text-start px-4 py-2.5 text-[13px] hover:bg-[var(--accent-xl)] transition-colors"
+                  className="w-full text-start px-4 py-2.5 text-[13px] hover:bg-[var(--signal-tint)] transition-colors"
                 >
-                  <span className="font-medium text-[var(--text)]">
+                  <span className="font-medium text-[var(--ink)]">
                     {isAr ? opt.labelAr : opt.labelEn}
                   </span>
                   {isAr && (
-                    <span className="block text-[11px] text-[var(--text-dim)]">{opt.labelEn}</span>
+                    <span className="block text-[11px] text-[var(--ink-40)]">{opt.labelEn}</span>
                   )}
                 </button>
               </li>

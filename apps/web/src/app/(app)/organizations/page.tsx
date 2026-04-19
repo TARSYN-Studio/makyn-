@@ -137,7 +137,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     <PageFrame className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <h1
-          className="font-display-en text-[32px] leading-none text-[var(--text)]"
+          className="font-display-en text-[32px] leading-none text-[var(--ink)]"
           style={{ fontWeight: 400 }}
         >
           {t("companies.title", lang)}
@@ -158,8 +158,8 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                 href={buildHref(searchParams, { filter: f.key })}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
                   active
-                    ? "bg-[var(--accent)] text-white"
-                    : "bg-[var(--card)] border border-[var(--border)] text-[var(--text-mid)] hover:bg-[var(--surface)]"
+                    ? "bg-[var(--signal)] text-white"
+                    : "bg-[var(--paper-low)] border border-[var(--stone-light)] text-[var(--ink-60)] hover:bg-[var(--paper-low)]"
                 }`}
               >
                 {f.label}
@@ -178,7 +178,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             name="q"
             defaultValue={q}
             placeholder={lang === "ar" ? "بحث بالاسم أو السجل" : "Search name or CR"}
-            className="w-full rounded-lg bg-[var(--card)] border border-[var(--border)] px-3 py-2 text-[13px] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)]"
+            className="w-full rounded-lg bg-[var(--paper-low)] border border-[var(--stone-light)] px-3 py-2 text-[13px] placeholder:text-[var(--ink-40)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--signal)]"
           />
         </form>
 
@@ -190,15 +190,15 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
         />
 
         {/* View toggle */}
-        <div className="ms-auto flex items-center rounded-lg border border-[var(--border)] bg-[var(--card)] p-0.5">
+        <div className="ms-auto flex items-center rounded-lg border border-[var(--stone-light)] bg-[var(--paper-low)] p-0.5">
           {(["grid", "list"] as ViewKey[]).map((v) => (
             <Link
               key={v}
               href={buildHref(searchParams, { view: v })}
               className={`px-2.5 py-1 rounded text-[12px] font-medium transition-colors ${
                 view === v
-                  ? "bg-[var(--surface)] text-[var(--text)]"
-                  : "text-[var(--text-mid)]"
+                  ? "bg-[var(--paper-low)] text-[var(--ink)]"
+                  : "text-[var(--ink-60)]"
               }`}
             >
               {v === "grid"
@@ -218,10 +218,10 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
           <Card>
             <CardBody className="py-12 text-center flex flex-col items-center gap-4">
               <NoCompanies />
-              <h2 className="text-[15px] font-semibold text-[var(--text)]">
+              <h2 className="text-[15px] font-semibold text-[var(--ink)]">
                 {t("companies.empty.title", lang)}
               </h2>
-              <p className="text-[13px] text-[var(--text-mid)]">
+              <p className="text-[13px] text-[var(--ink-60)]">
                 {t("companies.empty.desc", lang)}
               </p>
               <Link href="/organizations/new">
@@ -250,23 +250,23 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                   <CardBody className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h3 className="text-[15px] font-semibold text-[var(--text)] leading-snug">
+                        <h3 className="text-[15px] font-semibold text-[var(--ink)] leading-snug">
                           {c.legalNameAr}
                         </h3>
                         {c.tradeName && (
-                          <p className="text-[12px] text-[var(--text-dim)] mt-0.5">
+                          <p className="text-[12px] text-[var(--ink-40)] mt-0.5">
                             {c.tradeName}
                           </p>
                         )}
                       </div>
                       <StatusDot color={dotColor} />
                     </div>
-                    <div className="text-[13px] text-[var(--text-mid)]">
+                    <div className="text-[13px] text-[var(--ink-60)]">
                       <span className="num">{c.issues.length}</span>{" "}
                       {t("companies.openIssues", lang)}
                     </div>
                     {c.topIssue ? (
-                      <div className="text-[13px] text-[var(--text)] line-clamp-2">
+                      <div className="text-[13px] text-[var(--ink)] line-clamp-2">
                         {c.topIssue.titleAr}
                         {c.topIssue.detectedAmountSar && (
                           <>
@@ -280,11 +280,11 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                         )}
                       </div>
                     ) : (
-                      <p className="text-[12px] text-[var(--text-dim)]">
+                      <p className="text-[12px] text-[var(--ink-40)]">
                         {t("companies.noIssues", lang)}
                       </p>
                     )}
-                    <div className="text-[12px] text-[var(--text-dim)] num">
+                    <div className="text-[12px] text-[var(--ink-40)] num">
                       {t("companies.lastActivity", lang)}: {relative(c.lastActivity, lang)}
                     </div>
                   </CardBody>
@@ -314,10 +314,10 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                   c.status === "RED" ? "red" : c.status === "YELLOW" ? "yellow" : "green";
                 return (
                   <Tr key={c.id}>
-                    <Td className="font-semibold text-[var(--text)]">
+                    <Td className="font-semibold text-[var(--ink)]">
                       <Link
                         href={`/organizations/${c.id}`}
-                        className="hover:text-[var(--accent)]"
+                        className="hover:text-[var(--signal)]"
                       >
                         {c.legalNameAr}
                       </Link>
@@ -325,22 +325,22 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                     <Td>
                       <span className="inline-flex items-center gap-2">
                         <StatusDot color={dotColor} />
-                        <span className="text-[12px] text-[var(--text-mid)]">
+                        <span className="text-[12px] text-[var(--ink-60)]">
                           {t(`status.${c.status}`, lang)}
                         </span>
                       </span>
                     </Td>
                     <Td className="text-end num">{c.issues.length}</Td>
-                    <Td className="text-[var(--text-mid)] max-w-[280px] truncate">
+                    <Td className="text-[var(--ink-60)] max-w-[280px] truncate">
                       {c.topIssue?.titleAr ?? "—"}
                     </Td>
-                    <Td className="text-end num text-[var(--text-dim)]">
+                    <Td className="text-end num text-[var(--ink-40)]">
                       {relative(c.lastActivity, lang)}
                     </Td>
                     <Td className="text-end">
                       <Link
                         href={`/organizations/${c.id}`}
-                        className="text-[var(--text-dim)] hover:text-[var(--accent)]"
+                        className="text-[var(--ink-40)] hover:text-[var(--signal)]"
                       >
                         <span className="inline-block flip-rtl">→</span>
                       </Link>
