@@ -14,7 +14,7 @@ export default async function SignupPage() {
     <div className="min-h-screen grid place-items-center px-4 bg-[var(--paper)]">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <Wordmark size="lg" />
+          <Wordmark size="lg" lang={lang} />
         </div>
         <Card>
         <CardHeader>

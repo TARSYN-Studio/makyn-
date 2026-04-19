@@ -42,7 +42,16 @@ const arabic = Tajawal({
 
 export const metadata: Metadata = {
   title: "MAKYN",
-  description: "مكين — مركز عمليات الامتثال السعودي"
+  description: "A compliance instrument for Saudi Arabia.",
+  icons: {
+    icon: [
+      { url: "/favicon/favicon.ico", sizes: "any" },
+      { url: "/favicon/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon/favicon-32x32.png", type: "image/png", sizes: "32x32" }
+    ],
+    apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180" }]
+  },
+  manifest: "/favicon/site.webmanifest"
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

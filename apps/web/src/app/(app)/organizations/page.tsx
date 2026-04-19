@@ -238,7 +238,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             className="pointer-events-none absolute bottom-4 end-4 opacity-[0.06]"
             aria-hidden
           >
-            <Wordmark size="lg" className="h-20" />
+            <Wordmark size="lg" lang={lang} className="h-20" />
           </div>
         </div>
       )}

@@ -32,7 +32,7 @@ export function AppShell({
       <header className="h-14 bg-[var(--paper-low)] border-b border-[var(--stone-light)] flex items-center px-4 md:px-6">
         {/* Left: logo + wordmark */}
         <Link href="/dashboard" className="flex items-center me-6 shrink-0">
-          <Wordmark size="sm" />
+          <Wordmark size="sm" lang={lang} />
         </Link>
 
         {/* Center: desktop nav */}

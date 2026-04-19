@@ -15,7 +15,7 @@ export default async function LandingPage() {
     <main className="min-h-screen bg-[var(--paper)]">
       <div className="mx-auto flex max-w-4xl flex-col items-center px-6 pt-24 pb-12 text-center">
         <div className="mb-8 inline-flex items-center">
-          <Wordmark size="lg" />
+          <Wordmark size="lg" lang={lang} />
         </div>
 
         <h1
