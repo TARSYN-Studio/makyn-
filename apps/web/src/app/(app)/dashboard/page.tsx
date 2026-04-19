@@ -16,9 +16,7 @@ import { calculateCompanyStatus, type IssueForStatus } from "@makyn/core";
 import { Badge, StatusDot } from "@/components/ui/badge";
 import { Card, CardBody } from "@/components/ui/card";
 import { PageFrame } from "@/components/PageFrame";
-import { NoCompanies } from "@/components/illustrations/NoCompanies";
-import { NoIssues } from "@/components/illustrations/NoIssues";
-import { NoDeadlines } from "@/components/illustrations/NoDeadlines";
+import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { listUserOrgIds } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
@@ -454,16 +452,19 @@ export default async function DashboardPage() {
           </h2>
           {companies.length === 0 ? (
             <Card>
-              <CardBody className="py-10 flex flex-col items-center text-center gap-3">
-                <NoCompanies />
-                <p className="text-[13px] text-[var(--ink-60)]">
+              <CardBody className="py-14 flex flex-col items-center text-center gap-5">
+                <EmptyStateMark />
+                <p className={`text-[20px] leading-snug text-[var(--ink)] max-w-[28ch] ${lang === "en" ? "font-display-en" : ""}`}>
+                  {t("companies.empty.hero", lang)}
+                </p>
+                <p className="text-[13px] text-[var(--ink-60)] max-w-[36ch]">
                   {t("companies.empty.desc", lang)}
                 </p>
                 <Link
                   href="/organizations/new"
-                  className="text-[13px] font-medium text-[var(--signal)] hover:underline"
+                  className="text-[13px] font-medium text-[var(--signal)] hover:underline underline-offset-[6px]"
                 >
-                  + {t("dashboard.addCompany", lang)}
+                  {t("dashboard.addCompany", lang)}
                 </Link>
               </CardBody>
             </Card>
@@ -512,9 +513,9 @@ export default async function DashboardPage() {
               })}
               <Link
                 href="/organizations/new"
-                className="flex items-center justify-center h-full min-h-[140px] rounded-lg border border-dashed border-[var(--stone)] text-[13px] font-medium text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors"
+                className="flex items-center justify-center h-full min-h-[140px] rounded-[4px] border border-[var(--stone-light)] bg-[var(--paper-low)] text-[13px] font-medium text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors"
               >
-                + {t("dashboard.addCompany", lang)}
+                {t("dashboard.addCompany", lang)}
               </Link>
             </div>
           )}
@@ -529,9 +530,9 @@ export default async function DashboardPage() {
             <Card>
               <CardBody className="p-0">
                 {recent.length === 0 ? (
-                  <div className="px-5 py-10 flex flex-col items-center text-center gap-3">
-                    <NoIssues />
-                    <p className="text-[13px] text-[var(--ink-40)]">
+                  <div className="px-5 py-12 flex flex-col items-center text-center gap-4">
+                    <EmptyStateMark size={80} />
+                    <p className="text-[13px] text-[var(--ink-60)]">
                       {t("dashboard.noActivity", lang)}
                     </p>
                   </div>
@@ -575,9 +576,9 @@ export default async function DashboardPage() {
             </h2>
             {upcomingDeadlines.length === 0 ? (
               <Card>
-                <CardBody className="py-10 flex flex-col items-center text-center gap-3">
-                  <NoDeadlines />
-                  <p className="text-[13px] text-[var(--ink-40)]">
+                <CardBody className="py-12 flex flex-col items-center text-center gap-4">
+                  <EmptyStateMark size={80} />
+                  <p className="text-[13px] text-[var(--ink-60)]">
                     {t("dashboard.noDeadlines", lang)}
                   </p>
                 </CardBody>

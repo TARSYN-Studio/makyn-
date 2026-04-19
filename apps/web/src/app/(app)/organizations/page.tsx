@@ -9,7 +9,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
 import { PageFrame } from "@/components/PageFrame";
 import { Wordmark } from "@/components/LogoMark";
-import { NoCompanies } from "@/components/illustrations/NoCompanies";
+import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { listUserOrgIds } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
@@ -220,16 +220,16 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
       {filtered.length === 0 && (
         <div className="relative">
           <Card>
-            <CardBody className="py-12 text-center flex flex-col items-center gap-4">
-              <NoCompanies />
-              <h2 className="text-[15px] font-semibold text-[var(--ink)]">
-                {t("companies.empty.title", lang)}
-              </h2>
-              <p className="text-[13px] text-[var(--ink-60)]">
+            <CardBody className="py-16 text-center flex flex-col items-center gap-5">
+              <EmptyStateMark />
+              <p className={`text-[22px] leading-snug text-[var(--ink)] max-w-[28ch] ${lang === "en" ? "font-display-en" : ""}`}>
+                {t("companies.empty.hero", lang)}
+              </p>
+              <p className="text-[13px] text-[var(--ink-60)] max-w-[36ch]">
                 {t("companies.empty.desc", lang)}
               </p>
               <Link href="/organizations/new">
-                <Button>+ {t("companies.add", lang)}</Button>
+                <Button>{t("companies.add", lang)}</Button>
               </Link>
             </CardBody>
           </Card>

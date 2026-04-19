@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
 import { PageFrame } from "@/components/PageFrame";
-import { NoIssues } from "@/components/illustrations/NoIssues";
+import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
@@ -320,9 +320,9 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <div className="space-y-6">
           {activeIssues.length === 0 && (
             <Card>
-              <CardBody className="py-10 flex flex-col items-center text-center gap-3">
-                <NoIssues />
-                <p className="text-[13px] text-[var(--ink-40)]">
+              <CardBody className="py-12 flex flex-col items-center text-center gap-4">
+                <EmptyStateMark size={80} />
+                <p className="text-[13px] text-[var(--ink-60)]">
                   {t("company.noOpenIssues", lang)}
                 </p>
               </CardBody>
