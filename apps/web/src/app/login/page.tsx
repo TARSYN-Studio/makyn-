@@ -6,9 +6,15 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { t, type Lang } from "@/lib/i18n";
 import { getCurrentUser } from "@/lib/session";
 
-export default async function LoginPage() {
+type SearchParams = { next?: string };
+
+export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   const user = await getCurrentUser();
   const lang: Lang = user?.preferredLanguage === "en" ? "en" : "ar";
+
+  const signupHref = searchParams.next
+    ? `/signup?next=${encodeURIComponent(searchParams.next)}`
+    : "/signup";
 
   return (
     <div className="min-h-screen grid place-items-center px-4 bg-[var(--paper)]">
@@ -21,13 +27,13 @@ export default async function LoginPage() {
           <h1 className="text-xl font-semibold text-[var(--ink)]">{t("login.title", lang)}</h1>
         </CardHeader>
         <CardBody>
-          <LoginForm lang={lang} />
+          <LoginForm lang={lang} next={searchParams.next} />
           <p className="text-[13px] text-[var(--ink-40)] mt-4 text-center">
             {t("login.forgot", lang)} — {t("login.forgot.support", lang)}
           </p>
           <p className="text-[13px] text-[var(--ink-60)] mt-4 text-center">
             {t("login.noAccount", lang)}{" "}
-            <Link href="/signup" className="text-[var(--signal)] hover:underline">
+            <Link href={signupHref} className="text-[var(--signal)] hover:underline">
               {t("login.signup", lang)}
             </Link>
           </p>

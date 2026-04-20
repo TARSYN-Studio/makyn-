@@ -38,6 +38,9 @@ model User {
   documents           CompanyDocument[]
   auditLogActions     AuditLog[]            @relation("AuditActor")
   orgsSoftDeleted     Organization[]        @relation("OrgDeleter")
+  invitationsSent     Invitation[]          @relation("InvitationInvitedBy")
+  invitationsAccepted Invitation[]          @relation("InvitationAcceptedBy")
+  invitationsRevoked  Invitation[]          @relation("InvitationRevokedBy")
 
   @@index([email])
   @@index([phoneNumber])
@@ -91,6 +94,12 @@ model Organization {
 
   notes     String?  @db.Text
   isActive  Boolean  @default(true)
+
+  // v1.4 Commit B — per-org invite domain allow-list. Empty array
+  // means no restriction (default). Non-empty means invitee email
+  // domain MUST be one of these. Lowercased on write, exact match
+  // only, no wildcards/subdomains. OWNER-only to modify.
+  inviteDomainRestriction String[] @default([])
 
   // Soft-delete — only OWNER role can set. `deletedAt IS NULL` means
   // the org is live. Delete does NOT cascade to related orgs;
@@ -164,6 +173,7 @@ model Organization {
   otherDocuments Json?
 
   memberships Membership[]
+  invitations Invitation[]
   issues      Issue[]
   messages    Message[]
   documents   CompanyDocument[]
@@ -580,6 +590,50 @@ enum OrgRole {
   ADMIN
   MEMBER
   VIEWER
+}
+
+// ==========================================================================
+//  INVITATIONS (v1.4 Commit B) — magic-link team invites.
+//  One-shot opaque tokens (32 bytes), 7-day expiry, revoke on either manual
+//  action OR a duplicate invite to the same (email, org) pair. Email stays
+//  on this row (can be deleted on org deletion); raw email is NOT written
+//  to AuditLog — the audit payload hashes it per PDPL hygiene.
+//
+//  Role: ADMIN | MEMBER | VIEWER only. OWNER role is produced by the
+//  ownership-transfer flow (deferred from Commit B), never by invite.
+//  Enforced by enum-level CHECK constraint added in the migration.
+// ==========================================================================
+
+model Invitation {
+  id                String    @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  email             String    // lowercased + trimmed at write time
+  role              OrgRole   // CHECK constraint in migration: role != 'OWNER'
+  token             String    @unique // 32 bytes URL-safe base64
+
+  invitedByUserId   String
+  invitedBy         User      @relation("InvitationInvitedBy", fields: [invitedByUserId], references: [id])
+
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime
+
+  acceptedAt        DateTime?
+  acceptedByUserId  String?
+  acceptedBy        User?     @relation("InvitationAcceptedBy", fields: [acceptedByUserId], references: [id])
+
+  revokedAt         DateTime?
+  revokedByUserId   String?
+  revokedBy         User?     @relation("InvitationRevokedBy", fields: [revokedByUserId], references: [id])
+
+  // Pending-list queries: acceptedAt/revokedAt NULL AND expiresAt > now,
+  // scoped to organizationId. The composite index covers them.
+  @@index([organizationId, acceptedAt, revokedAt, expiresAt])
+  // Duplicate detection by (email, org): look for active (not accepted,
+  // not revoked) invite for this email in this org.
+  @@index([email, organizationId, acceptedAt, revokedAt])
+  @@index([token])
 }
 
 // ==========================================================================

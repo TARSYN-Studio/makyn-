@@ -12,6 +12,7 @@ import { calculateCompanyStatus, hoursUntil, type IssueForStatus } from "@makyn/
 import { CompanyDetailsForm } from "./details-form";
 import { ArchiveCompanyButton } from "./archive-button";
 import { Badge, StatusDot } from "@/components/ui/badge";
+import { RoleBadge } from "@/components/ui/role-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
@@ -89,8 +90,9 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   const now = new Date();
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
+  let access;
   try {
-    await requireOrgAccess(user.id, params.id, "org.read");
+    access = await requireOrgAccess(user.id, params.id, "org.read");
   } catch (e) {
     if (e instanceof OrgAccessError) notFound();
     throw e;
@@ -254,12 +256,15 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div className="min-w-0">
-          <h1
-            className="text-[32px] leading-tight text-[var(--ink)]"
-            style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
-          >
-            {company.legalNameAr}
-          </h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1
+              className="text-[32px] leading-tight text-[var(--ink)]"
+              style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
+            >
+              {company.legalNameAr}
+            </h1>
+            <RoleBadge role={access.role} lang={lang} />
+          </div>
           <div className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ink-40)] flex-wrap">
             {company.tradeName && <span>{company.tradeName}</span>}
             {company.crNumber && (
@@ -285,6 +290,9 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         </Button>
         <Link href={`/organizations/${company.id}?tab=details`}>
           <Button variant="secondary">{t("company.editDetails", lang)}</Button>
+        </Link>
+        <Link href={`/organizations/${company.id}/settings/team`}>
+          <Button variant="secondary">{t("team.nav.link", lang)}</Button>
         </Link>
       </div>
 
