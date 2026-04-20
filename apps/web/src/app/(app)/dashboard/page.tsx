@@ -1,14 +1,14 @@
 import Link from "next/link";
 import {
-  Buildings,
-  Warning,
-  ClockCountdown,
-  CheckCircle,
-  CaretUp,
-  CaretDown,
+  Building2 as Buildings,
+  AlertTriangle as Warning,
+  Clock as ClockCountdown,
+  CheckCircle2 as CheckCircle,
+  ChevronUp as CaretUp,
+  ChevronDown as CaretDown,
   Minus,
-  CaretRight
-} from "@phosphor-icons/react/dist/ssr";
+  ChevronRight as CaretRight
+} from "lucide-react";
 
 import { ChannelType, ExtractionStatus, IssueStatus, prisma } from "@makyn/db";
 import { calculateCompanyStatus, type IssueForStatus } from "@makyn/core";
@@ -379,7 +379,7 @@ export default async function DashboardPage() {
                 >
                   <span className="text-[var(--ink-40)]">{nextAction.prefix}:</span>
                   <span className="text-[var(--ink)]">{nextAction.label}</span>
-                  <CaretRight className="h-4 w-4 flip-rtl" weight="regular" />
+                  <CaretRight className="h-4 w-4 flip-rtl" />
                 </Link>
               )}
             </div>
@@ -643,7 +643,8 @@ export default async function DashboardPage() {
   );
 }
 
-type StatIcon = import("@phosphor-icons/react").Icon;
+import type { LucideIcon } from "lucide-react";
+type StatIcon = LucideIcon;
 
 function StatCard({
   label,
@@ -686,7 +687,7 @@ function StatCard({
           </div>
           <Icon
             className="h-5 w-5 shrink-0"
-            weight="regular"
+           
             style={{ color: "var(--ink-60)" }}
           />
         </div>
@@ -697,7 +698,7 @@ function StatCard({
           {value}
         </div>
         <div className="mt-2 flex items-center gap-1 text-[12px]">
-          <TrendIcon className="h-3.5 w-3.5" weight="regular" style={{ color: trendColor }} />
+          <TrendIcon className="h-3.5 w-3.5" style={{ color: trendColor }} />
           <span className="num" style={{ color: trendColor }}>
             {delta === 0 ? "—" : delta > 0 ? `+${delta}` : `${delta}`}
           </span>

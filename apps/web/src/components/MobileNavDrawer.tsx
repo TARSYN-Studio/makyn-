@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { List, X } from "@phosphor-icons/react";
+import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { logoutAction } from "@/actions/auth";
@@ -34,7 +34,7 @@ export function MobileNavDrawer({
         onClick={() => setOpen(true)}
         className="md:hidden p-2 -me-2 text-[var(--ink-60)]"
       >
-        <List className="h-5 w-5" />
+        <Menu className="h-5 w-5" />
       </button>
       <AnimatePresence>
         {open && (

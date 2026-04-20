@@ -103,6 +103,13 @@ html[lang="ar"] .num { font-family: var(--font-arabic); direction: rtl; }
 /* Directional icon flip helper for RTL */
 [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
 
+/* Lucide icons: 1.5 stroke-width everywhere, currentColor. Specific sizes
+   are applied per-site via Tailwind h-/w- utilities. */
+.lucide {
+  stroke-width: 1.5;
+  color: currentColor;
+}
+
 /* Motion — respect reduced-motion and keep durations under 200ms. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
