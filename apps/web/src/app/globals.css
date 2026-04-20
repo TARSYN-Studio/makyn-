@@ -110,7 +110,12 @@ html[lang="ar"] .num { font-family: var(--font-arabic); direction: rtl; }
   color: currentColor;
 }
 
-/* Motion — respect reduced-motion and keep durations under 200ms. */
+/**
+ * CRITICAL — DO NOT REMOVE.
+ * Enforces prefers-reduced-motion across all app animations.
+ * Required for accessibility compliance and brand restraint voice.
+ * If you think you need to remove this, open a discussion first.
+ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
