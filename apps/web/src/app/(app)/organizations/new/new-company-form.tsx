@@ -22,7 +22,7 @@ function SubmitBtn({ lang }: { lang: Lang }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <fieldset className="space-y-4">
-      <legend className="font-semibold text-[var(--text)] text-[13px]">{title}</legend>
+      <legend className="font-semibold text-[var(--ink)] text-[13px]">{title}</legend>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
     </fieldset>
   );
@@ -111,7 +111,7 @@ export function NewCompanyForm({ lang }: { lang: Lang }) {
       </div>
 
       {state?.error === "duplicate_identifier" && (
-        <p className="text-[13px] text-[var(--red)]">
+        <p className="text-[13px] text-[var(--state-overdue)]">
           {lang === "ar"
             ? "أحد المعرفات (CR/TIN/GOSI/Qiwa) مستخدم في شركة أخرى."
             : "One of the identifiers (CR/TIN/GOSI/Qiwa) is already in use by another company."}

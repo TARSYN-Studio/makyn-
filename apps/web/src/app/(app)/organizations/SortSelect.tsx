@@ -42,7 +42,7 @@ export function SortSelect({ value, options, carry }: Props) {
           router.push(buildHref(next, carry));
         });
       }}
-      className="rounded-lg bg-[var(--card)] border border-[var(--border)] px-2 py-1.5 text-[13px] text-[var(--text-mid)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--accent)] disabled:opacity-60"
+      className="rounded-lg bg-[var(--paper-low)] border border-[var(--stone-light)] px-2 py-1.5 text-[13px] text-[var(--ink-60)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--signal)] disabled:opacity-60"
     >
       {options.map((s) => (
         <option key={s.key} value={s.key}>

@@ -96,19 +96,19 @@ export default async function IssueDetailPage({ params }: PageProps) {
   return (
     <PageFrame className="max-w-7xl">
       {/* Breadcrumb */}
-      <div className="mb-4 text-[12px] text-[var(--text-dim)]">
-        <Link href="/organizations" className="hover:text-[var(--accent)]">
+      <div className="mb-4 text-[12px] text-[var(--ink-40)]">
+        <Link href="/organizations" className="hover:text-[var(--signal)]">
           {lang === "ar" ? "شركاتي" : "Companies"}
         </Link>
         <span>{sep}</span>
         <Link
           href={`/organizations/${issue.organization?.id}`}
-          className="hover:text-[var(--accent)]"
+          className="hover:text-[var(--signal)]"
         >
           {issue.organization?.legalNameAr ?? ""}
         </Link>
         <span>{sep}</span>
-        <span className="text-[var(--text-mid)]">{truncate(issue.titleAr, 60)}</span>
+        <span className="text-[var(--ink-60)]">{truncate(issue.titleAr, 60)}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,65%)_minmax(0,35%)] gap-6">
@@ -116,8 +116,8 @@ export default async function IssueDetailPage({ params }: PageProps) {
         <div className="space-y-6">
           <div>
             <h1
-              className="font-display-en text-[28px] leading-tight text-[var(--text)]"
-              style={{ fontWeight: 400 }}
+              className="text-[28px] leading-tight text-[var(--ink)]"
+              style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
             >
               {issue.titleAr}
             </h1>
@@ -128,45 +128,45 @@ export default async function IssueDetailPage({ params }: PageProps) {
               </Badge>
               <Badge>{t(`issue.status.${issue.status}`, lang)}</Badge>
               {issue.detectedDeadline && (
-                <span className="num text-[12px] text-[var(--text-mid)]">
+                <span className="num text-[12px] text-[var(--ink-60)]">
                   {deadlineLabel(issue.detectedDeadline, lang)}
                 </span>
               )}
             </div>
           </div>
 
-          <p className="text-[15px] leading-relaxed text-[var(--text)]">
+          <p className="text-[15px] leading-relaxed text-[var(--ink)]">
             {issue.summaryAr}
           </p>
 
           {/* Original Notice */}
           <Card>
             <details>
-              <summary className="cursor-pointer px-5 py-4 border-b border-[var(--border)] text-[13px] font-medium text-[var(--text)]">
+              <summary className="cursor-pointer px-5 py-4 border-b border-[var(--stone-light)] text-[13px] font-medium text-[var(--ink)]">
                 {t("issue.originalNotice", lang)}
               </summary>
-              <div className="px-5 py-4 space-y-3 text-[13px] text-[var(--text-mid)]">
+              <div className="px-5 py-4 space-y-3 text-[13px] text-[var(--ink-60)]">
                 {originalInbound ? (
                   <>
-                    <div className="num text-[11px] text-[var(--text-dim)]">
+                    <div className="num text-[11px] text-[var(--ink-40)]">
                       {originalInbound.createdAt
                         .toISOString()
                         .slice(0, 16)
                         .replace("T", " ")}
                     </div>
-                    <div className="whitespace-pre-wrap text-[var(--text)]">
+                    <div className="whitespace-pre-wrap text-[var(--ink)]">
                       {originalInbound.rawContent || "—"}
                     </div>
                     {originalInbound.extractedText && (
-                      <div className="mt-2 p-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] whitespace-pre-wrap">
-                        <div className="text-[11px] text-[var(--text-dim)] mb-1 uppercase tracking-wider">
+                      <div className="mt-2 p-3 rounded-lg bg-[var(--paper-low)] border border-[var(--stone-light)] whitespace-pre-wrap">
+                        <div className="text-[11px] text-[var(--ink-40)] mb-1 uppercase tracking-wider">
                           OCR
                         </div>
                         {originalInbound.extractedText}
                       </div>
                     )}
                     {originalInbound.contentType === "PHOTO" && (
-                      <div className="text-[12px] text-[var(--text-dim)]">
+                      <div className="text-[12px] text-[var(--ink-40)]">
                         {lang === "ar"
                           ? "صورة مرفقة — اطلعي عليها في Telegram"
                           : "Image attached — view in Telegram"}
@@ -174,7 +174,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                     )}
                   </>
                 ) : (
-                  <p className="text-[var(--text-dim)]">—</p>
+                  <p className="text-[var(--ink-40)]">—</p>
                 )}
               </div>
             </details>
@@ -183,13 +183,13 @@ export default async function IssueDetailPage({ params }: PageProps) {
           {/* Conversation */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-[var(--text)]">
+              <h2 className="font-semibold text-[var(--ink)]">
                 {t("issue.conversation", lang)}
               </h2>
             </CardHeader>
             <CardBody>
               {conversation.length === 0 && (
-                <p className="text-[13px] text-[var(--text-dim)]">—</p>
+                <p className="text-[13px] text-[var(--ink-40)]">—</p>
               )}
               <div className="space-y-3">
                 {conversation.map((m) => (
@@ -197,11 +197,11 @@ export default async function IssueDetailPage({ params }: PageProps) {
                     key={m.id}
                     className={`rounded-lg p-3 text-[13px] border ${
                       m.direction === "INBOUND"
-                        ? "bg-[var(--surface)] border-[var(--border)]"
-                        : "bg-[var(--accent-xl)] border-[var(--accent-l)]"
+                        ? "bg-[var(--paper-low)] border-[var(--stone-light)]"
+                        : "bg-[var(--signal-tint)] border-[var(--signal-tint)]"
                     }`}
                   >
-                    <div className="num text-[11px] text-[var(--text-dim)] mb-1">
+                    <div className="num text-[11px] text-[var(--ink-40)] mb-1">
                       {m.direction === "INBOUND"
                         ? lang === "ar"
                           ? "من المستخدم"
@@ -211,7 +211,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
                           : "Outbound"}{" "}
                       · {m.createdAt.toISOString().slice(0, 16).replace("T", " ")}
                     </div>
-                    <div className="whitespace-pre-wrap text-[var(--text)]">
+                    <div className="whitespace-pre-wrap text-[var(--ink)]">
                       {m.rawContent || m.extractedText || "—"}
                     </div>
                   </div>
@@ -223,22 +223,22 @@ export default async function IssueDetailPage({ params }: PageProps) {
           {/* Notes */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-[var(--text)]">
+              <h2 className="font-semibold text-[var(--ink)]">
                 {t("issue.notes", lang)}
               </h2>
             </CardHeader>
             <CardBody className="space-y-4">
               {issue.notes.length === 0 && (
-                <p className="text-[13px] text-[var(--text-dim)]">—</p>
+                <p className="text-[13px] text-[var(--ink-40)]">—</p>
               )}
               <ul className="space-y-3">
                 {issue.notes.map((n) => (
                   <li key={n.id} className="text-[13px]">
-                    <div className="num text-[11px] text-[var(--text-dim)]">
+                    <div className="num text-[11px] text-[var(--ink-40)]">
                       {n.author.fullName} ·{" "}
                       {n.createdAt.toISOString().slice(0, 16).replace("T", " ")}
                     </div>
-                    <div className="text-[var(--text)] whitespace-pre-wrap">
+                    <div className="text-[var(--ink)] whitespace-pre-wrap">
                       {n.content}
                     </div>
                   </li>
@@ -252,11 +252,11 @@ export default async function IssueDetailPage({ params }: PageProps) {
         {/* RIGHT */}
         <aside className="lg:sticky lg:top-6 self-start space-y-4">
           {/* Recommended Action */}
-          <div className="bg-[var(--accent-xl)] border border-[var(--accent-l)] rounded-lg p-4 space-y-3">
-            <div className="text-[11px] uppercase tracking-wider text-[var(--accent)] font-semibold">
+          <div className="bg-[var(--signal-tint)] border border-[var(--signal-tint)] rounded-lg p-4 space-y-3">
+            <div className="text-[11px] uppercase tracking-wider text-[var(--signal)] font-semibold">
               {t("issue.recommendedAction", lang)}
             </div>
-            <p className="text-[14px] text-[var(--text)] leading-relaxed">
+            <p className="text-[14px] text-[var(--ink)] leading-relaxed">
               {issue.recommendedAction}
             </p>
             {issue.recommendedHandler && (
@@ -276,45 +276,45 @@ export default async function IssueDetailPage({ params }: PageProps) {
 
           {/* Penalty */}
           {issue.penaltyIfIgnored && (
-            <div className="bg-[var(--red-l)] border border-[rgba(185,28,28,0.2)] rounded-lg p-4">
-              <div className="text-[11px] uppercase tracking-wider text-[var(--red)] font-semibold mb-2">
+            <div className="bg-[var(--state-overdue-tint)] border border-[rgba(139, 38, 53, 0.2)] rounded-lg p-4">
+              <div className="text-[11px] uppercase tracking-wider text-[var(--state-overdue)] font-semibold mb-2">
                 {t("issue.penalty", lang)}
               </div>
-              <p className="text-[13px] text-[var(--red)]">{issue.penaltyIfIgnored}</p>
+              <p className="text-[13px] text-[var(--state-overdue)]">{issue.penaltyIfIgnored}</p>
             </div>
           )}
 
           {/* Extracted Data */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-[var(--text)]">
+              <h2 className="font-semibold text-[var(--ink)]">
                 {t("issue.extractedData", lang)}
               </h2>
             </CardHeader>
             <CardBody className="space-y-3 text-[13px]">
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)]">
+                <div className="text-[11px] uppercase tracking-wider text-[var(--ink-40)]">
                   {t("issue.reference", lang)}
                 </div>
-                <div className="num text-[var(--text)]">
+                <div className="num text-[var(--ink)]">
                   {issue.referenceNumber ?? "—"}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)]">
+                <div className="text-[11px] uppercase tracking-wider text-[var(--ink-40)]">
                   {t("issue.amount", lang)}
                 </div>
-                <div className="num text-[var(--text)]">
+                <div className="num text-[var(--ink)]">
                   {issue.detectedAmountSar
                     ? `SAR ${Number(issue.detectedAmountSar).toLocaleString()}`
                     : "—"}
                 </div>
               </div>
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)]">
+                <div className="text-[11px] uppercase tracking-wider text-[var(--ink-40)]">
                   {t("issue.deadline", lang)}
                 </div>
-                <div className="num text-[var(--text)]">
+                <div className="num text-[var(--ink)]">
                   {formatDate(issue.detectedDeadline)}
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-[var(--text)]">
+              <h2 className="font-semibold text-[var(--ink)]">
                 {lang === "ar" ? "إجراءات سريعة" : "Quick actions"}
               </h2>
             </CardHeader>
@@ -356,7 +356,7 @@ export default async function IssueDetailPage({ params }: PageProps) {
           {/* Full status form */}
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-[var(--text)]">
+              <h2 className="font-semibold text-[var(--ink)]">
                 {t("issue.status", lang)}
               </h2>
             </CardHeader>

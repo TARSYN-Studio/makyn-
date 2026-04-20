@@ -9,7 +9,7 @@ export function ConfidenceIndicator({ confidence, lang }: { confidence: number; 
       ? "دقة الاستخراج منخفضة — تحقق من هذا الحقل"
       : "Low extraction confidence — please verify";
   return (
-    <span title={msg} className="text-[var(--amber)] text-xs ms-1 cursor-help" aria-label={msg}>
+    <span title={msg} className="text-[var(--state-pending)] text-xs ms-1 cursor-help" aria-label={msg}>
       ⚠
     </span>
   );

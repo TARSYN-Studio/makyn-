@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
-import { Inter, Instrument_Serif, JetBrains_Mono, Readex_Pro } from "next/font/google";
+import { Inter, Fraunces, JetBrains_Mono, Tajawal } from "next/font/google";
 
 import { getCurrentUser } from "@/lib/session";
 import type { Lang } from "@/lib/i18n";
@@ -14,9 +14,13 @@ const inter = Inter({
   subsets: ["latin"]
 });
 
-const serif = Instrument_Serif({
-  weight: "400",
-  style: ["normal", "italic"],
+// Fraunces is loaded but reserved — italic axis only, used for empty-state
+// hero sentences, the 404 headline, and the first-login welcome line.
+// Never for page headings, body, buttons, or form labels.
+const fraunces = Fraunces({
+  weight: ["400", "500"],
+  style: ["italic"],
+  axes: ["SOFT", "opsz"],
   variable: "--font-serif",
   display: "swap",
   subsets: ["latin"]
@@ -29,8 +33,8 @@ const mono = JetBrains_Mono({
   subsets: ["latin"]
 });
 
-const arabic = Readex_Pro({
-  weight: ["300", "400", "500", "600", "700"],
+const arabic = Tajawal({
+  weight: ["400", "500", "700", "800"],
   variable: "--font-ar",
   display: "swap",
   subsets: ["arabic", "latin"]
@@ -38,7 +42,16 @@ const arabic = Readex_Pro({
 
 export const metadata: Metadata = {
   title: "MAKYN",
-  description: "مكين — مركز عمليات الامتثال السعودي"
+  description: "A compliance instrument for Saudi Arabia.",
+  icons: {
+    icon: [
+      { url: "/favicon/favicon.ico", sizes: "any" },
+      { url: "/favicon/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon/favicon-32x32.png", type: "image/png", sizes: "32x32" }
+    ],
+    apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180" }]
+  },
+  manifest: "/favicon/site.webmanifest"
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -48,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={lang}
       dir={dirFor(lang)}
-      className={`${inter.variable} ${serif.variable} ${mono.variable} ${arabic.variable}`}
+      className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${arabic.variable}`}
     >
       <body>{children}</body>
     </html>

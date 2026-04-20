@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
 import { PageFrame } from "@/components/PageFrame";
-import { NoIssues } from "@/components/illustrations/NoIssues";
+import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
@@ -245,7 +245,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       <div className="mb-2">
         <Link
           href="/organizations"
-          className="text-[12px] text-[var(--text-dim)] hover:text-[var(--accent)]"
+          className="text-[12px] text-[var(--ink-40)] hover:text-[var(--signal)]"
         >
           <span className="inline-block rtl:scale-x-[-1]">←</span> {t("company.back", lang)}
         </Link>
@@ -255,12 +255,12 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
         <div className="min-w-0">
           <h1
-            className="font-display-en text-[32px] leading-tight text-[var(--text)]"
-            style={{ fontWeight: 400 }}
+            className="text-[32px] leading-tight text-[var(--ink)]"
+            style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
           >
             {company.legalNameAr}
           </h1>
-          <div className="mt-1 flex items-center gap-3 text-[12px] text-[var(--text-dim)] flex-wrap">
+          <div className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ink-40)] flex-wrap">
             {company.tradeName && <span>{company.tradeName}</span>}
             {company.crNumber && (
               <span className="num">CR: {company.crNumber}</span>
@@ -271,7 +271,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--card)] border border-[var(--border)] text-[15px]">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--paper-low)] border border-[var(--stone-light)] text-[15px]">
             <StatusDot color={dotColor} />
             <span className="font-medium">{t(`status.${status}`, lang)}</span>
           </div>
@@ -300,15 +300,15 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-[var(--border)] mb-6 overflow-x-auto">
+      <div className="flex items-center gap-1 border-b border-[var(--stone-light)] mb-6 overflow-x-auto">
         {tabs.map((t2) => (
           <Link
             key={t2.key}
             href={`/organizations/${company.id}?tab=${t2.key}`}
             className={`px-4 py-2 -mb-px text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t2.key
-                ? "border-[var(--accent)] text-[var(--text)]"
-                : "border-transparent text-[var(--text-dim)] hover:text-[var(--text)]"
+                ? "border-[var(--signal)] text-[var(--ink)]"
+                : "border-transparent text-[var(--ink-40)] hover:text-[var(--ink)]"
             }`}
           >
             {t2.label}
@@ -320,9 +320,9 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <div className="space-y-6">
           {activeIssues.length === 0 && (
             <Card>
-              <CardBody className="py-10 flex flex-col items-center text-center gap-3">
-                <NoIssues />
-                <p className="text-[13px] text-[var(--text-dim)]">
+              <CardBody className="py-12 flex flex-col items-center text-center gap-4">
+                <EmptyStateMark size={80} />
+                <p className="text-[13px] text-[var(--ink-60)]">
                   {t("company.noOpenIssues", lang)}
                 </p>
               </CardBody>
@@ -333,9 +333,9 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
             if (list.length === 0) return null;
             return (
               <section key={key}>
-                <h3 className="text-[13px] font-semibold text-[var(--text-mid)] mb-2 uppercase tracking-wider">
+                <h3 className="text-[13px] font-semibold text-[var(--ink-60)] mb-2 uppercase tracking-wider">
                   {t(`company.urgency.${key}`, lang)}{" "}
-                  <span className="num text-[var(--text-dim)]">({list.length})</span>
+                  <span className="num text-[var(--ink-40)]">({list.length})</span>
                 </h3>
                 <div className="space-y-3">
                   {list.map((issue) => (
@@ -347,16 +347,16 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                           </Badge>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <h4 className="font-semibold text-[var(--text)] truncate">
+                              <h4 className="font-semibold text-[var(--ink)] truncate">
                                 {issue.titleAr}
                               </h4>
                               <Badge variant="accent">{issue.governmentBody}</Badge>
                               <Badge>{t(`issue.status.${issue.status}`, lang)}</Badge>
                             </div>
-                            <p className="text-[13px] text-[var(--text-mid)] line-clamp-2">
+                            <p className="text-[13px] text-[var(--ink-60)] line-clamp-2">
                               {issue.summaryAr}
                             </p>
-                            <div className="flex items-center gap-4 mt-2 text-[12px] text-[var(--text-dim)]">
+                            <div className="flex items-center gap-4 mt-2 text-[12px] text-[var(--ink-40)]">
                               <span>
                                 {t("issue.deadline", lang)}:{" "}
                                 <span className="num">
@@ -388,7 +388,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <div className="space-y-3">
           {resolvedIssues.length === 0 ? (
             <Card>
-              <CardBody className="py-8 text-center text-[var(--text-dim)] text-[13px]">
+              <CardBody className="py-8 text-center text-[var(--ink-40)] text-[13px]">
                 {t("company.noResolved", lang)}
               </CardBody>
             </Card>
@@ -402,15 +402,15 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                     </Badge>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h4 className="font-semibold text-[var(--text)] truncate">
+                        <h4 className="font-semibold text-[var(--ink)] truncate">
                           {issue.titleAr}
                         </h4>
                         <Badge variant="accent">{issue.governmentBody}</Badge>
                       </div>
-                      <p className="text-[13px] text-[var(--text-mid)] line-clamp-2">
+                      <p className="text-[13px] text-[var(--ink-60)] line-clamp-2">
                         {issue.summaryAr}
                       </p>
-                      <div className="text-[12px] text-[var(--text-dim)] num mt-1">
+                      <div className="text-[12px] text-[var(--ink-40)] num mt-1">
                         {fmtDate(issue.resolvedAt)}
                       </div>
                     </div>
@@ -426,7 +426,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <>
           {documents.length === 0 ? (
             <Card>
-              <CardBody className="py-8 text-center text-[var(--text-dim)] text-[13px]">
+              <CardBody className="py-8 text-center text-[var(--ink-40)] text-[13px]">
                 {t("company.noDocuments", lang)}
               </CardBody>
             </Card>
@@ -453,7 +453,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                           {d.extractionStatus}
                         </Badge>
                       </Td>
-                      <Td className="num text-[var(--text-dim)]">
+                      <Td className="num text-[var(--ink-40)]">
                         {fmtDate(d.createdAt)}
                       </Td>
                     </Tr>
@@ -474,12 +474,12 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
           </Card>
           <Card>
             <CardHeader>
-              <h2 className="font-semibold text-[var(--text)]">
+              <h2 className="font-semibold text-[var(--ink)]">
                 {t("company.archive", lang)}
               </h2>
             </CardHeader>
             <CardBody className="space-y-3">
-              <p className="text-[13px] text-[var(--text-mid)]">
+              <p className="text-[13px] text-[var(--ink-60)]">
                 {lang === "ar"
                   ? "يمكنك إخفاء هذه الشركة من القوائم عبر الأرشفة."
                   : "Archive this company to hide it from your lists."}
@@ -494,27 +494,27 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         <>
           {timeline.length === 0 ? (
             <Card>
-              <CardBody className="py-8 text-center text-[var(--text-dim)] text-[13px]">
+              <CardBody className="py-8 text-center text-[var(--ink-40)] text-[13px]">
                 {t("company.noActivity", lang)}
               </CardBody>
             </Card>
           ) : (
             <Card>
               <CardBody className="p-0">
-                <ul className="relative ms-4 my-4 border-s border-[var(--border)]">
+                <ul className="relative ms-4 my-4 border-s border-[var(--stone-light)]">
                   {timeline.map((e, idx) => (
                     <li key={idx} className="ps-4 pe-5 py-3 relative">
-                      <span className="absolute -start-[5px] top-4 h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+                      <span className="absolute -start-[5px] top-4 h-2.5 w-2.5 rounded-full bg-[var(--signal)]" />
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[12px] text-[var(--text-dim)]">
+                          <div className="text-[12px] text-[var(--ink-40)]">
                             {t(`company.timeline.${e.kind}`, lang)}
                           </div>
-                          <div className="text-[13px] text-[var(--text)] truncate">
+                          <div className="text-[13px] text-[var(--ink)] truncate">
                             {e.href ? (
                               <Link
                                 href={e.href}
-                                className="hover:text-[var(--accent)]"
+                                className="hover:text-[var(--signal)]"
                               >
                                 {e.label}
                               </Link>
@@ -523,7 +523,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                             )}
                           </div>
                         </div>
-                        <span className="num text-[12px] text-[var(--text-dim)] shrink-0">
+                        <span className="num text-[12px] text-[var(--ink-40)] shrink-0">
                           {fmtDate(e.at)}
                         </span>
                       </div>
@@ -543,12 +543,12 @@ function StatMini({ label, value }: { label: string; value: number | string }) {
   return (
     <Card>
       <CardBody>
-        <div className="text-[11px] uppercase tracking-wider text-[var(--text-dim)] font-medium">
+        <div className="text-[11px] uppercase tracking-wider text-[var(--ink-40)] font-medium">
           {label}
         </div>
         <div
-          className="font-display-en text-[20px] leading-none mt-1.5 text-[var(--text)]"
-          style={{ fontWeight: 400 }}
+          className="text-[20px] leading-none mt-1.5 text-[var(--ink)]"
+          style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
         >
           <span className="num">{value}</span>
         </div>

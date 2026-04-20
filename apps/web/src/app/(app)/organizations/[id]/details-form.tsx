@@ -96,7 +96,7 @@ export function CompanyDetailsForm({ company, lang }: { company: CompanyInput; l
       </div>
 
       {state?.error === "duplicate_identifier" && (
-        <p className="text-[13px] text-[var(--red)]">
+        <p className="text-[13px] text-[var(--state-overdue)]">
           {lang === "ar"
             ? "أحد المعرفات مستخدم في شركة أخرى."
             : "One of the identifiers is already in use by another company."}

@@ -5,33 +5,43 @@
 :root {
   color-scheme: light;
 
-  /* Font stacks */
+  /* Font stacks
+     Fraunces is loaded but reserved — used only via .font-display-en on
+     specific surfaces (404 headline, empty-state sentence, first-login
+     welcome). Default display is Inter. */
   --font-sans: var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-display: var(--font-serif), Georgia, serif;
   --font-mono-stack: var(--font-mono), "SF Mono", Consolas, monospace;
-  --font-arabic: var(--font-ar), "Readex Pro", "IBM Plex Sans Arabic", "Geeza Pro", system-ui, sans-serif;
+  --font-arabic: var(--font-ar), "Tajawal", "Geeza Pro", system-ui, sans-serif;
 
-  /* Color tokens — Slate warm canvas */
-  --bg: #F5F5F0;
-  --surface: #FAFAF7;
-  --card: #FFFFFF;
-  --border: #E5E4DC;
-  --border-s: #CECCC0;
-  --text: #1A1A14;
-  --text-mid: #4A4A3C;
-  --text-dim: #9A9A88;
-  --accent: #1E3A8A;
-  --accent-mid: #2D52B8;
-  --accent-l: #EEF2FF;
-  --accent-xl: #F5F7FF;
-  --red: #B91C1C;
-  --red-l: #FEF2F2;
-  --green: #065F46;
-  --green-l: #ECFDF5;
-  --amber: #92400E;
-  --amber-l: #FFFBEB;
-  --teal: #0E7490;
-  --teal-l: #F0FDFA;
+  /* Paper — cream canvas (brand) */
+  --paper:          #F2EEE6;
+  --paper-low:      #F7F4EE;
+  --paper-deep:     #E8E3D7;
+
+  /* Stone — decorative rules and borders */
+  --stone:          #C9C2B3;
+  --stone-light:    #DDD8CC;
+
+  /* Ink — deep navy text scale */
+  --ink:            #0E1628;
+  --ink-80:         #2A3349;
+  --ink-60:         #4E5568;
+  --ink-40:         #8B91A0;
+  --ink-20:         #C4C7CF;
+
+  /* Signal — the only saturated colour */
+  --signal:         #1E3A8A;
+  --signal-deep:    #152C6B;
+  --signal-tint:    #E8ECF5;
+
+  /* Functional state — desaturated tonal system, product-UI only */
+  --state-overdue:        #8B2635;
+  --state-overdue-tint:   rgba(139, 38, 53, 0.08);
+  --state-resolved:       #1F6F43;
+  --state-resolved-tint:  rgba(31, 111, 67, 0.08);
+  --state-pending:        #B8860B;
+  --state-pending-tint:   rgba(184, 134, 11, 0.08);
 }
 
 html {
@@ -40,8 +50,8 @@ html {
 
 body {
   min-height: 100vh;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--paper);
+  color: var(--ink);
   font-size: 14px;
   line-height: 1.55;
 }
@@ -50,8 +60,9 @@ html[lang="en"] body { font-family: var(--font-sans); }
 html[lang="ar"] body {
   font-family: var(--font-arabic);
   font-size: 16.5px;
-  line-height: 1.9;
+  line-height: 1.7;
   font-weight: 400;
+  letter-spacing: 0;
 }
 
 /* Arabic legibility floor — never render below 14px, bump xs/sm one step.
@@ -64,43 +75,51 @@ html[lang="ar"] .text-\[13px\] {
 html[lang="ar"] .text-xs { font-size: 14px; }
 html[lang="ar"] .text-sm { font-size: 15px; }
 
-/* Display / font utilities */
-.font-display-en { font-family: var(--font-display); }
-html[lang="ar"] .font-display-en { font-family: var(--font-arabic); font-weight: 600; }
+/* Tajawal breaks under letter-spacing — strip it on Arabic surfaces. */
+html[lang="ar"] * {
+  letter-spacing: 0 !important;
+}
+
+/* Display font utility — Fraunces italic, reserved for the three surfaces
+   called out in the brand brief: 404 headline, empty-state sentence,
+   first-login welcome line. Do not use for page headings or body. */
+.font-display-en { font-family: var(--font-display); font-style: italic; }
+html[lang="ar"] .font-display-en { font-family: var(--font-arabic); font-weight: 600; font-style: normal; }
 
 .font-mono { font-family: var(--font-mono-stack); letter-spacing: -0.01em; }
 
 .text-ar { font-family: var(--font-arabic) !important; direction: rtl; }
 
+/* Tabular numerals — do not force mono on Arabic surfaces so that
+   Arabic-Indic digits render in Tajawal. */
 .num {
-  font-family: var(--font-mono-stack);
   font-variant-numeric: tabular-nums;
   direction: ltr;
   unicode-bidi: isolate;
 }
+html[lang="en"] .num { font-family: var(--font-mono-stack); }
+html[lang="ar"] .num { font-family: var(--font-arabic); direction: rtl; }
 
 /* Directional icon flip helper for RTL */
 [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
 
-/* Animations */
+/* Motion — respect reduced-motion and keep durations under 200ms. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(2px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.fade-in { animation: fadeIn 200ms ease-out both; }
+.fade-in { animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-@keyframes urgentPulse {
-  0%, 100% { border-color: var(--red); }
-  50% { border-color: rgba(185, 28, 28, 0.4); }
-}
-.urgent-pulse { animation: urgentPulse 2s ease-in-out infinite; }
-
-@keyframes skeletonShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
+/* Skeleton placeholder — static, no shimmer. Reserves layout space while
+   server data loads. Motion removed deliberately. */
 .skeleton {
-  background: linear-gradient(90deg, var(--border) 0%, rgba(255,255,255,0.6) 50%, var(--border) 100%);
-  background-size: 200% 100%;
-  animation: skeletonShimmer 1.5s linear infinite;
+  background: var(--ink-20);
+  opacity: 0.35;
 }

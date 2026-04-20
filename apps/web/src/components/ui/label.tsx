@@ -6,7 +6,7 @@ export function Label({ className, ...rest }: LabelHTMLAttributes<HTMLLabelEleme
   return (
     <label
       className={cn(
-        "block text-[13px] font-medium text-[var(--text-mid)] mb-1",
+        "block text-[13px] font-medium text-[var(--ink-60)] mb-1",
         className
       )}
       {...rest}

@@ -9,15 +9,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-[var(--accent)] text-white hover:bg-[var(--accent-mid)] active:scale-[0.98] focus:border-[var(--accent)]",
+    "bg-[var(--signal)] text-[var(--paper)] hover:bg-[var(--signal-deep)]",
   secondary:
-    "bg-transparent text-[var(--text-mid)] border border-[var(--border)] hover:bg-[var(--surface)] focus:border-[var(--accent)]",
+    "bg-transparent text-[var(--ink)] border border-[var(--ink)] hover:bg-[var(--ink)] hover:text-[var(--paper)]",
   ghost:
-    "bg-transparent text-[var(--text-mid)] hover:bg-[var(--surface)] focus:border-[var(--accent)]",
+    "bg-transparent text-[var(--ink-80)] hover:bg-[var(--paper-low)]",
   danger:
-    "bg-[var(--red)] text-white hover:brightness-110 focus:border-[var(--red)]",
-  // Legacy alias — "gold" used to mean a warm accent; route to primary.
-  gold: "bg-[var(--accent)] text-white hover:bg-[var(--accent-mid)] active:scale-[0.98]"
+    "bg-[var(--state-overdue)] text-[var(--paper)] hover:bg-[var(--ink)]",
+  // Legacy alias — routes to primary.
+  gold: "bg-[var(--signal)] text-[var(--paper)] hover:bg-[var(--signal-deep)]"
 };
 
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -35,7 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cn(
-        "inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-[120ms] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] active:scale-[0.98] active:transition-transform active:duration-[50ms] disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center rounded-[6px] font-semibold tracking-[0.01em] transition-colors duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none focus:ring-2 focus:ring-[var(--signal)] focus:ring-offset-2 focus:ring-offset-[var(--paper)] disabled:pointer-events-none disabled:opacity-50",
         variants[variant],
         sizes[size],
         className

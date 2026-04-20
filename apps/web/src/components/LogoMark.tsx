@@ -1,43 +1,57 @@
 /* eslint-disable @next/next/no-img-element */
-// Plain <img> is intentional — we want the page to render even if
-// /logo.png is missing (no next/image build-time optimization pass).
+// Plain <img> so the page renders even if the SVG asset is missing —
+// no next/image build-time optimisation pass.
+
+import type { Lang } from "@/lib/i18n";
 
 type Size = "sm" | "lg";
+type Surface = "paper" | "ink";
+
+function logoSrc(lang: Lang, surface: Surface): string {
+  const locale = lang === "ar" ? "ar" : "en";
+  const onInk = surface === "ink" ? "-onink" : "";
+  return `/logos/makyn-${locale}${onInk}.svg`;
+}
 
 export function LogoMark({
+  lang,
+  surface = "paper",
   className = "",
   title = "MAKYN"
 }: {
+  lang: Lang;
+  surface?: Surface;
   className?: string;
   title?: string;
 }) {
-  // Icon-scale usage: default 32px tall, native aspect ratio preserved.
   return (
     <img
-      src="/logo.png"
+      src={logoSrc(lang, surface)}
       alt={title}
       className={`h-8 w-auto ${className}`}
-      style={{ width: "auto" }}
     />
   );
 }
 
 export function Wordmark({
-  className = "",
+  lang,
+  surface = "paper",
   size = "sm",
+  className = "",
   title = "MAKYN"
 }: {
-  className?: string;
+  lang: Lang;
+  surface?: Surface;
   size?: Size;
+  className?: string;
   title?: string;
 }) {
   const sizeClass = size === "lg" ? "h-16" : "h-8";
   return (
     <img
-      src="/logo.png"
+      src={logoSrc(lang, surface)}
       alt={title}
       className={`${sizeClass} w-auto ${className}`}
-      style={{ width: "auto" }}
     />
   );
 }

@@ -277,13 +277,13 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <button type="button" onClick={onBack} className="text-[13px] text-[var(--accent)] hover:underline mb-3 block">
+        <button type="button" onClick={onBack} className="text-[13px] text-[var(--signal)] hover:underline mb-3 block">
           {isAr ? "→ رجوع" : "← Back"}
         </button>
-        <h1 className="text-[20px] font-semibold text-[var(--text)]">
+        <h1 className="text-[20px] font-semibold text-[var(--ink)]">
           {isAr ? "رفع المستندات" : "Upload Documents"}
         </h1>
-        <p className="text-[13px] text-[var(--text-mid)] mt-1">
+        <p className="text-[13px] text-[var(--ink-60)] mt-1">
           {isAr
             ? "ارفع ما لديك — سيستخرج الذكاء الاصطناعي البيانات تلقائياً"
             : "Upload what you have — AI will extract the data automatically"}
@@ -292,7 +292,7 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
 
       {/* Required section */}
       <section className="space-y-3">
-        <h2 className="text-[11px] font-semibold text-[var(--text-dim)] uppercase tracking-wider">
+        <h2 className="text-[11px] font-semibold text-[var(--ink-40)] uppercase tracking-wider">
           {isAr ? "المستندات المطلوبة" : "Required Documents"}
         </h2>
         <div className="space-y-3">
@@ -337,21 +337,21 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
 
       {/* Add more section */}
       <section>
-        <h2 className="text-[11px] font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-3">
+        <h2 className="text-[11px] font-semibold text-[var(--ink-40)] uppercase tracking-wider mb-3">
           {isAr ? "إضافة مستندات أخرى" : "Add Other Documents"}
         </h2>
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="w-full border border-dashed border-[var(--border-s)] rounded-lg py-3 text-[13px] text-[var(--text-mid)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors font-medium"
+          className="w-full border border-dashed border-[var(--stone)] rounded-lg py-3 text-[13px] text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors font-medium"
         >
           + {isAr ? "إضافة مستند آخر" : "Add Another Document"}
         </button>
       </section>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
-        <div className="text-[11px] text-[var(--text-dim)]">
+      <div className="flex items-center justify-between pt-2 border-t border-[var(--stone-light)]">
+        <div className="text-[11px] text-[var(--ink-40)]">
           {isAr
             ? "السجل التجاري مطلوب للمتابعة"
             : "Commercial Registration required to continue"}

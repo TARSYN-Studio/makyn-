@@ -123,19 +123,19 @@ export function DocumentUploadCard({
     <div
       className={`relative border rounded-lg p-4 transition-colors ${
         skipped
-          ? "border-[var(--border)] bg-[var(--surface)] opacity-60"
+          ? "border-[var(--stone-light)] bg-[var(--paper-low)] opacity-60"
           : status === "COMPLETED"
-            ? "border-[var(--green)]/30 bg-[var(--green-l)]"
+            ? "border-[var(--state-resolved)]/30 bg-[var(--state-resolved-tint)]"
             : failed
-              ? "border-[var(--amber)]/30 bg-[var(--amber-l)]"
-              : "border-[var(--border)] bg-[var(--card)]"
+              ? "border-[var(--state-pending)]/30 bg-[var(--state-pending-tint)]"
+              : "border-[var(--stone-light)] bg-[var(--paper-low)]"
       }`}
     >
       {removable && (
         <button
           type="button"
           onClick={onRemove}
-          className="absolute top-2 end-2 text-[var(--text-dim)] hover:text-[var(--red)] text-lg leading-none"
+          className="absolute top-2 end-2 text-[var(--ink-40)] hover:text-[var(--state-overdue)] text-lg leading-none"
           aria-label="Remove"
         >
           ×
@@ -144,11 +144,11 @@ export function DocumentUploadCard({
 
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[var(--text)] text-[13px]">
+          <p className="font-semibold text-[var(--ink)] text-[13px]">
             {isAr ? nameAr : nameEn}
-            {required && <span className="text-[var(--red)] ms-1">*</span>}
+            {required && <span className="text-[var(--state-overdue)] ms-1">*</span>}
           </p>
-          <p className="text-[11px] text-[var(--text-mid)] mt-0.5">{isAr ? descriptionAr : nameEn}</p>
+          <p className="text-[11px] text-[var(--ink-60)] mt-0.5">{isAr ? descriptionAr : nameEn}</p>
         </div>
         {docStatus && !failed && (
           <div className="flex-shrink-0">
@@ -160,39 +160,39 @@ export function DocumentUploadCard({
       {!skipped && (
         <div className="mt-3">
           {docStatus?.documentId && !failed ? (
-            <p className="text-[11px] text-[var(--text-mid)] truncate">
-              <span className="text-[var(--green)]">✓</span> {docStatus.fileName ?? "uploaded"}
+            <p className="text-[11px] text-[var(--ink-60)] truncate">
+              <span className="text-[var(--state-resolved)]">✓</span> {docStatus.fileName ?? "uploaded"}
             </p>
           ) : failed && docStatus?.documentId ? (
             <div className="space-y-2">
-              <p className="text-[11px] text-[var(--amber)]">
+              <p className="text-[11px] text-[var(--state-pending)]">
                 {friendlyError(docStatus.extractionError, isAr)}
               </p>
               <div className="flex items-center gap-3 text-[11px]">
                 <button
                   type="button"
                   onClick={() => inputRef.current?.click()}
-                  className="font-medium text-[var(--amber)] underline underline-offset-2 hover:opacity-80"
+                  className="font-medium text-[var(--state-pending)] underline underline-offset-2 hover:opacity-80"
                 >
                   {isAr ? "إعادة المحاولة" : "Retry"}
                 </button>
-                <span className="text-[var(--amber)]/60">·</span>
+                <span className="text-[var(--state-pending)]/60">·</span>
                 {skippable && !required && (
                   <button
                     type="button"
                     onClick={() => onSkippedChange(true)}
-                    className="font-medium text-[var(--amber)] hover:opacity-80"
+                    className="font-medium text-[var(--state-pending)] hover:opacity-80"
                   >
                     {isAr ? "إدخال يدوي لاحقاً" : "Enter manually"}
                   </button>
                 )}
               </div>
               {docStatus.extractionError && (
-                <details className="text-[11px] text-[var(--amber)]/70">
+                <details className="text-[11px] text-[var(--state-pending)]/70">
                   <summary className="cursor-pointer hover:opacity-100">
                     {isAr ? "عرض التفاصيل التقنية" : "See technical details"}
                   </summary>
-                  <pre className="mt-1 whitespace-pre-wrap break-words font-mono bg-[var(--amber-l)] rounded p-2">
+                  <pre className="mt-1 whitespace-pre-wrap break-words font-mono bg-[var(--state-pending-tint)] rounded p-2">
                     {docStatus.extractionError}
                   </pre>
                 </details>
@@ -206,19 +206,19 @@ export function DocumentUploadCard({
               onDragOver={(e) => e.preventDefault()}
               onClick={() => inputRef.current?.click()}
               onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-              className="border border-dashed border-[var(--border-s)] hover:border-[var(--accent)] rounded-lg p-3 text-center cursor-pointer transition-colors"
+              className="border border-dashed border-[var(--stone)] hover:border-[var(--signal)] rounded-lg p-3 text-center cursor-pointer transition-colors"
             >
               {uploading ? (
-                <span className="text-[11px] text-[var(--accent)] animate-pulse">
+                <span className="text-[11px] text-[var(--signal)]">
                   {isAr ? "جاري الرفع..." : "Uploading..."}
                 </span>
               ) : (
-                <span className="text-[11px] text-[var(--text-mid)]">
+                <span className="text-[11px] text-[var(--ink-60)]">
                   {isAr
                     ? "انقر لرفع الملف أو اسحب وأفلت"
                     : "Click to upload or drag & drop"}
                   <br />
-                  <span className="text-[var(--text-dim)]">PDF / PNG / JPG / HEIC — 10 MB max</span>
+                  <span className="text-[var(--ink-40)]">PDF / PNG / JPG / HEIC — 10 MB max</span>
                 </span>
               )}
             </div>
@@ -230,7 +230,7 @@ export function DocumentUploadCard({
             accept=".pdf,.png,.jpg,.jpeg,.heic"
             onChange={handleInputChange}
           />
-          {error && <p className="text-[11px] text-[var(--red)] mt-1">{error}</p>}
+          {error && <p className="text-[11px] text-[var(--state-overdue)] mt-1">{error}</p>}
         </div>
       )}
 
@@ -240,22 +240,22 @@ export function DocumentUploadCard({
             type="checkbox"
             checked={false}
             onChange={(e) => onSkippedChange(e.target.checked)}
-            className="w-3.5 h-3.5 rounded accent-[var(--accent)]"
+            className="w-3.5 h-3.5 rounded accent-[var(--signal)]"
           />
-          <span className="text-[11px] text-[var(--text-mid)]">
+          <span className="text-[11px] text-[var(--ink-60)]">
             {isAr ? "سأضيفه لاحقاً" : "Add later"}
           </span>
         </label>
       )}
 
       {skipped && (
-        <p className="mt-2 text-[11px] text-[var(--text-mid)] flex items-center gap-2">
-          <span className="text-[var(--text-dim)]">✓</span>
+        <p className="mt-2 text-[11px] text-[var(--ink-60)] flex items-center gap-2">
+          <span className="text-[var(--ink-40)]">✓</span>
           {isAr ? "سيُضاف لاحقاً" : "Skipping"}
-          <span className="text-[var(--text-dim)]">·</span>
+          <span className="text-[var(--ink-40)]">·</span>
           <button
             type="button"
-            className="text-[var(--accent)] hover:text-[var(--accent-mid)] underline underline-offset-2"
+            className="text-[var(--signal)] hover:text-[var(--signal-deep)] underline underline-offset-2"
             onClick={() => onSkippedChange(false)}
           >
             {isAr ? "تغيير" : "change"}
