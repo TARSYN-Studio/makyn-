@@ -66,10 +66,16 @@ export function Badge({
   ...rest
 }: HTMLAttributes<HTMLSpanElement> & { variant?: AnyVariant }) {
   const resolved = resolveVariant(variant);
+  // Locale-aware typography: EN renders uppercase + tracked at 11px;
+  // AR renders sentence-case at 12px semibold — slightly larger to
+  // compensate for Tajawal's smaller x-height at 11px, and tracking-free
+  // because Arabic breaks under letter-spacing.
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-[2px] ps-2 pe-2 py-[3px] text-[11px] font-medium uppercase tracking-[0.02em]",
+        "inline-flex items-center rounded-[2px] ps-2 pe-2 py-[3px] font-semibold",
+        "[html[lang=en]_&]:text-[11px] [html[lang=en]_&]:uppercase [html[lang=en]_&]:tracking-[0.02em]",
+        "[html[lang=ar]_&]:text-[12px]",
         tones[resolved],
         className
       )}

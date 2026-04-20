@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardText, Check } from "@phosphor-icons/react";
+import { ClipboardList as ClipboardText, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { t, type Lang } from "@/lib/i18n";

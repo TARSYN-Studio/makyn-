@@ -1,14 +1,14 @@
 import Link from "next/link";
 import {
-  Buildings,
-  Warning,
-  ClockCountdown,
-  CheckCircle,
-  CaretUp,
-  CaretDown,
+  Building2 as Buildings,
+  AlertTriangle as Warning,
+  Clock as ClockCountdown,
+  CheckCircle2 as CheckCircle,
+  ChevronUp as CaretUp,
+  ChevronDown as CaretDown,
   Minus,
-  CaretRight
-} from "@phosphor-icons/react/dist/ssr";
+  ChevronRight as CaretRight
+} from "lucide-react";
 
 import { ChannelType, ExtractionStatus, IssueStatus, prisma } from "@makyn/db";
 import { calculateCompanyStatus, type IssueForStatus } from "@makyn/core";
@@ -29,27 +29,48 @@ const OPEN_STATUSES = [
   IssueStatus.ESCALATED
 ];
 
+// Deterministic composition via formatToParts — runtime Intl output varies
+// by Node ICU build, so we extract day/month/year individually and
+// reassemble in a locale-explicit order.
+function partsOf(
+  d: Date,
+  locale: string,
+  calendar?: string
+): { day: string; month: string; year: string } {
+  const fmt = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    ...(calendar ? { calendar } : {})
+  });
+  const pick = (parts: Intl.DateTimeFormatPart[], type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const parts = fmt.formatToParts(d);
+  return {
+    day: pick(parts, "day"),
+    month: pick(parts, "month"),
+    year: pick(parts, "year")
+  };
+}
+
 function formatHijri(d: Date): string {
   try {
-    // Force day-month-year order so output reads as "٢ ذو القعدة ١٤٤٧".
-    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic-nu-arab", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).format(d);
+    // Umm al-Qura — the civil Saudi calendar. Arabic-Indic numerals via nu=arab.
+    const { day, month, year } = partsOf(d, "ar-SA-u-ca-islamic-umalqura-nu-arab");
+    return `${day} ${month} ${year} هـ`;
   } catch {
     return "";
   }
 }
 
 function formatGregorian(d: Date, lang: Lang): string {
-  // Arabic: "ar-SA" reliably produces day-month-year with Arabic-Indic numerals.
-  const locale = lang === "ar" ? "ar-SA" : "en-GB";
-  return new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(d);
+  if (lang === "ar") {
+    const { day, month, year } = partsOf(d, "ar-SA-u-ca-gregory-nu-arab", "gregory");
+    return `${day} ${month} ${year}`;
+  }
+  // US order for English: "April 20, 2026".
+  const { day, month, year } = partsOf(d, "en-US", "gregory");
+  return `${month} ${day}, ${year}`;
 }
 
 function relativeDays(target: Date): number {
@@ -358,7 +379,7 @@ export default async function DashboardPage() {
                 >
                   <span className="text-[var(--ink-40)]">{nextAction.prefix}:</span>
                   <span className="text-[var(--ink)]">{nextAction.label}</span>
-                  <CaretRight className="h-4 w-4 flip-rtl" weight="regular" />
+                  <CaretRight className="h-4 w-4 flip-rtl" />
                 </Link>
               )}
             </div>
@@ -622,7 +643,8 @@ export default async function DashboardPage() {
   );
 }
 
-type StatIcon = import("@phosphor-icons/react").Icon;
+import type { LucideIcon } from "lucide-react";
+type StatIcon = LucideIcon;
 
 function StatCard({
   label,
@@ -665,7 +687,7 @@ function StatCard({
           </div>
           <Icon
             className="h-5 w-5 shrink-0"
-            weight="regular"
+           
             style={{ color: "var(--ink-60)" }}
           />
         </div>
@@ -676,7 +698,7 @@ function StatCard({
           {value}
         </div>
         <div className="mt-2 flex items-center gap-1 text-[12px]">
-          <TrendIcon className="h-3.5 w-3.5" weight="regular" style={{ color: trendColor }} />
+          <TrendIcon className="h-3.5 w-3.5" style={{ color: trendColor }} />
           <span className="num" style={{ color: trendColor }}>
             {delta === 0 ? "—" : delta > 0 ? `+${delta}` : `${delta}`}
           </span>

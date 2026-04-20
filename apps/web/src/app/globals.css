@@ -103,7 +103,19 @@ html[lang="ar"] .num { font-family: var(--font-arabic); direction: rtl; }
 /* Directional icon flip helper for RTL */
 [dir="rtl"] .flip-rtl { transform: scaleX(-1); }
 
-/* Motion — respect reduced-motion and keep durations under 200ms. */
+/* Lucide icons: 1.5 stroke-width everywhere, currentColor. Specific sizes
+   are applied per-site via Tailwind h-/w- utilities. */
+.lucide {
+  stroke-width: 1.5;
+  color: currentColor;
+}
+
+/**
+ * CRITICAL — DO NOT REMOVE.
+ * Enforces prefers-reduced-motion across all app animations.
+ * Required for accessibility compliance and brand restraint voice.
+ * If you think you need to remove this, open a discussion first.
+ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
