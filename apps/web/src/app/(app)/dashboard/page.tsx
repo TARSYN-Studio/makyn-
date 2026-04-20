@@ -29,27 +29,48 @@ const OPEN_STATUSES = [
   IssueStatus.ESCALATED
 ];
 
+// Deterministic composition via formatToParts — runtime Intl output varies
+// by Node ICU build, so we extract day/month/year individually and
+// reassemble in a locale-explicit order.
+function partsOf(
+  d: Date,
+  locale: string,
+  calendar?: string
+): { day: string; month: string; year: string } {
+  const fmt = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    ...(calendar ? { calendar } : {})
+  });
+  const pick = (parts: Intl.DateTimeFormatPart[], type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const parts = fmt.formatToParts(d);
+  return {
+    day: pick(parts, "day"),
+    month: pick(parts, "month"),
+    year: pick(parts, "year")
+  };
+}
+
 function formatHijri(d: Date): string {
   try {
-    // Force day-month-year order so output reads as "٢ ذو القعدة ١٤٤٧".
-    return new Intl.DateTimeFormat("ar-SA-u-ca-islamic-nu-arab", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).format(d);
+    // Umm al-Qura — the civil Saudi calendar. Arabic-Indic numerals via nu=arab.
+    const { day, month, year } = partsOf(d, "ar-SA-u-ca-islamic-umalqura-nu-arab");
+    return `${day} ${month} ${year} هـ`;
   } catch {
     return "";
   }
 }
 
 function formatGregorian(d: Date, lang: Lang): string {
-  // Arabic: "ar-SA" reliably produces day-month-year with Arabic-Indic numerals.
-  const locale = lang === "ar" ? "ar-SA" : "en-GB";
-  return new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(d);
+  if (lang === "ar") {
+    const { day, month, year } = partsOf(d, "ar-SA-u-ca-gregory-nu-arab", "gregory");
+    return `${day} ${month} ${year}`;
+  }
+  // US order for English: "April 20, 2026".
+  const { day, month, year } = partsOf(d, "en-US", "gregory");
+  return `${month} ${day}, ${year}`;
 }
 
 function relativeDays(target: Date): number {
