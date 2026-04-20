@@ -29,7 +29,7 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-[var(--paper)] flex flex-col">
-      <header className="h-14 bg-[var(--paper-low)] border-b border-[var(--stone-light)] flex items-center px-4 md:px-6">
+      <header className="h-16 bg-[var(--paper-low)] border-b border-[var(--stone-light)] flex items-center px-4 md:px-6">
         {/* Left: logo + wordmark */}
         <Link href="/dashboard" className="flex items-center me-6 shrink-0">
           <Wordmark size="sm" lang={lang} />

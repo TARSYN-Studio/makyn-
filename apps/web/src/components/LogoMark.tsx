@@ -1,6 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 // Plain <img> so the page renders even if the SVG asset is missing —
 // no next/image build-time optimisation pass.
+//
+// `block` kills the baseline-descender whitespace that an inline <img>
+// carries by default, which previously clipped the top of the glyphs
+// when the nav container was tight.
 
 import type { Lang } from "@/lib/i18n";
 
@@ -28,7 +32,7 @@ export function LogoMark({
     <img
       src={logoSrc(lang, surface)}
       alt={title}
-      className={`h-8 w-auto ${className}`}
+      className={`block h-10 w-auto ${className}`}
     />
   );
 }
@@ -46,12 +50,15 @@ export function Wordmark({
   className?: string;
   title?: string;
 }) {
-  const sizeClass = size === "lg" ? "h-16" : "h-8";
+  // sm is the nav/header lockup — bumped to 40px so the glyphs have
+  // enough device pixels to render without the top stroke clipping.
+  // lg remains 64px for the login / landing hero lockup.
+  const sizeClass = size === "lg" ? "h-16" : "h-10";
   return (
     <img
       src={logoSrc(lang, surface)}
       alt={title}
-      className={`${sizeClass} w-auto ${className}`}
+      className={`block ${sizeClass} w-auto ${className}`}
     />
   );
 }
