@@ -17,8 +17,10 @@ const inter = Inter({
 // Fraunces is loaded but reserved — italic axis only, used for empty-state
 // hero sentences, the 404 headline, and the first-login welcome line.
 // Never for page headings, body, buttons, or form labels.
+// Variable font — must not declare `weight` when `axes` is set,
+// otherwise next/font errors at build: "Axes can only be defined for
+// variable fonts" (thrown when the weight array forces a static subset).
 const fraunces = Fraunces({
-  weight: ["400", "500"],
   style: ["italic"],
   axes: ["SOFT", "opsz"],
   variable: "--font-serif",
