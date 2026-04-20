@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 
 import { loginAction, type LoginState } from "@/actions/auth";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,8 @@ function SubmitButton({ lang }: { lang: Lang }) {
 export function LoginForm({ lang, next }: { lang: Lang; next?: string }) {
   const [state, action] = useFormState<LoginState, FormData>(loginAction, {});
   return (
+    <div className="space-y-4">
+    <OAuthButtons lang={lang} next={next} />
     <form action={action} className="space-y-4">
       <div>
         <Label htmlFor="email">{t("login.email", lang)}</Label>
@@ -37,5 +40,6 @@ export function LoginForm({ lang, next }: { lang: Lang; next?: string }) {
       )}
       <SubmitButton lang={lang} />
     </form>
+    </div>
   );
 }

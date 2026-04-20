@@ -66,6 +66,8 @@ export async function login(raw: unknown): Promise<LoginResult> {
 
   if (!user) return { ok: false, error: "invalid_credentials" };
   if (!user.isActive) return { ok: false, error: "inactive" };
+  // OAuth-only accounts have no passwordHash — can't log in with a password.
+  if (!user.passwordHash) return { ok: false, error: "invalid_credentials" };
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return { ok: false, error: "invalid_credentials" };

@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 
 import { signupAction, type SignupState } from "@/actions/auth";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,8 @@ export function SignupForm({
   const emailLocked = Boolean(presetEmail);
 
   return (
+    <div className="space-y-4">
+    {!emailLocked && <OAuthButtons lang={lang} next={next} />}
     <form action={action} className="space-y-4">
       <div>
         <Label htmlFor="fullName">{t("signup.fullName", lang)}</Label>
@@ -64,5 +67,6 @@ export function SignupForm({
       )}
       <SubmitButton lang={lang} />
     </form>
+    </div>
   );
 }

@@ -15,7 +15,7 @@ model User {
   id                String    @id @default(uuid())
   email             String    @unique
   emailVerifiedAt   DateTime?
-  passwordHash      String
+  passwordHash      String?
   fullName          String
   phoneNumber       String?   @unique
   phoneVerifiedAt   DateTime?
@@ -30,6 +30,7 @@ model User {
   channels            MessagingChannel[]
   channelTokens       ChannelConnectToken[]
   sessions            Session[]
+  oauthAccounts       OAuthAccount[]
   conversations       Conversation[]
   messages            Message[]
   issuesCreated       Issue[]               @relation("IssueCreator")
@@ -347,6 +348,28 @@ model Session {
   userAgent  String?
   ipAddress  String?
 
+  @@index([userId])
+}
+
+// ==========================================================================
+//  OAUTH ACCOUNTS — Google / Microsoft (Entra ID) social login.
+//  One row per (provider, providerAccountId). A User can have multiple
+//  linked providers. Users created via OAuth start with passwordHash=NULL
+//  and can add a password later; users who signed up with email/password
+//  can also link an OAuth provider later.
+// ==========================================================================
+
+model OAuthAccount {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String   // "google" | "microsoft"
+  providerAccountId String   // stable subject ("sub") from the ID token
+  email             String   // email from provider at time of link
+  createdAt         DateTime @default(now())
+  lastLoginAt       DateTime @default(now())
+
+  @@unique([provider, providerAccountId])
   @@index([userId])
 }
 
