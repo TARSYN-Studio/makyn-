@@ -20,6 +20,8 @@ model User {
   phoneNumber       String?   @unique
   phoneVerifiedAt   DateTime?
   preferredLanguage String    @default("ar")
+  theme             String    @default("light")
+  dockPosition      String    @default("side")
   role              UserRole  @default(SME_OWNER)
   isActive          Boolean   @default(true)
   createdAt         DateTime  @default(now())

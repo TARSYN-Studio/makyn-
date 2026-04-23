@@ -59,10 +59,14 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   const lang: Lang = (user?.preferredLanguage === "en" ? "en" : "ar");
+  const theme = user?.theme === "dark" ? "dark" : "light";
+  const dock = user?.dockPosition === "top" ? "top" : "side";
   return (
     <html
       lang={lang}
       dir={dirFor(lang)}
+      data-theme={theme}
+      data-dock={dock}
       className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${arabic.variable}`}
     >
       <body>{children}</body>

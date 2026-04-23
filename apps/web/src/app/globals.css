@@ -15,25 +15,35 @@
   --font-arabic: var(--font-ar), "Tajawal", "Geeza Pro", system-ui, sans-serif;
 
   /* Paper — cream canvas (brand) */
-  --paper:          #F2EEE6;
-  --paper-low:      #F7F4EE;
-  --paper-deep:     #E8E3D7;
+  --paper:          #EDE7DA;
+  --paper-low:      #F5F1E6;
+  --paper-deep:     #DED6C4;
+
+  /* Card surfaces that pop off the warm canvas */
+  --card:           #FFFFFF;
+  --card-warm:      #FBF7EE;
 
   /* Stone — decorative rules and borders */
-  --stone:          #C9C2B3;
-  --stone-light:    #DDD8CC;
+  --stone:          #B6AE99;
+  --stone-light:    #CFC7B3;
+  --stone-hair:     #E3DCCB;
 
   /* Ink — deep navy text scale */
-  --ink:            #0E1628;
-  --ink-80:         #2A3349;
-  --ink-60:         #4E5568;
-  --ink-40:         #8B91A0;
-  --ink-20:         #C4C7CF;
+  --ink:            #0A0F16;
+  --ink-80:         #1E2638;
+  --ink-60:         #434B5E;
+  --ink-40:         #7B8293;
+  --ink-20:         #BABEC8;
 
   /* Signal — the only saturated colour */
   --signal:         #1E3A8A;
   --signal-deep:    #152C6B;
-  --signal-tint:    #E8ECF5;
+  --signal-tint:    #DCE3F3;
+
+  /* Chrome — nav bar surface; cool off-white against warm canvas */
+  --chrome:         #FAFAF7;
+  --chrome-line:    #D8D4C8;
+  --chrome-hover:   #EFECE2;
 
   /* Functional state — desaturated tonal system, product-UI only */
   --state-overdue:        #8B2635;
@@ -41,7 +51,59 @@
   --state-resolved:       #1F6F43;
   --state-resolved-tint:  rgba(31, 111, 67, 0.08);
   --state-pending:        #B8860B;
-  --state-pending-tint:   rgba(184, 134, 11, 0.08);
+  --state-pending-tint:   rgba(184, 134, 11, 0.10);
+
+  /* Chrome geometry — consumed by sticky elements (approval bar, filter rails)
+     so they know how far to offset from the dock. Updated by [data-dock]. */
+  --dock-side-width: 248px;
+  --dock-top-height: 72px;
+  --dock-inline-start: var(--dock-side-width);
+  --dock-block-start: 0px;
+}
+
+html[data-dock="top"] {
+  --dock-inline-start: 0px;
+  --dock-block-start: var(--dock-top-height);
+}
+html[data-dock="side"] {
+  --dock-inline-start: var(--dock-side-width);
+  --dock-block-start: 0px;
+}
+
+/* Dark theme — users opt in via Settings → Appearance. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper:       #0B1017;
+  --paper-low:   #111823;
+  --paper-deep:  #050810;
+  --card:        #141B28;
+  --card-warm:   #1A2231;
+
+  --stone:       #3A4356;
+  --stone-light: #2A3244;
+  --stone-hair:  #1E2533;
+
+  --ink:         #EDE7DA;
+  --ink-80:      #D4CEC0;
+  --ink-60:      rgba(237, 231, 218, 0.70);
+  --ink-40:      rgba(237, 231, 218, 0.45);
+  --ink-20:      rgba(237, 231, 218, 0.22);
+
+  --signal:      #6E8EE8;
+  --signal-deep: #4A6FC7;
+  --signal-tint: rgba(110, 142, 232, 0.14);
+
+  --chrome:       #1A1D24;
+  --chrome-line:  #2B2F38;
+  --chrome-hover: #23272F;
+
+  --state-overdue:       #E56B7C;
+  --state-overdue-tint:  rgba(229, 107, 124, 0.14);
+  --state-resolved:      #5FB585;
+  --state-resolved-tint: rgba(95, 181, 133, 0.14);
+  --state-pending:       #E8B63A;
+  --state-pending-tint:  rgba(232, 182, 58, 0.14);
 }
 
 html {
@@ -86,6 +148,12 @@ html[lang="ar"] * {
 .font-display-en { font-family: var(--font-display); font-style: italic; }
 html[lang="ar"] .font-display-en { font-family: var(--font-arabic); font-weight: 600; font-style: normal; }
 
+/* Editorial Fraunces italic for hero sublines across the dashboard, issue
+   detail, and other surfaces. Same rule as font-display-en but scoped so
+   that the stricter brand-brief usage remains recognizable. */
+.font-display-it { font-family: var(--font-display); font-style: italic; font-weight: 400; }
+html[lang="ar"] .font-display-it { font-family: var(--font-arabic); font-style: normal; font-weight: 500; }
+
 .font-mono { font-family: var(--font-mono-stack); letter-spacing: -0.01em; }
 
 .text-ar { font-family: var(--font-arabic) !important; direction: rtl; }
@@ -110,6 +178,21 @@ html[lang="ar"] .num { font-family: var(--font-arabic); direction: rtl; }
   color: currentColor;
 }
 
+/* Elevation scale — layered soft shadows. Matches the prototype handoff;
+   card surfaces (--card) sit above --paper and use these to read as lifted.
+   Dark mode deepens the RGB so the shadow still reads against --card. */
+.elev-1 { box-shadow: 0 1px 2px rgba(10,15,22,0.06), 0 2px 6px rgba(10,15,22,0.04); }
+.elev-2 { box-shadow: 0 2px 4px rgba(10,15,22,0.06), 0 6px 16px rgba(10,15,22,0.08); }
+.elev-3 { box-shadow: 0 4px 8px rgba(10,15,22,0.08), 0 12px 28px rgba(10,15,22,0.10); }
+.elev-hero  { box-shadow: 0 1px 3px rgba(10,15,22,0.04), 0 8px 24px rgba(10,15,22,0.06), 0 24px 64px rgba(10,15,22,0.08); }
+.elev-float { box-shadow: 0 12px 28px rgba(10,15,22,0.18), 0 32px 72px rgba(10,15,22,0.22); }
+
+html[data-theme="dark"] .elev-1 { box-shadow: 0 1px 2px rgba(0,0,0,0.40), 0 2px 6px rgba(0,0,0,0.32); }
+html[data-theme="dark"] .elev-2 { box-shadow: 0 2px 4px rgba(0,0,0,0.40), 0 6px 16px rgba(0,0,0,0.38); }
+html[data-theme="dark"] .elev-3 { box-shadow: 0 4px 8px rgba(0,0,0,0.45), 0 12px 28px rgba(0,0,0,0.42); }
+html[data-theme="dark"] .elev-hero  { box-shadow: 0 1px 3px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.40), 0 24px 64px rgba(0,0,0,0.50); }
+html[data-theme="dark"] .elev-float { box-shadow: 0 12px 28px rgba(0,0,0,0.55), 0 32px 72px rgba(0,0,0,0.62); }
+
 /**
  * CRITICAL — DO NOT REMOVE.
  * Enforces prefers-reduced-motion across all app animations.
@@ -128,6 +211,20 @@ html[lang="ar"] .num { font-family: var(--font-arabic); direction: rtl; }
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-in { animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Motion primitives — shared keyframes referenced by Reveal/Stagger. */
+@keyframes stg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes breath {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.8); opacity: 0; }
+}
 
 /* Skeleton placeholder — static, no shimmer. Reserves layout space while
    server data loads. Motion removed deliberately. */
