@@ -8,6 +8,8 @@ import { destroySessionById } from "@/lib/session";
 import { requireUser } from "@/lib/session";
 
 const languageSchema = z.enum(["ar", "en"]);
+const themeSchema = z.enum(["light", "dark"]);
+const dockSchema = z.enum(["side", "top"]);
 
 export async function updateProfileAction(formData: FormData) {
   const user = await requireUser();
@@ -34,6 +36,30 @@ export async function setLanguageAction(formData: FormData) {
   await prisma.user.update({
     where: { id: user.id },
     data: { preferredLanguage: parsed.data }
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function setThemeAction(formData: FormData) {
+  const user = await requireUser();
+  const raw = formData.get("theme")?.toString();
+  const parsed = themeSchema.safeParse(raw);
+  if (!parsed.success) return;
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { theme: parsed.data }
+  });
+  revalidatePath("/", "layout");
+}
+
+export async function setDockAction(formData: FormData) {
+  const user = await requireUser();
+  const raw = formData.get("dockPosition")?.toString();
+  const parsed = dockSchema.safeParse(raw);
+  if (!parsed.success) return;
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { dockPosition: parsed.data }
   });
   revalidatePath("/", "layout");
 }

@@ -8,6 +8,9 @@ const AR: Dict = {
 
   "nav.dashboard": "لوحة القيادة",
   "nav.companies": "الشركات",
+  "nav.issues": "المسائل",
+  "nav.documents": "المستندات",
+  "nav.activity": "السجل",
   "nav.channels": "القنوات",
   "nav.settings": "الإعدادات",
   "nav.logout": "تسجيل الخروج",
@@ -271,6 +274,9 @@ const EN: Dict = {
 
   "nav.dashboard": "Dashboard",
   "nav.companies": "Organizations",
+  "nav.issues": "Issues",
+  "nav.documents": "Documents",
+  "nav.activity": "Activity",
   "nav.channels": "Channels",
   "nav.settings": "Settings",
   "nav.logout": "Sign out",

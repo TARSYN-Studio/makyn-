@@ -1,21 +1,21 @@
 import Link from "next/link";
 import {
-  Building2 as Buildings,
-  AlertTriangle as Warning,
-  Clock as ClockCountdown,
-  CheckCircle2 as CheckCircle,
-  ChevronUp as CaretUp,
-  ChevronDown as CaretDown,
-  Minus,
-  ChevronRight as CaretRight
+  Building2,
+  AlertTriangle,
+  Clock,
+  CheckCircle2,
+  ChevronRight
 } from "lucide-react";
 
 import { ChannelType, ExtractionStatus, IssueStatus, prisma } from "@makyn/db";
 import { calculateCompanyStatus, type IssueForStatus } from "@makyn/core";
 
-import { Badge, StatusDot } from "@/components/ui/badge";
-import { Card, CardBody } from "@/components/ui/card";
-import { PageFrame } from "@/components/PageFrame";
+import { LiftCard } from "@/components/motion/LiftCard";
+import { NumberTicker } from "@/components/motion/NumberTicker";
+import { ProgressRing } from "@/components/motion/ProgressRing";
+import { Reveal } from "@/components/motion/Reveal";
+import { SectionHead } from "@/components/motion/SectionHead";
+import { StatusDot } from "@/components/motion/StatusDot";
 import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { listUserOrgIds } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
@@ -55,7 +55,6 @@ function partsOf(
 
 function formatHijri(d: Date): string {
   try {
-    // Umm al-Qura — the civil Saudi calendar. Arabic-Indic numerals via nu=arab.
     const { day, month, year } = partsOf(d, "ar-SA-u-ca-islamic-umalqura-nu-arab");
     return `${day} ${month} ${year} هـ`;
   } catch {
@@ -68,7 +67,6 @@ function formatGregorian(d: Date, lang: Lang): string {
     const { day, month, year } = partsOf(d, "ar-SA-u-ca-gregory-nu-arab", "gregory");
     return `${day} ${month} ${year}`;
   }
-  // US order for English: "April 20, 2026".
   const { day, month, year } = partsOf(d, "en-US", "gregory");
   return `${month} ${day}, ${year}`;
 }
@@ -85,8 +83,6 @@ function deadlineLabel(d: Date, lang: Lang): string {
   return t("dashboard.deadline.in", lang, { count: days });
 }
 
-// Intl.RelativeTimeFormat handles Arabic dual/plural correctly:
-// -1 day → "أمس" · -2 days → "قبل يومين" · -5 days → "قبل 5 أيام".
 function relTime(date: Date, lang: Lang): string {
   const rtf = new Intl.RelativeTimeFormat(lang === "ar" ? "ar-SA" : "en-GB", {
     numeric: "auto"
@@ -103,6 +99,7 @@ function relTime(date: Date, lang: Lang): string {
 export default async function DashboardPage() {
   const user = await requireUser();
   const lang: Lang = user.preferredLanguage === "en" ? "en" : "ar";
+  const isAr = lang === "ar";
   const now = new Date();
 
   // Aggregate scope per v1.4 Q5 answer: show metrics across every org the
@@ -117,16 +114,12 @@ export default async function DashboardPage() {
   const in30d = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const in72h = new Date(now.getTime() + 72 * 60 * 60 * 1000);
   const minus30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const minus7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const minus14d = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
   const [
     companies,
     openIssuesCount,
     dueThisWeekCount,
     resolvedLast30,
-    resolvedLast7,
-    resolvedPrev7,
     urgentIssues,
     upcomingDeadlines,
     recentIssuesCreated,
@@ -168,20 +161,6 @@ export default async function DashboardPage() {
         organizationId: orgScope,
         status: IssueStatus.RESOLVED,
         resolvedAt: { gte: minus30d }
-      }
-    }),
-    prisma.issue.count({
-      where: {
-        organizationId: orgScope,
-        status: IssueStatus.RESOLVED,
-        resolvedAt: { gte: minus7d }
-      }
-    }),
-    prisma.issue.count({
-      where: {
-        organizationId: orgScope,
-        status: IssueStatus.RESOLVED,
-        resolvedAt: { gte: minus14d, lt: minus7d }
       }
     }),
     prisma.issue.findMany({
@@ -244,10 +223,64 @@ export default async function DashboardPage() {
   ]);
 
   const totalCompanies = companies.length;
-  const resolvedDelta = resolvedLast7 - resolvedPrev7;
 
-  // Build unified activity feed
-  type Activity = { at: Date; kind: string; label: string; company: string; href: string };
+  // Health score — aggregate across companies. Red pulls it down fastest.
+  const companyStatuses = companies.map((c) => {
+    const issuesForStatus: IssueForStatus[] = c.issues.map((i) => ({
+      urgencyLevel: i.urgencyLevel,
+      detectedDeadline: i.detectedDeadline,
+      governmentBody: i.governmentBody
+    }));
+    return calculateCompanyStatus(issuesForStatus);
+  });
+  const redCount = companyStatuses.filter((s) => s === "RED").length;
+  const yellowCount = companyStatuses.filter((s) => s === "YELLOW").length;
+  const greenCount = companyStatuses.filter((s) => s === "GREEN").length;
+  const totalForHealth = Math.max(1, totalCompanies);
+  const healthScore = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        100 * (greenCount + yellowCount * 0.5) / totalForHealth - redCount * 15
+      )
+    )
+  );
+  const healthTone =
+    healthScore >= 85 ? "healthy" : healthScore >= 60 ? "attention" : "overdue";
+  const healthColor =
+    healthTone === "healthy"
+      ? "var(--state-resolved)"
+      : healthTone === "attention"
+        ? "var(--state-pending)"
+        : "var(--state-overdue)";
+  const healthTint =
+    healthTone === "healthy"
+      ? "var(--state-resolved-tint)"
+      : healthTone === "attention"
+        ? "var(--state-pending-tint)"
+        : "var(--state-overdue-tint)";
+  const statusWord =
+    healthTone === "healthy"
+      ? isAr
+        ? "سليم"
+        : "In order"
+      : healthTone === "attention"
+        ? isAr
+          ? "بحاجة لاهتمام"
+          : "Attention needed"
+        : isAr
+          ? "عاجل"
+          : "Urgent";
+
+  // Activity feed (unchanged logic)
+  type Activity = {
+    at: Date;
+    kind: string;
+    label: string;
+    company: string;
+    href: string;
+  };
   const activity: Activity[] = [];
   for (const i of recentIssuesCreated) {
     activity.push({
@@ -294,96 +327,75 @@ export default async function DashboardPage() {
       at: m.createdAt,
       kind: "noticeReceived",
       label: (m.rawContent ?? "").slice(0, 80) || "—",
-      company: m.organization?.legalNameAr ?? (lang === "ar" ? "غير مطابقة" : "Unmatched"),
+      company: m.organization?.legalNameAr ?? (isAr ? "غير مطابقة" : "Unmatched"),
       href: m.organizationId ? `/organizations/${m.organizationId}` : "/organizations"
     });
   }
   activity.sort((a, b) => b.at.getTime() - a.at.getTime());
   const recent = activity.slice(0, 10);
 
-  const pageTitle = t("dashboard.pageTitle", lang);
   const urgentBanner =
     urgentIssues.length > 0
       ? t("dashboard.urgencyBanner.count", lang, { n: urgentIssues.length })
       : null;
 
-  // Next-action line (priority: urgency-5 → 7-day deadline → latest activity).
-  type NextAction = { prefix: string; label: string; href: string } | null;
-  const nextAction: NextAction = (() => {
-    const top = urgentIssues[0];
-    if (top) {
-      const due =
-        top.detectedDeadline != null
-          ? ` — ${deadlineLabel(top.detectedDeadline, lang)}`
-          : "";
-      return {
-        prefix: lang === "ar" ? "التالي" : "Next",
-        label: `${top.titleAr} — ${top.organization?.legalNameAr ?? ""}${due}`,
-        href: `/organizations/${top.organizationId}/issues/${top.id}`
-      };
+  const greeting = user.fullName?.split(" ")[0] ?? "";
+  const heroTitle =
+    totalCompanies === 0
+      ? isAr
+        ? "مرحباً بك في مكين"
+        : "Welcome to MAKYN"
+      : isAr
+        ? `مرحباً، ${greeting}`
+        : `Good to see you, ${greeting}`;
+  const heroSubline = (() => {
+    if (totalCompanies === 0) {
+      return isAr
+        ? "ابدأ بإضافة شركتك الأولى لنحافظ على ملفها مرتّباً."
+        : "Add your first organization and we'll keep its file in order.";
     }
-    const soonest = upcomingDeadlines.find((i) => i.detectedDeadline && i.detectedDeadline <= in7d);
-    if (soonest && soonest.detectedDeadline) {
-      return {
-        prefix: lang === "ar" ? "أقرب موعد" : "Next deadline",
-        label: `${soonest.titleAr} — ${deadlineLabel(soonest.detectedDeadline, lang)}`,
-        href: `/organizations/${soonest.organizationId}/issues/${soonest.id}`
-      };
+    if (urgentIssues.length > 0) {
+      return isAr
+        ? `${urgentIssues.length} ${urgentIssues.length === 1 ? "مسألة" : "مسائل"} تحتاج انتباهك الآن.`
+        : `${urgentIssues.length} ${urgentIssues.length === 1 ? "matter is" : "matters are"} asking for your attention.`;
     }
-    // docExtracted events carry the raw PDF filename as label, which
-    // reads as noise in the hero ("Netaj_Industrial_Holding_CR.pdf —
-    // Company"). Skip them here; the activity list below still shows
-    // them with a proper "Document extracted · Company" framing.
-    const lastActionable = recent.find((a) => a.kind !== "docExtracted");
-    if (lastActionable) {
-      return {
-        prefix: lang === "ar" ? "لا توجد بنود عاجلة. آخر نشاط" : "No urgent items. Last activity",
-        label: `${lastActionable.label} — ${lastActionable.company}`,
-        href: lastActionable.href
-      };
+    if (openIssuesCount > 0) {
+      return isAr
+        ? `نتابع ${openIssuesCount} ${openIssuesCount === 1 ? "مسألة" : "مسائل"} مفتوحة عبر ملفاتك.`
+        : `We're handling ${openIssuesCount} open ${openIssuesCount === 1 ? "matter" : "matters"} across your files.`;
     }
-    return null;
+    return isAr
+      ? "كل شيء في مكانه. سنوافيك بأي جديد."
+      : "Everything's in order. We'll surface anything new.";
   })();
 
   return (
-    <PageFrame>
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Greeting — with subtle line pattern behind and next-action line */}
-        <div className="relative">
-          {/* Line pattern: 1px horizontals @ 12px, radial fade */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-[140px] -z-0"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(0deg, var(--stone-light) 0 1px, transparent 1px 12px)",
-              opacity: 0.4,
-              WebkitMaskImage:
-                "radial-gradient(ellipse 70% 60% at 50% 50%, black 40%, transparent 100%)",
-              maskImage:
-                "radial-gradient(ellipse 70% 60% at 50% 50%, black 40%, transparent 100%)"
-            }}
-          />
-          <div className="relative flex items-start justify-between gap-4 flex-wrap">
+    <div className="max-w-[1100px] mx-auto">
+      {/* Hero */}
+      <Reveal>
+        <div className="pt-6 pb-8">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="min-w-0">
+              <div className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.2em] uppercase mb-3">
+                {isAr ? "لوحة القيادة · اليوم" : "Dashboard · Today"}
+              </div>
               <h1
-                className="text-[32px] leading-tight text-[var(--ink)]"
-                style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
+                className={`text-[44px] md:text-[52px] font-semibold text-[var(--ink)] leading-[1.05] tracking-[-0.025em] ${
+                  isAr ? "text-ar" : ""
+                }`}
+                style={{ letterSpacing: isAr ? 0 : "-0.025em" }}
               >
-                {pageTitle}
+                {heroTitle}
               </h1>
-              {nextAction && (
-                <Link
-                  href={nextAction.href}
-                  className="mt-2 inline-flex items-center gap-1.5 text-[16px] font-medium text-[var(--ink-60)] hover:text-[var(--signal)]"
-                >
-                  <span className="text-[var(--ink-40)]">{nextAction.prefix}:</span>
-                  <span className="text-[var(--ink)]">{nextAction.label}</span>
-                  <CaretRight className="h-4 w-4 flip-rtl" />
-                </Link>
-              )}
+              <p
+                className={`font-display-it text-[18px] md:text-[22px] text-[var(--ink-60)] mt-3 leading-snug max-w-[560px] ${
+                  isAr ? "text-ar" : ""
+                }`}
+              >
+                {heroSubline}
+              </p>
             </div>
-            <div className="text-end">
+            <div className="text-end shrink-0">
               <div className="num text-[13px] text-[var(--ink-60)]">
                 {formatGregorian(now, lang)}
               </div>
@@ -392,11 +404,86 @@ export default async function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Urgent banner */}
-        {urgentBanner && (
-          <div className="bg-[var(--state-overdue-tint)] border-s-[3px] border-[var(--state-overdue)] rounded-[4px] p-4">
+          {/* Hero card — health orb + metrics. Omitted when no companies. */}
+          {totalCompanies > 0 && (
+            <div className="mt-8 rounded-2xl bg-[var(--card)] elev-hero border border-[var(--stone-hair)] overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
+                <div
+                  className="p-8 flex flex-col items-center justify-center gap-3 border-b md:border-b-0"
+                  style={{
+                    background: healthTint,
+                    borderInlineEnd: "1px solid var(--stone-hair)"
+                  }}
+                >
+                  <div
+                    className="text-[10px] font-mono tracking-[0.2em] uppercase"
+                    style={{ color: healthColor }}
+                  >
+                    {isAr ? "الحالة العامة" : "Overall Health"}
+                  </div>
+                  <div className="relative">
+                    <ProgressRing value={healthScore} size={120} stroke={4} color={healthColor} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <NumberTicker
+                        value={healthScore}
+                        className="text-[36px] font-semibold text-[var(--ink)] leading-none"
+                      />
+                      <span className="text-[9.5px] font-mono text-[var(--ink-40)] tracking-[0.18em] uppercase mt-1">
+                        / 100
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    className={`text-[14px] font-semibold ${isAr ? "text-ar" : ""}`}
+                    style={{ color: healthColor }}
+                  >
+                    {statusWord}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 grid-rows-2">
+                  <HeroMetric
+                    lang={lang}
+                    label={t("dashboard.metrics.companies", lang)}
+                    value={totalCompanies}
+                    Icon={Building2}
+                  />
+                  <HeroMetric
+                    lang={lang}
+                    label={t("dashboard.metrics.openIssues", lang)}
+                    value={openIssuesCount}
+                    Icon={AlertTriangle}
+                    borderInlineStart
+                  />
+                  <HeroMetric
+                    lang={lang}
+                    label={t("dashboard.metrics.dueThisWeek", lang)}
+                    value={dueThisWeekCount}
+                    Icon={Clock}
+                    borderTop
+                  />
+                  <HeroMetric
+                    lang={lang}
+                    label={t("dashboard.metrics.resolvedThisMonth", lang)}
+                    value={resolvedLast30}
+                    Icon={CheckCircle2}
+                    borderInlineStart
+                    borderTop
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Reveal>
+
+      {/* Urgent banner */}
+      {urgentBanner && (
+        <Reveal delay={80}>
+          <div
+            className="bg-[var(--state-overdue-tint)] border-s-[3px] border-[var(--state-overdue)] rounded-[8px] p-4 mb-8"
+          >
             <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--state-overdue)] mb-2">
               {urgentBanner}
             </div>
@@ -421,292 +508,287 @@ export default async function DashboardPage() {
             </ul>
             {urgentIssues.length > 3 && (
               <Link
-                href="/organizations?filter=urgent"
+                href="/issues?filter=urgent"
                 className="inline-block mt-2 text-[12px] font-medium text-[var(--state-overdue)] hover:underline"
               >
                 {t("dashboard.viewAllUrgent", lang)} →
               </Link>
             )}
           </div>
-        )}
+        </Reveal>
+      )}
 
-        {/* Metrics — semantic colors + duotone icons */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label={t("dashboard.metrics.companies", lang)}
-            value={totalCompanies}
-            colorVar="--signal"
-            Icon={Buildings}
-            delta={0}
-            deltaLabel={t("dashboard.metrics.noPriorData", lang)}
-          />
-          <StatCard
-            label={t("dashboard.metrics.openIssues", lang)}
-            value={openIssuesCount}
-            colorVar="--state-pending"
-            Icon={Warning}
-            delta={0}
-            deltaLabel={t("dashboard.metrics.noPriorData", lang)}
-          />
-          <StatCard
-            label={t("dashboard.metrics.dueThisWeek", lang)}
-            value={dueThisWeekCount}
-            colorVar="--state-overdue"
-            Icon={ClockCountdown}
-            delta={0}
-            deltaLabel={t("dashboard.metrics.noPriorData", lang)}
-          />
-          <StatCard
-            label={t("dashboard.metrics.resolvedThisMonth", lang)}
-            value={resolvedLast30}
-            colorVar="--state-resolved"
-            Icon={CheckCircle}
-            delta={resolvedDelta}
-            deltaLabel={t("dashboard.metrics.comparedToPrev", lang)}
-          />
-        </div>
+      {/* Upcoming deadlines */}
+      {upcomingDeadlines.length > 0 && (
+        <Reveal delay={120}>
+          <section className="mb-10">
+            <SectionHead
+              lang={lang}
+              eyebrow={isAr ? "المواعيد القادمة" : "What's ahead"}
+              title={t("dashboard.deadlinesSection", lang)}
+              action={isAr ? "كل المواعيد" : "See all"}
+              actionHref="/issues"
+            />
+            <div className="mt-5 space-y-1.5">
+              {upcomingDeadlines.slice(0, 6).map((i) => {
+                if (!i.detectedDeadline) return null;
+                const days = relativeDays(i.detectedDeadline);
+                const tone =
+                  days <= 2
+                    ? "var(--state-overdue)"
+                    : days <= 7
+                      ? "var(--state-pending)"
+                      : "var(--ink-40)";
+                return (
+                  <LiftCard
+                    key={i.id}
+                    tiltMax={0.6}
+                    liftY={-2}
+                    className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 px-5 py-4 flex items-center gap-5 hover:border-[var(--ink-20)]"
+                  >
+                    <Link
+                      href={`/organizations/${i.organizationId}/issues/${i.id}`}
+                      className="flex items-center gap-5 w-full"
+                    >
+                      <div className="flex items-center gap-3 flex-none w-[150px]">
+                        <span
+                          className="w-1 h-8 rounded-full shrink-0"
+                          style={{ background: tone }}
+                        />
+                        <div>
+                          <div className="text-[16px] font-semibold text-[var(--ink)] num leading-none">
+                            {deadlineLabel(i.detectedDeadline, lang)}
+                          </div>
+                          <div className="text-[10px] font-mono text-[var(--ink-40)] tracking-wider uppercase mt-1 truncate">
+                            {i.organization?.legalNameAr ?? ""}
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        className={`flex-1 min-w-0 text-[13.5px] text-[var(--ink-80)] line-clamp-2 ${
+                          isAr ? "text-ar" : ""
+                        }`}
+                      >
+                        {i.titleAr}
+                      </div>
+                      <span className="text-[11px] font-mono text-[var(--ink-40)] uppercase tracking-wider flex-none">
+                        {i.governmentBody}
+                      </span>
+                      <ChevronRight
+                        className="h-4 w-4 text-[var(--ink-40)] flex-none flip-rtl"
+                        strokeWidth={1.5}
+                      />
+                    </Link>
+                  </LiftCard>
+                );
+              })}
+            </div>
+          </section>
+        </Reveal>
+      )}
 
-        {/* Companies snapshot */}
-        <section>
-          <h2 className="text-[20px] font-semibold text-[var(--ink)] mb-4">
-            {t("dashboard.companiesSection", lang)}
-          </h2>
+      {/* Companies grid */}
+      <Reveal delay={180}>
+        <section className="mb-10">
+          <SectionHead
+            lang={lang}
+            eyebrow={isAr ? "الملفات" : "On file"}
+            title={t("dashboard.companiesSection", lang)}
+            action={isAr ? "كل الشركات" : "See all"}
+            actionHref="/organizations"
+          />
           {companies.length === 0 ? (
-            <Card>
-              <CardBody className="py-14 flex flex-col items-center text-center gap-5">
-                <EmptyStateMark />
-                <p className={`text-[20px] leading-snug text-[var(--ink)] max-w-[28ch] ${lang === "en" ? "font-display-en" : ""}`}>
-                  {t("companies.empty.hero", lang)}
-                </p>
-                <p className="text-[13px] text-[var(--ink-60)] max-w-[36ch]">
-                  {t("companies.empty.desc", lang)}
-                </p>
-                <Link
-                  href="/organizations/new"
-                  className="text-[13px] font-medium text-[var(--signal)] hover:underline underline-offset-[6px]"
-                >
-                  {t("dashboard.addCompany", lang)}
-                </Link>
-              </CardBody>
-            </Card>
+            <div className="mt-6 rounded-2xl bg-[var(--card)] elev-1 border border-[var(--stone-hair)] py-14 flex flex-col items-center text-center gap-5 px-6">
+              <EmptyStateMark />
+              <p
+                className={`text-[20px] leading-snug text-[var(--ink)] max-w-[28ch] ${
+                  lang === "en" ? "font-display-en" : ""
+                }`}
+              >
+                {t("companies.empty.hero", lang)}
+              </p>
+              <p className="text-[13px] text-[var(--ink-60)] max-w-[36ch]">
+                {t("companies.empty.desc", lang)}
+              </p>
+              <Link
+                href="/organizations/new"
+                className="text-[13px] font-medium text-[var(--signal)] hover:underline underline-offset-[6px]"
+              >
+                {t("dashboard.addCompany", lang)}
+              </Link>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {companies.map((c) => {
-                const openIssues: IssueForStatus[] = c.issues.map((i) => ({
-                  urgencyLevel: i.urgencyLevel,
-                  detectedDeadline: i.detectedDeadline,
-                  governmentBody: i.governmentBody
-                }));
-                const status = calculateCompanyStatus(openIssues);
-                const dotColor =
-                  status === "RED" ? "red" : status === "YELLOW" ? "yellow" : "green";
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {companies.map((c, idx) => {
+                const status = companyStatuses[idx];
+                const tone: "healthy" | "attention" | "overdue" =
+                  status === "RED"
+                    ? "overdue"
+                    : status === "YELLOW"
+                      ? "attention"
+                      : "healthy";
                 const top = c.issues[0];
                 return (
-                  <Link key={c.id} href={`/organizations/${c.id}`}>
-                    <Card interactive className="h-full cursor-pointer">
-                      <CardBody className="space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-[15px] font-semibold text-[var(--ink)] leading-snug">
-                            {c.legalNameAr}
-                          </h3>
-                          <StatusDot color={dotColor} />
+                  <LiftCard
+                    key={c.id}
+                    tiltMax={1}
+                    liftY={-3}
+                    className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 hover:elev-2 hover:border-[var(--ink-20)] h-full"
+                  >
+                    <Link
+                      href={`/organizations/${c.id}`}
+                      className="block p-5 h-full"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <h3
+                          className={`text-[15.5px] font-semibold text-[var(--ink)] leading-snug ${
+                            isAr ? "text-ar" : ""
+                          }`}
+                        >
+                          {c.legalNameAr}
+                        </h3>
+                        <StatusDot status={tone} size={8} />
+                      </div>
+                      <div className="text-[12.5px] text-[var(--ink-60)] mb-2">
+                        <span className="num">{c.issues.length}</span>{" "}
+                        {t("companies.openIssues", lang)}
+                      </div>
+                      {top ? (
+                        <div
+                          className={`text-[13px] text-[var(--ink-80)] line-clamp-2 ${
+                            isAr ? "text-ar" : ""
+                          }`}
+                        >
+                          {top.titleAr}
                         </div>
-                        <div className="text-[13px] text-[var(--ink-60)]">
-                          <span className="num">{c.issues.length}</span>{" "}
-                          {t("companies.openIssues", lang)}
+                      ) : (
+                        <div className="text-[12px] text-[var(--ink-40)]">
+                          {t("companies.noIssues", lang)}
                         </div>
-                        {top ? (
-                          <div className="text-[13px] text-[var(--ink)] line-clamp-2">
-                            {top.titleAr}
-                          </div>
-                        ) : (
-                          <div className="text-[12px] text-[var(--ink-40)]">
-                            {t("companies.noIssues", lang)}
-                          </div>
-                        )}
-                        <div className="text-[12px] text-[var(--ink-40)] num">
-                          {relTime(top?.updatedAt ?? c.updatedAt, lang)}
-                        </div>
-                      </CardBody>
-                    </Card>
-                  </Link>
+                      )}
+                      <div className="mt-4 pt-3 border-t border-[var(--stone-hair)] text-[11px] font-mono text-[var(--ink-40)]">
+                        {relTime(top?.updatedAt ?? c.updatedAt, lang)}
+                      </div>
+                    </Link>
+                  </LiftCard>
                 );
               })}
               <Link
                 href="/organizations/new"
-                className="flex items-center justify-center h-full min-h-[140px] rounded-[4px] border border-[var(--stone-light)] bg-[var(--paper-low)] text-[13px] font-medium text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors"
+                className="flex items-center justify-center h-full min-h-[140px] rounded-xl border border-dashed border-[var(--stone-light)] bg-[var(--paper-low)] text-[13px] font-medium text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors"
               >
                 {t("dashboard.addCompany", lang)}
               </Link>
             </div>
           )}
         </section>
+      </Reveal>
 
-        {/* Activity + Deadlines */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section>
-            <h2 className="text-[20px] font-semibold text-[var(--ink)] mb-4">
-              {t("dashboard.activitySection", lang)}
-            </h2>
-            <Card>
-              <CardBody className="p-0">
-                {recent.length === 0 ? (
-                  <div className="px-5 py-12 flex flex-col items-center text-center gap-4">
-                    <EmptyStateMark size={80} />
-                    <p className="text-[13px] text-[var(--ink-60)]">
-                      {t("dashboard.noActivity", lang)}
-                    </p>
-                  </div>
-                ) : (
-                  <ul>
-                    {recent.map((a, idx) => (
-                      <li
-                        key={idx}
-                        className="px-5 py-3 border-b last:border-b-0 border-[var(--stone-light)]"
-                      >
-                        <Link
-                          href={a.href}
-                          className="flex items-center justify-between gap-3 hover:text-[var(--signal)]"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="text-[12px] text-[var(--ink-40)]">
-                              {t(`dashboard.activity.${a.kind}`, lang)} ·{" "}
-                              <span className="text-[var(--ink-60)]">
-                                {a.company}
-                              </span>
-                            </div>
-                            <div className="text-[13px] text-[var(--ink)] truncate">
-                              {a.label}
-                            </div>
-                          </div>
-                          <span className="num text-[12px] text-[var(--ink-40)] shrink-0">
-                            {relTime(a.at, lang)}
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardBody>
-            </Card>
-          </section>
-
-          <section>
-            <h2 className="text-[20px] font-semibold text-[var(--ink)] mb-4">
-              {t("dashboard.deadlinesSection", lang)}
-            </h2>
-            {upcomingDeadlines.length === 0 ? (
-              <Card>
-                <CardBody className="py-12 flex flex-col items-center text-center gap-4">
-                  <EmptyStateMark size={80} />
-                  <p className="text-[13px] text-[var(--ink-60)]">
-                    {t("dashboard.noDeadlines", lang)}
-                  </p>
-                </CardBody>
-              </Card>
-            ) : (
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {upcomingDeadlines.map((i) => {
-                  if (!i.detectedDeadline) return null;
-                  const days = relativeDays(i.detectedDeadline);
-                  const tint =
-                    days <= 2
-                      ? "bg-[var(--state-overdue-tint)] border-[var(--state-overdue)]/30"
-                      : days <= 7
-                        ? "bg-[var(--state-pending-tint)] border-[var(--state-pending)]/30"
-                        : "bg-[var(--paper-low)] border-[var(--stone-light)]";
-                  return (
+      {/* Recent activity — editorial timeline */}
+      <Reveal delay={240}>
+        <section className="mb-16">
+          <SectionHead
+            lang={lang}
+            eyebrow={isAr ? "السجل" : "Recently"}
+            title={t("dashboard.activitySection", lang)}
+            action={isAr ? "عرض السجل" : "See all"}
+            actionHref="/activity"
+          />
+          {recent.length === 0 ? (
+            <div className="mt-6 rounded-2xl bg-[var(--card)] elev-1 border border-[var(--stone-hair)] py-12 flex flex-col items-center text-center gap-4 px-6">
+              <EmptyStateMark size={80} />
+              <p className="text-[13px] text-[var(--ink-60)]">
+                {t("dashboard.noActivity", lang)}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-5 relative">
+              <div
+                className="absolute top-0 bottom-0 w-px bg-[var(--stone-light)]"
+                style={{ [isAr ? "right" : "left"]: "7px" }}
+              />
+              <ul className="space-y-3.5">
+                {recent.map((a, idx) => (
+                  <li key={idx} className="flex items-start gap-4 relative">
+                    <span
+                      className={`w-[15px] h-[15px] rounded-full flex-none mt-0.5 relative z-10 ${
+                        idx === 0
+                          ? "bg-[var(--ink)] border-2 border-[var(--ink)]"
+                          : "bg-[var(--paper)] border-2 border-[var(--signal)]"
+                      }`}
+                    />
                     <Link
-                      key={i.id}
-                      href={`/organizations/${i.organizationId}/issues/${i.id}`}
-                      className={`min-w-[280px] shrink-0 rounded-lg border p-4 shadow-card ${tint}`}
+                      href={a.href}
+                      className="flex-1 min-w-0 hover:text-[var(--signal)] group"
                     >
-                      <div className="num text-[12px] font-medium text-[var(--ink-60)] mb-2">
-                        {deadlineLabel(i.detectedDeadline, lang)}
+                      <div className="text-[12px] text-[var(--ink-40)]">
+                        {t(`dashboard.activity.${a.kind}`, lang)} ·{" "}
+                        <span className="text-[var(--ink-60)]">{a.company}</span>
                       </div>
-                      <div className="text-[13px] text-[var(--ink-40)] mb-1">
-                        {i.organization?.legalNameAr ?? ""}
+                      <div
+                        className={`text-[13px] text-[var(--ink-80)] truncate ${
+                          isAr ? "text-ar" : ""
+                        }`}
+                      >
+                        {a.label}
                       </div>
-                      <div className="text-[14px] font-medium text-[var(--ink)] line-clamp-2 mb-3">
-                        {i.titleAr}
+                      <div className="text-[10.5px] font-mono text-[var(--ink-40)] mt-0.5 num">
+                        {relTime(a.at, lang)}
                       </div>
-                      <Badge variant="neutral">{i.governmentBody}</Badge>
                     </Link>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </div>
-      </div>
-    </PageFrame>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      </Reveal>
+    </div>
   );
 }
 
 import type { LucideIcon } from "lucide-react";
-type StatIcon = LucideIcon;
 
-function StatCard({
+function HeroMetric({
+  lang,
   label,
   value,
-  delta,
-  deltaLabel,
-  colorVar,
-  Icon
+  Icon,
+  borderInlineStart,
+  borderTop
 }: {
+  lang: Lang;
   label: string;
   value: number;
-  delta: number;
-  deltaLabel?: string;
-  colorVar: "--signal" | "--state-pending" | "--state-overdue" | "--state-resolved";
-  Icon: StatIcon;
+  Icon: LucideIcon;
+  borderInlineStart?: boolean;
+  borderTop?: boolean;
 }) {
-  // Single-rule accent on the inline-start edge. No tinted container; the
-  // tile sits flat on paper-low so the numeral carries the weight.
-  const accentColor = `var(${colorVar})`;
-
-  const TrendIcon = delta > 0 ? CaretUp : delta < 0 ? CaretDown : Minus;
-  const trendColor =
-    delta > 0
-      ? "var(--state-resolved)"
-      : delta < 0
-        ? "var(--state-overdue)"
-        : "var(--ink-40)";
-
+  const isAr = lang === "ar";
   return (
-    <Card className="relative overflow-hidden">
-      <span
-        aria-hidden
-        className="absolute inset-y-0 start-0 w-[3px]"
-        style={{ background: accentColor }}
-      />
-      <CardBody>
-        <div className="flex items-start justify-between gap-3">
-          <div className="text-[11px] uppercase tracking-[0.1em] text-[var(--ink-40)] font-medium">
-            {label}
-          </div>
-          <Icon
-            className="h-5 w-5 shrink-0"
-           
-            style={{ color: "var(--ink-60)" }}
-          />
-        </div>
+    <div
+      className="px-6 md:px-7 py-6 flex flex-col justify-center"
+      style={{
+        borderInlineStart: borderInlineStart ? "1px solid var(--stone-hair)" : undefined,
+        borderTop: borderTop ? "1px solid var(--stone-hair)" : undefined
+      }}
+    >
+      <div className="flex items-center justify-between gap-3 mb-2">
         <div
-          className="text-[40px] leading-none mt-3 text-[var(--ink)] num"
-          style={{ fontWeight: 500, fontVariantNumeric: "tabular-nums" }}
+          className={`text-[10px] font-mono text-[var(--ink-40)] tracking-[0.18em] uppercase ${
+            isAr ? "text-ar" : ""
+          }`}
         >
-          {value}
+          {label}
         </div>
-        <div className="mt-2 flex items-center gap-1 text-[12px]">
-          <TrendIcon className="h-3.5 w-3.5" style={{ color: trendColor }} />
-          <span className="num" style={{ color: trendColor }}>
-            {delta === 0 ? "—" : delta > 0 ? `+${delta}` : `${delta}`}
-          </span>
-          {deltaLabel && (
-            <span className="text-[var(--ink-40)] truncate">{deltaLabel}</span>
-          )}
-        </div>
-      </CardBody>
-    </Card>
+        <Icon className="h-3.5 w-3.5 shrink-0 text-[var(--ink-40)]" strokeWidth={1.5} />
+      </div>
+      <div
+        className="text-[28px] md:text-[30px] font-semibold text-[var(--ink)] leading-none"
+        style={{ letterSpacing: "-0.02em" }}
+      >
+        <NumberTicker value={value} />
+      </div>
+    </div>
   );
 }

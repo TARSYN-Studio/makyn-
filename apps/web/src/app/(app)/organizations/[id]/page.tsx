@@ -11,12 +11,16 @@ import { calculateCompanyStatus, hoursUntil, type IssueForStatus } from "@makyn/
 
 import { CompanyDetailsForm } from "./details-form";
 import { ArchiveCompanyButton } from "./archive-button";
-import { Badge, StatusDot } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { RoleBadge } from "@/components/ui/role-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Table, Thead, Tbody, Tr, Th, Td } from "@/components/ui/table";
-import { PageFrame } from "@/components/PageFrame";
+import { LiftCard } from "@/components/motion/LiftCard";
+import { NumberTicker } from "@/components/motion/NumberTicker";
+import { ProgressRing } from "@/components/motion/ProgressRing";
+import { Reveal } from "@/components/motion/Reveal";
+import { StatusDot } from "@/components/motion/StatusDot";
 import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
@@ -86,6 +90,7 @@ function fmtDate(d: Date | null | undefined): string {
 export default async function CompanyDetailPage({ params, searchParams }: PageProps) {
   const user = await requireUser();
   const lang: Lang = user.preferredLanguage === "en" ? "en" : "ar";
+  const isAr = lang === "ar";
   const tab = searchParams.tab ?? "active";
   const now = new Date();
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -115,7 +120,20 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       governmentBody: i.governmentBody
     }));
   const status = calculateCompanyStatus(openIssues);
-  const dotColor = status === "RED" ? "red" : status === "YELLOW" ? "yellow" : "green";
+  const tone: "healthy" | "attention" | "overdue" =
+    status === "RED" ? "overdue" : status === "YELLOW" ? "attention" : "healthy";
+  const healthColor =
+    tone === "healthy"
+      ? "var(--state-resolved)"
+      : tone === "attention"
+        ? "var(--state-pending)"
+        : "var(--state-overdue)";
+  const healthTint =
+    tone === "healthy"
+      ? "var(--state-resolved-tint)"
+      : tone === "attention"
+        ? "var(--state-pending-tint)"
+        : "var(--state-overdue-tint)";
 
   // Stat summaries
   const total = company.issues.length;
@@ -133,6 +151,13 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   const resolutionRate =
     resolutionDenom === 0 ? 0 : Math.round((resolvedCount / resolutionDenom) * 100);
 
+  // Health score derived from resolution rate and urgent count
+  const urgentIssueCount = openIssues.filter((i) => i.urgencyLevel >= 5).length;
+  const healthScore = Math.max(
+    10,
+    Math.min(100, 100 - urgentIssueCount * 20 - openCount * 3 + resolutionRate * 0.3)
+  );
+
   const tabs = [
     { key: "active", label: t("company.tabs.active", lang) },
     { key: "resolved", label: t("company.tabs.resolved", lang) },
@@ -145,7 +170,6 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   const activeIssues = company.issues
     .filter((i) => ACTIVE_STATUSES.includes(i.status))
     .sort((a, b) => {
-      // deadline asc, nulls last
       if (!a.detectedDeadline && !b.detectedDeadline) return 0;
       if (!a.detectedDeadline) return 1;
       if (!b.detectedDeadline) return -1;
@@ -242,126 +266,233 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
   }
   const timeline = events.slice(0, 30);
 
+  const statusWord =
+    tone === "healthy"
+      ? isAr
+        ? "سليم"
+        : "In order"
+      : tone === "attention"
+        ? isAr
+          ? "بحاجة لاهتمام"
+          : "Attention needed"
+        : isAr
+          ? "عاجل"
+          : "Urgent";
+
   return (
-    <PageFrame className="max-w-6xl">
-      <div className="mb-2">
+    <div className="max-w-[1100px] mx-auto pb-8">
+      <Reveal>
         <Link
           href="/organizations"
-          className="text-[12px] text-[var(--ink-40)] hover:text-[var(--signal)]"
+          className="inline-flex items-center gap-1 text-[12px] text-[var(--ink-40)] hover:text-[var(--signal)] mb-4"
         >
-          <span className="inline-block rtl:scale-x-[-1]">←</span> {t("company.back", lang)}
+          <span className="inline-block flip-rtl">←</span> {t("company.back", lang)}
         </Link>
-      </div>
+      </Reveal>
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1
-              className="text-[32px] leading-tight text-[var(--ink)]"
-              style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
+      {/* Editorial header */}
+      <Reveal delay={60}>
+        <div className="pb-6 mb-6 border-b border-[var(--stone-hair)]">
+          <div className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.18em] uppercase mb-2">
+            {isAr ? "ملف الشركة" : "Company File"}
+          </div>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1
+                  className={`text-[36px] md:text-[44px] font-semibold text-[var(--ink)] leading-[1.05] tracking-[-0.02em] ${
+                    isAr ? "text-ar" : ""
+                  }`}
+                >
+                  {company.legalNameAr}
+                </h1>
+                <RoleBadge role={access.role} lang={lang} />
+              </div>
+              <div className="mt-2 flex items-center gap-3 text-[12px] text-[var(--ink-40)] flex-wrap">
+                {company.tradeName && (
+                  <span className={isAr ? "text-ar" : ""}>{company.tradeName}</span>
+                )}
+                {company.crNumber && (
+                  <span className="num">CR {company.crNumber}</span>
+                )}
+                {company.zatcaTin && (
+                  <span className="num">TIN {company.zatcaTin}</span>
+                )}
+              </div>
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--card)] border border-[var(--stone-hair)] shrink-0">
+              <StatusDot status={tone} size={8} />
+              <span className="font-medium text-[13px]">
+                {t(`status.${status}`, lang)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* Hero card — health + metrics */}
+      <Reveal delay={120}>
+        <div className="rounded-2xl bg-[var(--card)] elev-hero border border-[var(--stone-hair)] overflow-hidden mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr]">
+            <div
+              className="p-6 flex flex-col items-center justify-center gap-3 border-b md:border-b-0"
+              style={{
+                background: healthTint,
+                borderInlineEnd: "1px solid var(--stone-hair)"
+              }}
             >
-              {company.legalNameAr}
-            </h1>
-            <RoleBadge role={access.role} lang={lang} />
-          </div>
-          <div className="mt-1 flex items-center gap-3 text-[12px] text-[var(--ink-40)] flex-wrap">
-            {company.tradeName && <span>{company.tradeName}</span>}
-            {company.crNumber && (
-              <span className="num">CR: {company.crNumber}</span>
-            )}
-            {company.zatcaTin && (
-              <span className="num">TIN: {company.zatcaTin}</span>
-            )}
+              <div
+                className="text-[10px] font-mono tracking-[0.2em] uppercase"
+                style={{ color: healthColor }}
+              >
+                {isAr ? "الحالة" : "Health"}
+              </div>
+              <div className="relative">
+                <ProgressRing value={healthScore} size={104} stroke={4} color={healthColor} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <NumberTicker
+                    value={Math.round(healthScore)}
+                    className="text-[30px] font-semibold text-[var(--ink)] leading-none"
+                  />
+                  <span className="text-[9px] font-mono text-[var(--ink-40)] tracking-[0.18em] uppercase mt-1">
+                    / 100
+                  </span>
+                </div>
+              </div>
+              <div
+                className={`text-[13px] font-semibold ${isAr ? "text-ar" : ""}`}
+                style={{ color: healthColor }}
+              >
+                {statusWord}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 grid-rows-2">
+              <HeroMetric
+                lang={lang}
+                label={t("company.stats.total", lang)}
+                value={total}
+              />
+              <HeroMetric
+                lang={lang}
+                label={t("company.stats.open", lang)}
+                value={openCount}
+                borderInlineStart
+              />
+              <HeroMetric
+                lang={lang}
+                label={t("company.stats.thisWeek", lang)}
+                value={thisWeekCount}
+                borderTop
+              />
+              <HeroMetric
+                lang={lang}
+                label={t("company.stats.resolutionRate", lang)}
+                value={resolutionRate}
+                suffix="%"
+                borderInlineStart
+                borderTop
+              />
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--paper-low)] border border-[var(--stone-light)] text-[15px]">
-            <StatusDot color={dotColor} />
-            <span className="font-medium">{t(`status.${status}`, lang)}</span>
-          </div>
-        </div>
-      </div>
+      </Reveal>
 
       {/* Action row */}
-      <div className="flex items-center gap-2 flex-wrap mb-6">
-        <Button variant="secondary" disabled title={t("company.comingSoon", lang)}>
-          {t("company.addIssue", lang)}
-        </Button>
-        <Link href={`/organizations/${company.id}?tab=details`}>
-          <Button variant="secondary">{t("company.editDetails", lang)}</Button>
-        </Link>
-        <Link href={`/organizations/${company.id}/settings/team`}>
-          <Button variant="secondary">{t("team.nav.link", lang)}</Button>
-        </Link>
-      </div>
-
-      {/* Stat summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <StatMini label={t("company.stats.total", lang)} value={total} />
-        <StatMini label={t("company.stats.open", lang)} value={openCount} />
-        <StatMini label={t("company.stats.thisWeek", lang)} value={thisWeekCount} />
-        <StatMini
-          label={t("company.stats.resolutionRate", lang)}
-          value={`${resolutionRate}%`}
-        />
-      </div>
+      <Reveal delay={160}>
+        <div className="flex items-center gap-2 flex-wrap mb-6">
+          <Button variant="secondary" disabled title={t("company.comingSoon", lang)}>
+            {t("company.addIssue", lang)}
+          </Button>
+          <Link href={`/organizations/${company.id}?tab=details`}>
+            <Button variant="secondary">{t("company.editDetails", lang)}</Button>
+          </Link>
+          <Link href={`/organizations/${company.id}/settings/team`}>
+            <Button variant="secondary">{t("team.nav.link", lang)}</Button>
+          </Link>
+        </div>
+      </Reveal>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-[var(--stone-light)] mb-6 overflow-x-auto">
-        {tabs.map((t2) => (
-          <Link
-            key={t2.key}
-            href={`/organizations/${company.id}?tab=${t2.key}`}
-            className={`px-4 py-2 -mb-px text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
-              tab === t2.key
-                ? "border-[var(--signal)] text-[var(--ink)]"
-                : "border-transparent text-[var(--ink-40)] hover:text-[var(--ink)]"
-            }`}
-          >
-            {t2.label}
-          </Link>
-        ))}
-      </div>
+      <Reveal delay={200}>
+        <div className="flex items-center gap-1 border-b border-[var(--stone-hair)] mb-6 overflow-x-auto">
+          {tabs.map((t2) => (
+            <Link
+              key={t2.key}
+              href={`/organizations/${company.id}?tab=${t2.key}`}
+              className={`px-4 py-2 -mb-px text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+                tab === t2.key
+                  ? "border-[var(--ink)] text-[var(--ink)]"
+                  : "border-transparent text-[var(--ink-40)] hover:text-[var(--ink)]"
+              }`}
+            >
+              {t2.label}
+            </Link>
+          ))}
+        </div>
+      </Reveal>
 
       {tab === "active" && (
         <div className="space-y-6">
           {activeIssues.length === 0 && (
-            <Card>
-              <CardBody className="py-12 flex flex-col items-center text-center gap-4">
-                <EmptyStateMark size={80} />
-                <p className="text-[13px] text-[var(--ink-60)]">
-                  {t("company.noOpenIssues", lang)}
-                </p>
-              </CardBody>
-            </Card>
+            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-12 flex flex-col items-center text-center gap-4 px-6">
+              <EmptyStateMark size={80} />
+              <p className="text-[13px] text-[var(--ink-60)]">
+                {t("company.noOpenIssues", lang)}
+              </p>
+            </div>
           )}
           {(["urgent", "high", "medium", "low"] as const).map((key) => {
             const list = buckets[key];
             if (list.length === 0) return null;
             return (
               <section key={key}>
-                <h3 className="text-[13px] font-semibold text-[var(--ink-60)] mb-2 uppercase tracking-wider">
+                <h3 className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.18em] uppercase mb-3">
                   {t(`company.urgency.${key}`, lang)}{" "}
-                  <span className="num text-[var(--ink-40)]">({list.length})</span>
+                  <span className="num">({list.length})</span>
                 </h3>
-                <div className="space-y-3">
-                  {list.map((issue) => (
-                    <Link key={issue.id} href={`/organizations/${company.id}/issues/${issue.id}`}>
-                      <Card interactive>
-                        <CardBody className="flex items-start gap-4">
-                          <Badge variant={urgencyBadge[issue.urgencyLevel]}>
-                            U{issue.urgencyLevel}
-                          </Badge>
-                          <div className="flex-1 min-w-0">
+                <div className="space-y-2.5">
+                  {list.map((issue) => {
+                    const issueTone =
+                      issue.urgencyLevel >= 5
+                        ? "var(--state-overdue)"
+                        : issue.urgencyLevel >= 3
+                          ? "var(--state-pending)"
+                          : "var(--ink-40)";
+                    return (
+                      <LiftCard
+                        key={issue.id}
+                        tiltMax={0.8}
+                        liftY={-3}
+                        className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 hover:elev-2 hover:border-[var(--ink-20)] overflow-hidden"
+                      >
+                        <Link
+                          href={`/organizations/${company.id}/issues/${issue.id}`}
+                          className="flex items-stretch gap-4"
+                        >
+                          <span
+                            className="w-1 shrink-0"
+                            style={{ background: issueTone }}
+                          />
+                          <div className="flex-1 p-4 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <h4 className="font-semibold text-[var(--ink)] truncate">
+                              <Badge variant={urgencyBadge[issue.urgencyLevel]}>
+                                U{issue.urgencyLevel}
+                              </Badge>
+                              <h4
+                                className={`font-semibold text-[var(--ink)] text-[15px] truncate ${
+                                  isAr ? "text-ar" : ""
+                                }`}
+                              >
                                 {issue.titleAr}
                               </h4>
                               <Badge variant="accent">{issue.governmentBody}</Badge>
                               <Badge>{t(`issue.status.${issue.status}`, lang)}</Badge>
                             </div>
-                            <p className="text-[13px] text-[var(--ink-60)] line-clamp-2">
+                            <p
+                              className={`text-[13px] text-[var(--ink-60)] line-clamp-2 ${
+                                isAr ? "text-ar" : ""
+                              }`}
+                            >
                               {issue.summaryAr}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-[12px] text-[var(--ink-40)]">
@@ -381,10 +512,10 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                               )}
                             </div>
                           </div>
-                        </CardBody>
-                      </Card>
-                    </Link>
-                  ))}
+                        </Link>
+                      </LiftCard>
+                    );
+                  })}
                 </div>
               </section>
             );
@@ -393,38 +524,50 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       )}
 
       {tab === "resolved" && (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {resolvedIssues.length === 0 ? (
-            <Card>
-              <CardBody className="py-8 text-center text-[var(--ink-40)] text-[13px]">
-                {t("company.noResolved", lang)}
-              </CardBody>
-            </Card>
+            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-10 text-center text-[var(--ink-40)] text-[13px]">
+              {t("company.noResolved", lang)}
+            </div>
           ) : (
             resolvedIssues.map((issue) => (
-              <Link key={issue.id} href={`/organizations/${company.id}/issues/${issue.id}`}>
-                <Card interactive>
-                  <CardBody className="flex items-start gap-4">
-                    <Badge variant="done">
-                      {t(`issue.status.${issue.status}`, lang)}
-                    </Badge>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h4 className="font-semibold text-[var(--ink)] truncate">
-                          {issue.titleAr}
-                        </h4>
-                        <Badge variant="accent">{issue.governmentBody}</Badge>
-                      </div>
-                      <p className="text-[13px] text-[var(--ink-60)] line-clamp-2">
-                        {issue.summaryAr}
-                      </p>
-                      <div className="text-[12px] text-[var(--ink-40)] num mt-1">
-                        {fmtDate(issue.resolvedAt)}
-                      </div>
+              <LiftCard
+                key={issue.id}
+                tiltMax={0.4}
+                liftY={-2}
+                className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 hover:elev-2 hover:border-[var(--ink-20)]"
+              >
+                <Link
+                  href={`/organizations/${company.id}/issues/${issue.id}`}
+                  className="flex items-start gap-4 p-4"
+                >
+                  <Badge variant="done">
+                    {t(`issue.status.${issue.status}`, lang)}
+                  </Badge>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h4
+                        className={`font-semibold text-[var(--ink)] text-[15px] truncate ${
+                          isAr ? "text-ar" : ""
+                        }`}
+                      >
+                        {issue.titleAr}
+                      </h4>
+                      <Badge variant="accent">{issue.governmentBody}</Badge>
                     </div>
-                  </CardBody>
-                </Card>
-              </Link>
+                    <p
+                      className={`text-[13px] text-[var(--ink-60)] line-clamp-2 ${
+                        isAr ? "text-ar" : ""
+                      }`}
+                    >
+                      {issue.summaryAr}
+                    </p>
+                    <div className="text-[12px] text-[var(--ink-40)] num mt-1">
+                      {fmtDate(issue.resolvedAt)}
+                    </div>
+                  </div>
+                </Link>
+              </LiftCard>
             ))
           )}
         </div>
@@ -433,13 +576,11 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       {tab === "documents" && (
         <>
           {documents.length === 0 ? (
-            <Card>
-              <CardBody className="py-8 text-center text-[var(--ink-40)] text-[13px]">
-                {t("company.noDocuments", lang)}
-              </CardBody>
-            </Card>
+            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-10 text-center text-[var(--ink-40)] text-[13px]">
+              {t("company.noDocuments", lang)}
+            </div>
           ) : (
-            <Card>
+            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 overflow-hidden">
               <Table>
                 <Thead>
                   <Tr>
@@ -468,7 +609,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                   ))}
                 </Tbody>
               </Table>
-            </Card>
+            </div>
           )}
         </>
       )}
@@ -488,7 +629,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
             </CardHeader>
             <CardBody className="space-y-3">
               <p className="text-[13px] text-[var(--ink-60)]">
-                {lang === "ar"
+                {isAr
                   ? "يمكنك إخفاء هذه الشركة من القوائم عبر الأرشفة."
                   : "Archive this company to hide it from your lists."}
               </p>
@@ -501,66 +642,97 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
       {tab === "timeline" && (
         <>
           {timeline.length === 0 ? (
-            <Card>
-              <CardBody className="py-8 text-center text-[var(--ink-40)] text-[13px]">
-                {t("company.noActivity", lang)}
-              </CardBody>
-            </Card>
+            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-10 text-center text-[var(--ink-40)] text-[13px]">
+              {t("company.noActivity", lang)}
+            </div>
           ) : (
-            <Card>
-              <CardBody className="p-0">
-                <ul className="relative ms-4 my-4 border-s border-[var(--stone-light)]">
-                  {timeline.map((e, idx) => (
-                    <li key={idx} className="ps-4 pe-5 py-3 relative">
-                      <span className="absolute -start-[5px] top-4 h-2.5 w-2.5 rounded-full bg-[var(--signal)]" />
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="text-[12px] text-[var(--ink-40)]">
-                            {t(`company.timeline.${e.kind}`, lang)}
-                          </div>
-                          <div className="text-[13px] text-[var(--ink)] truncate">
-                            {e.href ? (
-                              <Link
-                                href={e.href}
-                                className="hover:text-[var(--signal)]"
-                              >
-                                {e.label}
-                              </Link>
-                            ) : (
-                              e.label
-                            )}
-                          </div>
+            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 p-5">
+              <ul className="relative">
+                <div
+                  className="absolute top-0 bottom-0 w-px bg-[var(--stone-light)]"
+                  style={{ [isAr ? "right" : "left"]: "7px" }}
+                />
+                {timeline.map((e, idx) => (
+                  <li key={idx} className="ps-6 pe-1 py-2 relative">
+                    <span
+                      className={`w-[15px] h-[15px] rounded-full absolute top-2 border-2 ${
+                        idx === 0
+                          ? "bg-[var(--ink)] border-[var(--ink)]"
+                          : "bg-[var(--paper)] border-[var(--signal)]"
+                      }`}
+                      style={{ [isAr ? "right" : "left"]: 0 }}
+                    />
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-mono text-[var(--ink-40)] tracking-wider uppercase">
+                          {t(`company.timeline.${e.kind}`, lang)}
                         </div>
-                        <span className="num text-[12px] text-[var(--ink-40)] shrink-0">
-                          {fmtDate(e.at)}
-                        </span>
+                        <div
+                          className={`text-[13px] text-[var(--ink)] truncate ${
+                            isAr ? "text-ar" : ""
+                          }`}
+                        >
+                          {e.href ? (
+                            <Link href={e.href} className="hover:text-[var(--signal)]">
+                              {e.label}
+                            </Link>
+                          ) : (
+                            e.label
+                          )}
+                        </div>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              </CardBody>
-            </Card>
+                      <span className="num text-[12px] text-[var(--ink-40)] shrink-0">
+                        {fmtDate(e.at)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </>
       )}
-    </PageFrame>
+    </div>
   );
 }
 
-function StatMini({ label, value }: { label: string; value: number | string }) {
+function HeroMetric({
+  lang,
+  label,
+  value,
+  suffix = "",
+  borderInlineStart,
+  borderTop
+}: {
+  lang: Lang;
+  label: string;
+  value: number;
+  suffix?: string;
+  borderInlineStart?: boolean;
+  borderTop?: boolean;
+}) {
+  const isAr = lang === "ar";
   return (
-    <Card>
-      <CardBody>
-        <div className="text-[11px] uppercase tracking-wider text-[var(--ink-40)] font-medium">
-          {label}
-        </div>
-        <div
-          className="text-[20px] leading-none mt-1.5 text-[var(--ink)]"
-          style={{ fontWeight: 500, letterSpacing: "-0.01em" }}
-        >
-          <span className="num">{value}</span>
-        </div>
-      </CardBody>
-    </Card>
+    <div
+      className="px-5 py-5 flex flex-col justify-center"
+      style={{
+        borderInlineStart: borderInlineStart ? "1px solid var(--stone-hair)" : undefined,
+        borderTop: borderTop ? "1px solid var(--stone-hair)" : undefined
+      }}
+    >
+      <div
+        className={`text-[10px] font-mono text-[var(--ink-40)] tracking-[0.16em] uppercase mb-2 ${
+          isAr ? "text-ar" : ""
+        }`}
+      >
+        {label}
+      </div>
+      <div
+        className="text-[24px] md:text-[26px] font-semibold text-[var(--ink)] leading-none"
+        style={{ letterSpacing: "-0.02em" }}
+      >
+        <NumberTicker value={value} suffix={suffix} />
+      </div>
+    </div>
   );
 }

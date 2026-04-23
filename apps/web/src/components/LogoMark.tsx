@@ -1,20 +1,41 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 // Plain <img> so the page renders even if the SVG asset is missing —
 // no next/image build-time optimisation pass.
 //
-// `block` kills the baseline-descender whitespace that an inline <img>
-// carries by default, which previously clipped the top of the glyphs
-// when the nav container was tight.
+// Wordmark renders inside a fixed-size box with `object-fit: contain` so
+// every (lang × theme) variant reads at identical optical size regardless
+// of the source SVG's internal padding. Theme is watched via a
+// MutationObserver on <html data-theme>.
+
+import { useEffect, useState } from "react";
 
 import type { Lang } from "@/lib/i18n";
 
 type Size = "sm" | "lg";
-type Surface = "paper" | "ink";
+type Surface = "paper" | "ink" | "auto";
 
-function logoSrc(lang: Lang, surface: Surface): string {
+function logoSrc(lang: Lang, surface: "paper" | "ink"): string {
   const locale = lang === "ar" ? "ar" : "en";
   const onInk = surface === "ink" ? "-onink" : "";
   return `/logos/makyn-${locale}${onInk}.svg`;
+}
+
+function useIsDark() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const read = () => document.documentElement.getAttribute("data-theme") === "dark";
+    setIsDark(read());
+    const obs = new MutationObserver(() => setIsDark(read()));
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"]
+    });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
 }
 
 export function LogoMark({
@@ -24,7 +45,7 @@ export function LogoMark({
   title = "MAKYN"
 }: {
   lang: Lang;
-  surface?: Surface;
+  surface?: "paper" | "ink";
   className?: string;
   title?: string;
 }) {
@@ -39,26 +60,48 @@ export function LogoMark({
 
 export function Wordmark({
   lang,
-  surface = "paper",
+  surface = "auto",
   size = "sm",
+  boxWidth = 120,
   className = "",
   title = "MAKYN"
 }: {
   lang: Lang;
   surface?: Surface;
   size?: Size;
+  boxWidth?: number;
   className?: string;
   title?: string;
 }) {
-  // sm is the nav/header lockup — bumped to 40px so the glyphs have
-  // enough device pixels to render without the top stroke clipping.
-  // lg remains 64px for the login / landing hero lockup.
-  const sizeClass = size === "lg" ? "h-16" : "h-10";
+  const isAr = lang === "ar";
+  const isDark = useIsDark();
+  const resolvedSurface: "paper" | "ink" =
+    surface === "auto" ? (isDark ? "ink" : "paper") : surface;
+
+  // sm = chrome lockup (28px box). lg = login / hero lockup (64px box).
+  const boxHeight = size === "lg" ? 64 : 28;
+
   return (
-    <img
-      src={logoSrc(lang, surface)}
-      alt={title}
-      className={`block ${sizeClass} w-auto ${className}`}
-    />
+    <span
+      className={`inline-flex items-center flex-none ${className}`}
+      style={{
+        width: boxWidth,
+        height: boxHeight,
+        justifyContent: isAr ? "flex-end" : "flex-start"
+      }}
+    >
+      <img
+        src={logoSrc(lang, resolvedSurface)}
+        alt={title}
+        draggable={false}
+        className="select-none block"
+        style={{
+          maxHeight: "100%",
+          maxWidth: "100%",
+          objectFit: "contain",
+          objectPosition: isAr ? "right center" : "left center"
+        }}
+      />
+    </span>
   );
 }

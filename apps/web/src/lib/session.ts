@@ -74,6 +74,8 @@ export async function getSessionFromCookie() {
           fullName: true,
           phoneNumber: true,
           preferredLanguage: true,
+          theme: true,
+          dockPosition: true,
           role: true,
           isActive: true
         }
