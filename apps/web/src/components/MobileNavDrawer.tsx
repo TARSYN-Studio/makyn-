@@ -51,7 +51,7 @@ export function MobileNavDrawer({
           >
             <motion.aside
               dir={isRtl ? "rtl" : "ltr"}
-              className="absolute top-0 bottom-0 w-72 bg-[var(--paper-low)] border-s border-[var(--stone-light)] p-4 shadow-modal"
+              className="absolute top-0 bottom-0 w-72 bg-[var(--chrome)] border-s border-[var(--chrome-line)] p-4 shadow-modal"
               style={{ insetInlineEnd: 0 }}
               onClick={(e) => e.stopPropagation()}
               initial={{ x: slideFrom }}
@@ -83,8 +83,8 @@ export function MobileNavDrawer({
                       onClick={() => setOpen(false)}
                       className={`px-3 py-2 rounded-lg text-[14px] font-medium ${
                         active
-                          ? "bg-[var(--signal-tint)] text-[var(--signal)]"
-                          : "text-[var(--ink-60)] hover:bg-[var(--paper-low)]"
+                          ? "bg-[var(--ink)] text-[var(--paper)]"
+                          : "text-[var(--ink-60)] hover:bg-[var(--chrome-hover)] hover:text-[var(--ink)]"
                       }`}
                     >
                       {label}
@@ -92,11 +92,11 @@ export function MobileNavDrawer({
                   );
                 })}
               </nav>
-              <div className="mt-6 pt-6 border-t border-[var(--stone-light)]">
+              <div className="mt-6 pt-6 border-t border-[var(--chrome-line)]">
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className="w-full text-start px-3 py-2 rounded-lg text-[14px] text-[var(--ink-60)] hover:bg-[var(--paper-low)]"
+                    className="w-full text-start px-3 py-2 rounded-lg text-[14px] text-[var(--ink-60)] hover:bg-[var(--chrome-hover)]"
                   >
                     {logoutLabel}
                   </button>
