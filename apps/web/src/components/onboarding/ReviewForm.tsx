@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 
 import { ReviewFieldGroup, type ReviewField } from "./ReviewFieldGroup";
 import { mergeExtractedFields } from "@makyn/core/ai/extracted-fields";
-import { Button } from "@/components/ui/button";
+import { PressableButton } from "@/components/motion/PressableButton";
+import { MagneticLink } from "@/components/motion/MagneticLink";
 import type { Lang } from "@/lib/i18n";
 
 type ExtractedResult = {
@@ -237,22 +238,32 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <button type="button" onClick={onBack} className="text-[13px] text-[var(--signal)] hover:underline mb-3 block">
-          {isAr ? "→ رجوع لتعديل المستندات" : "← Back to edit documents"}
-        </button>
-        <h1 className="text-[20px] font-semibold text-[var(--ink)]">
-          {isAr ? "راجع وأكد البيانات" : "Review and confirm"}
-        </h1>
-        <p className="text-[13px] text-[var(--ink-60)] mt-1">
-          {isAr
-            ? "البيانات مستخرجة تلقائياً — راجعها وعدّل ما يلزم"
-            : "Data extracted automatically — review and edit as needed"}
-        </p>
-      </div>
+    <div className="max-w-[720px] mx-auto">
+      <MagneticLink onClick={onBack} isRtl={isAr} className="text-[12px] text-[var(--ink-60)] hover:text-[var(--ink)] mb-4">
+        {isAr ? "← رجوع لتعديل المستندات" : "← Back to edit documents"}
+      </MagneticLink>
 
-      <div className="space-y-4">
+      <div className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.2em] uppercase mb-3">
+        {isAr ? "الخطوة ٣ من ٣" : "Step 3 of 3"}
+      </div>
+      <h1
+        className={`text-[40px] md:text-[48px] font-semibold text-[var(--ink)] leading-[1.05] tracking-[-0.02em] ${
+          isAr ? "text-ar" : ""
+        }`}
+      >
+        {isAr ? "راجع وأكّد البيانات." : "Review and confirm."}
+      </h1>
+      <p
+        className={`text-[15.5px] text-[var(--ink-60)] mt-2 max-w-[520px] ${
+          isAr ? "text-ar" : ""
+        }`}
+      >
+        {isAr
+          ? "استخرجنا البيانات تلقائياً — راجعها وعدّل ما يلزم قبل الحفظ."
+          : "We've extracted the data — review it and edit anything that needs correcting."}
+      </p>
+
+      <div className="mt-10 space-y-4">
         <ReviewFieldGroup
           titleAr="البيانات الأساسية (من السجل التجاري)"
           titleEn="Basic Information (from CR)"
@@ -297,9 +308,9 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
         />
 
         {skippedDocs.length > 0 && (
-          <div className="border border-[var(--stone-light)] rounded-lg p-4">
-            <p className="text-[11px] font-semibold text-[var(--ink-40)] uppercase tracking-wider mb-2">
-              {isAr ? "مستندات لاحقة" : "Skipped Documents"}
+          <div className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 p-4">
+            <p className="text-[10.5px] font-mono font-medium text-[var(--ink-40)] uppercase tracking-[0.18em] mb-2">
+              {isAr ? "مستندات لاحقة" : "Skipped documents"}
             </p>
             <ul className="space-y-1">
               {skippedDocs.map((dt) => (
@@ -321,23 +332,20 @@ export function ReviewForm({ lang, sessionId, uploadedDocs, results, onSaved, on
         </p>
       )}
 
-      <div className="flex items-center gap-3 pt-2 border-t border-[var(--stone-light)]">
-        <Button
+      <div className="mt-10 pt-6 border-t border-[var(--stone-hair)] flex items-center gap-3 flex-wrap">
+        <PressableButton
+          size="lg"
+          variant="primary"
           disabled={isPending}
           onClick={handleSave}
-          size="lg"
         >
           {isPending
-            ? isAr ? "جاري الحفظ..." : "Saving..."
-            : isAr ? "حفظ الشركة" : "Save Company"}
-        </Button>
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={onBack}
-        >
+            ? isAr ? "جارٍ الحفظ…" : "Saving…"
+            : isAr ? "حفظ الشركة" : "Save organization"}
+        </PressableButton>
+        <PressableButton size="lg" variant="secondary" onClick={onBack}>
           {isAr ? "رجوع لتعديل المستندات" : "Back to documents"}
-        </Button>
+        </PressableButton>
       </div>
     </div>
   );

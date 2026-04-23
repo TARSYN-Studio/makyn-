@@ -62,7 +62,8 @@ export function Wordmark({
   lang,
   surface = "auto",
   size = "sm",
-  boxWidth = 120,
+  boxWidth = 140,
+  boxHeight,
   className = "",
   title = "MAKYN"
 }: {
@@ -70,6 +71,7 @@ export function Wordmark({
   surface?: Surface;
   size?: Size;
   boxWidth?: number;
+  boxHeight?: number;
   className?: string;
   title?: string;
 }) {
@@ -78,15 +80,15 @@ export function Wordmark({
   const resolvedSurface: "paper" | "ink" =
     surface === "auto" ? (isDark ? "ink" : "paper") : surface;
 
-  // sm = chrome lockup (28px box). lg = login / hero lockup (64px box).
-  const boxHeight = size === "lg" ? 64 : 28;
+  // sm = chrome lockup (40px box). lg = login / hero lockup (72px box).
+  const resolvedHeight = boxHeight ?? (size === "lg" ? 72 : 40);
 
   return (
     <span
       className={`inline-flex items-center flex-none ${className}`}
       style={{
         width: boxWidth,
-        height: boxHeight,
+        height: resolvedHeight,
         justifyContent: isAr ? "flex-end" : "flex-start"
       }}
     >

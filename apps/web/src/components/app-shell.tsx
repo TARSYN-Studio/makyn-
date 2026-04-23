@@ -311,7 +311,7 @@ function MobileTopBar({
       }}
     >
       <Link href="/dashboard" aria-label="MAKYN">
-        <Wordmark size="sm" lang={lang} boxWidth={110} />
+        <Wordmark size="sm" lang={lang} boxWidth={110} boxHeight={32} />
       </Link>
       <div className="flex items-center gap-2">
         <form action={setLanguageAction}>

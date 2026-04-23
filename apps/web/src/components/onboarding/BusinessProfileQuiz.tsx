@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { PressableButton } from "@/components/motion/PressableButton";
 import type { Lang } from "@/lib/i18n";
 
 export type BusinessProfile = {
@@ -13,15 +14,15 @@ export type BusinessProfile = {
 };
 
 const ACTIVITY_OPTIONS = [
-  { value: "trading", ar: "تجارة عامة", en: "General Trading" },
+  { value: "trading", ar: "تجارة عامة", en: "General trading" },
   { value: "services", ar: "خدمات", en: "Services" },
   { value: "manufacturing", ar: "صناعة", en: "Manufacturing" },
   { value: "technology", ar: "تقنية", en: "Technology" },
-  { value: "food", ar: "غذاء ومشروبات", en: "Food & Beverage" },
+  { value: "food", ar: "غذاء ومشروبات", en: "Food & beverage" },
   { value: "healthcare", ar: "صحة", en: "Healthcare" },
   { value: "tourism", ar: "سياحة", en: "Tourism" },
-  { value: "financial", ar: "مالية", en: "Financial Services" },
-  { value: "import_export", ar: "استيراد وتصدير", en: "Import & Export" },
+  { value: "financial", ar: "مالية", en: "Financial services" },
+  { value: "import_export", ar: "استيراد وتصدير", en: "Import & export" },
   { value: "other", ar: "أخرى", en: "Other" }
 ];
 
@@ -60,134 +61,185 @@ export function BusinessProfileQuiz({ lang, onComplete }: Props) {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-[20px] font-semibold text-[var(--ink)]">
-          {isAr ? "بعض الأسئلة السريعة" : "A few quick questions"}
-        </h1>
-        <p className="text-[13px] text-[var(--ink-60)] mt-1">
-          {isAr
-            ? "لنعرف المستندات الصحيحة لشركتك"
-            : "So we can show you the right document slots"}
-        </p>
+    <div className="max-w-[640px] mx-auto">
+      <div className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.2em] uppercase mb-3">
+        {isAr ? "الخطوة ١ من ٣" : "Step 1 of 3"}
       </div>
-
-      {/* Q1 */}
-      <div className="space-y-2">
-        <p className="font-medium text-[var(--ink)] text-[13px]">
-          {isAr ? "هل لديك موظفون؟" : "Do you have employees?"}
-        </p>
-        <div className="flex gap-3">
-          <ToggleBtn
-            active={hasEmployees === true}
-            onClick={() => setHasEmployees(true)}
-            label={isAr ? "نعم" : "Yes"}
-          />
-          <ToggleBtn
-            active={hasEmployees === false}
-            onClick={() => setHasEmployees(false)}
-            label={isAr ? "لا" : "No"}
-          />
-        </div>
-      </div>
-
-      {/* Q2 */}
-      <div className="space-y-2">
-        <p className="font-medium text-[var(--ink)] text-[13px]">
-          {isAr ? "هل لديك موقع فعلي أو مقر؟" : "Do you have physical premises?"}
-        </p>
-        <div className="flex gap-3">
-          <ToggleBtn
-            active={hasPremises === true}
-            onClick={() => setHasPremises(true)}
-            label={isAr ? "نعم" : "Yes"}
-          />
-          <ToggleBtn
-            active={hasPremises === false}
-            onClick={() => setHasPremises(false)}
-            label={isAr ? "لا" : "No"}
-          />
-        </div>
-      </div>
-
-      {/* Q3 */}
-      <div className="space-y-2">
-        <p className="font-medium text-[var(--ink)] text-[13px]">
-          {isAr ? "ما نشاط شركتك الرئيسي؟" : "What's your primary business activity?"}
-          <span className="text-[var(--ink-40)] font-normal ms-1 text-[11px]">
-            {isAr ? "(اختر كل ما ينطبق)" : "(select all that apply)"}
-          </span>
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {ACTIVITY_OPTIONS.map((opt) => (
-            <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={activities.includes(opt.value)}
-                onChange={() => toggleActivity(opt.value)}
-                className="w-4 h-4 rounded accent-[var(--signal)]"
-              />
-              <span className="text-[13px] text-[var(--ink)]">
-                {isAr ? opt.ar : opt.en}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Q4 */}
-      <div className="space-y-2">
-        <p className="font-medium text-[var(--ink)] text-[13px]">
-          {isAr
-            ? "هل الشركة ذات ملكية أجنبية كاملة أو جزئية؟"
-            : "Does the company have foreign ownership?"}
-        </p>
-        <div className="flex gap-3">
-          <ToggleBtn
-            active={foreignOwnership === true}
-            onClick={() => setForeignOwnership(true)}
-            label={isAr ? "نعم" : "Yes"}
-          />
-          <ToggleBtn
-            active={foreignOwnership === false}
-            onClick={() => setForeignOwnership(false)}
-            label={isAr ? "لا" : "No"}
-          />
-        </div>
-      </div>
-
-      <Button
-        disabled={!canContinue}
-        onClick={handleContinue}
-        size="lg"
-        className="w-full"
+      <h1
+        className={`text-[40px] md:text-[48px] font-semibold text-[var(--ink)] leading-[1.05] tracking-[-0.02em] ${
+          isAr ? "text-ar" : ""
+        }`}
       >
-        {isAr ? "التالي — رفع المستندات" : "Next — Upload documents"}
-      </Button>
+        {isAr ? "بعض الأسئلة السريعة." : "A few quick questions."}
+      </h1>
+      <p
+        className={`text-[15.5px] text-[var(--ink-60)] mt-2 max-w-[480px] ${
+          isAr ? "text-ar" : ""
+        }`}
+      >
+        {isAr
+          ? "لنعرف المستندات الصحيحة لشركتك."
+          : "So we can show you the right document slots."}
+      </p>
+
+      <div className="mt-12 space-y-10">
+        <Question
+          number="01"
+          label={isAr ? "هل لديك موظفون؟" : "Do you have employees?"}
+          isAr={isAr}
+        >
+          <YesNo value={hasEmployees} onChange={setHasEmployees} isAr={isAr} />
+        </Question>
+
+        <Question
+          number="02"
+          label={isAr ? "هل لديك موقع فعلي أو مقر؟" : "Do you have physical premises?"}
+          isAr={isAr}
+        >
+          <YesNo value={hasPremises} onChange={setHasPremises} isAr={isAr} />
+        </Question>
+
+        <Question
+          number="03"
+          label={isAr ? "نشاط الشركة الرئيسي" : "Primary business activities"}
+          hint={isAr ? "اختر كل ما ينطبق." : "Select all that apply."}
+          isAr={isAr}
+        >
+          <div className="flex flex-wrap gap-2">
+            {ACTIVITY_OPTIONS.map((opt) => {
+              const active = activities.includes(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => toggleActivity(opt.value)}
+                  className={`px-4 h-10 rounded-full border text-[13px] transition-colors ${
+                    active
+                      ? "bg-[var(--ink)] text-[var(--paper)] border-[var(--ink)]"
+                      : "bg-[var(--card)] text-[var(--ink-80)] border-[var(--stone-light)] hover:border-[var(--ink-40)]"
+                  } ${isAr ? "text-ar" : ""}`}
+                >
+                  {isAr ? opt.ar : opt.en}
+                </button>
+              );
+            })}
+          </div>
+        </Question>
+
+        <Question
+          number="04"
+          label={
+            isAr
+              ? "هل الشركة ذات ملكية أجنبية كاملة أو جزئية؟"
+              : "Does the company have foreign ownership?"
+          }
+          isAr={isAr}
+        >
+          <YesNo value={foreignOwnership} onChange={setForeignOwnership} isAr={isAr} />
+        </Question>
+      </div>
+
+      <div className="mt-12 flex items-center justify-end">
+        <PressableButton
+          size="lg"
+          variant="primary"
+          disabled={!canContinue}
+          onClick={handleContinue}
+          trailing={<ArrowRight className="h-4 w-4 flip-rtl" strokeWidth={1.5} />}
+        >
+          {isAr ? "التالي — رفع المستندات" : "Next — Upload documents"}
+        </PressableButton>
+      </div>
     </div>
   );
 }
 
-function ToggleBtn({
+function Question({
+  number,
+  label,
+  hint,
+  isAr,
+  children
+}: {
+  number: string;
+  label: string;
+  hint?: string;
+  isAr: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[48px_1fr] gap-5">
+      <div className="text-[13px] font-mono text-[var(--ink-40)] tracking-wider pt-1 num">
+        {number}
+      </div>
+      <div>
+        <div className="flex items-baseline gap-2 flex-wrap mb-4">
+          <h2
+            className={`text-[18px] font-semibold text-[var(--ink)] ${
+              isAr ? "text-ar" : ""
+            }`}
+          >
+            {label}
+          </h2>
+          {hint && (
+            <span
+              className={`text-[12.5px] text-[var(--ink-40)] ${
+                isAr ? "text-ar" : ""
+              }`}
+            >
+              {hint}
+            </span>
+          )}
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function YesNo({
+  value,
+  onChange,
+  isAr
+}: {
+  value: boolean | null;
+  onChange: (v: boolean) => void;
+  isAr: boolean;
+}) {
+  return (
+    <div className="flex gap-2.5">
+      <PillButton active={value === true} onClick={() => onChange(true)} isAr={isAr}>
+        {isAr ? "نعم" : "Yes"}
+      </PillButton>
+      <PillButton active={value === false} onClick={() => onChange(false)} isAr={isAr}>
+        {isAr ? "لا" : "No"}
+      </PillButton>
+    </div>
+  );
+}
+
+function PillButton({
   active,
   onClick,
-  label
+  isAr,
+  children
 }: {
   active: boolean;
   onClick: () => void;
-  label: string;
+  isAr: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`px-5 py-2 rounded-lg border text-[13px] font-medium transition-colors ${
+      className={`min-w-[88px] h-11 px-6 rounded-full border text-[14px] font-medium transition-all ${
         active
-          ? "bg-[var(--signal)] text-white border-[var(--signal)]"
-          : "bg-[var(--paper-low)] text-[var(--ink)] border-[var(--stone-light)] hover:border-[var(--stone)]"
-      }`}
+          ? "bg-[var(--ink)] text-[var(--paper)] border-[var(--ink)]"
+          : "bg-[var(--card)] text-[var(--ink-80)] border-[var(--stone-light)] hover:border-[var(--ink-40)] hover:bg-[var(--card-warm)]"
+      } ${isAr ? "text-ar" : ""}`}
     >
-      {label}
+      {children}
     </button>
   );
 }

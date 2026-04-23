@@ -5,7 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AddDocumentDialog, ALL_DOC_TYPES, type DocTypeOption } from "./AddDocumentDialog";
 import { DocumentUploadCard, type DocStatus } from "./DocumentUploadCard";
 import type { BusinessProfile } from "./BusinessProfileQuiz";
-import { Button } from "@/components/ui/button";
+import { PressableButton } from "@/components/motion/PressableButton";
+import { MagneticLink } from "@/components/motion/MagneticLink";
 import type { Lang } from "@/lib/i18n";
 
 // Metadata for every document type
@@ -275,25 +276,35 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
   const existingTypeSet = new Set(slots);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <button type="button" onClick={onBack} className="text-[13px] text-[var(--signal)] hover:underline mb-3 block">
-          {isAr ? "→ رجوع" : "← Back"}
-        </button>
-        <h1 className="text-[20px] font-semibold text-[var(--ink)]">
-          {isAr ? "رفع المستندات" : "Upload Documents"}
-        </h1>
-        <p className="text-[13px] text-[var(--ink-60)] mt-1">
-          {isAr
-            ? "ارفع ما لديك — سيستخرج الذكاء الاصطناعي البيانات تلقائياً"
-            : "Upload what you have — AI will extract the data automatically"}
-        </p>
+    <div className="max-w-[640px] mx-auto">
+      <MagneticLink onClick={onBack} isRtl={isAr} className="text-[12px] text-[var(--ink-60)] hover:text-[var(--ink)] mb-4">
+        {isAr ? "← رجوع" : "← Back"}
+      </MagneticLink>
+
+      <div className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.2em] uppercase mb-3">
+        {isAr ? "الخطوة ٢ من ٣" : "Step 2 of 3"}
       </div>
+      <h1
+        className={`text-[40px] md:text-[48px] font-semibold text-[var(--ink)] leading-[1.05] tracking-[-0.02em] ${
+          isAr ? "text-ar" : ""
+        }`}
+      >
+        {isAr ? "ارفع المستندات." : "Upload your documents."}
+      </h1>
+      <p
+        className={`text-[15.5px] text-[var(--ink-60)] mt-2 max-w-[480px] ${
+          isAr ? "text-ar" : ""
+        }`}
+      >
+        {isAr
+          ? "ارفع ما لديك — سنقرأها ونستخرج البيانات تلقائياً."
+          : "Upload what you have — we'll read them and extract the data."}
+      </p>
 
       {/* Required section */}
-      <section className="space-y-3">
-        <h2 className="text-[11px] font-semibold text-[var(--ink-40)] uppercase tracking-wider">
-          {isAr ? "المستندات المطلوبة" : "Required Documents"}
+      <section className="mt-10 space-y-3">
+        <h2 className="text-[10.5px] font-mono font-medium text-[var(--ink-40)] uppercase tracking-[0.18em]">
+          {isAr ? "المستندات المطلوبة" : "Required documents"}
         </h2>
         <div className="space-y-3">
           {slots.map((docType) => {
@@ -336,39 +347,34 @@ export function DocumentUploadGrid({ lang, sessionId, profile, onComplete, onBac
       </section>
 
       {/* Add more section */}
-      <section>
-        <h2 className="text-[11px] font-semibold text-[var(--ink-40)] uppercase tracking-wider mb-3">
-          {isAr ? "إضافة مستندات أخرى" : "Add Other Documents"}
+      <section className="mt-8">
+        <h2 className="text-[10.5px] font-mono font-medium text-[var(--ink-40)] uppercase tracking-[0.18em] mb-3">
+          {isAr ? "إضافة مستندات أخرى" : "Add other documents"}
         </h2>
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="w-full border border-dashed border-[var(--stone)] rounded-lg py-3 text-[13px] text-[var(--ink-60)] hover:border-[var(--signal)] hover:text-[var(--signal)] transition-colors font-medium"
+          className="w-full border border-dashed border-[var(--stone-light)] rounded-xl py-4 text-[13px] text-[var(--ink-60)] hover:border-[var(--ink-40)] hover:text-[var(--ink)] transition-colors font-medium"
         >
-          + {isAr ? "إضافة مستند آخر" : "Add Another Document"}
+          + {isAr ? "إضافة مستند آخر" : "Add another document"}
         </button>
       </section>
 
       {/* Footer */}
-      <div className="flex items-center justify-between pt-2 border-t border-[var(--stone-light)]">
-        <div className="text-[11px] text-[var(--ink-40)]">
+      <div className="mt-10 pt-6 border-t border-[var(--stone-hair)] flex items-center justify-between gap-4 flex-wrap">
+        <div className={`text-[12px] text-[var(--ink-40)] ${isAr ? "text-ar" : ""}`}>
           {isAr
-            ? "السجل التجاري مطلوب للمتابعة"
-            : "Commercial Registration required to continue"}
+            ? "السجل التجاري مطلوب للمتابعة."
+            : "Commercial Registration is required to continue."}
         </div>
-        <Button
+        <PressableButton
+          size="lg"
+          variant="primary"
           disabled={!canContinue}
           onClick={handleContinue}
-          title={
-            !canContinue
-              ? isAr
-                ? "السجل التجاري مطلوب لإكمال التسجيل"
-                : "CR required to continue"
-              : undefined
-          }
         >
           {isAr ? "التالي — مراجعة البيانات" : "Next — Review data"}
-        </Button>
+        </PressableButton>
       </div>
 
       <AddDocumentDialog

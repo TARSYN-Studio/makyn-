@@ -9,6 +9,8 @@ import {
 } from "@makyn/db";
 import { calculateCompanyStatus, hoursUntil, type IssueForStatus } from "@makyn/core";
 
+import { ChevronRight } from "lucide-react";
+
 import { CompanyDetailsForm } from "./details-form";
 import { ArchiveCompanyButton } from "./archive-button";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +22,29 @@ import { LiftCard } from "@/components/motion/LiftCard";
 import { NumberTicker } from "@/components/motion/NumberTicker";
 import { ProgressRing } from "@/components/motion/ProgressRing";
 import { Reveal } from "@/components/motion/Reveal";
+import { SectionHead } from "@/components/motion/SectionHead";
 import { StatusDot } from "@/components/motion/StatusDot";
 import { EmptyStateMark } from "@/components/brand/EmptyStateMark";
 import { OrgAccessError, requireOrgAccess } from "@/lib/permissions";
 import { t, type Lang } from "@/lib/i18n";
 import { requireUser } from "@/lib/session";
+
+const AUTHORITIES = [
+  { code: "ZATCA", en: "Zakat, Tax & Customs", ar: "الزكاة والضريبة" },
+  { code: "GOSI", en: "Social Insurance", ar: "التأمينات الاجتماعية" },
+  { code: "QIWA", en: "Ministry of HR", ar: "الموارد البشرية" },
+  { code: "BALADY", en: "Municipal License", ar: "البلدية" },
+  { code: "MOI", en: "Ministry of Commerce", ar: "وزارة التجارة" },
+  { code: "CD", en: "Civil Defense", ar: "الدفاع المدني" }
+] as const;
+
+function dateLabel(dateStr: Date | string, lang: Lang): string {
+  const d = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
+  const months = lang === "ar"
+    ? ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]
+    : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${d.getDate()} ${months[d.getMonth()]}`;
+}
 
 type PageProps = { params: { id: string }; searchParams: { tab?: string } };
 
@@ -158,13 +178,14 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
     Math.min(100, 100 - urgentIssueCount * 20 - openCount * 3 + resolutionRate * 0.3)
   );
 
+  // Editorial scroll is the default view. Deep-dive tabs stay available for
+  // the older surfaces that don't have a section on the overview yet.
   const tabs = [
-    { key: "active", label: t("company.tabs.active", lang) },
     { key: "resolved", label: t("company.tabs.resolved", lang) },
     { key: "documents", label: t("company.tabs.documents", lang) },
-    { key: "details", label: t("company.tabs.details", lang) },
-    { key: "timeline", label: t("company.tabs.timeline", lang) }
+    { key: "details", label: t("company.tabs.details", lang) }
   ];
+  const showOverview = tab !== "resolved" && tab !== "documents" && tab !== "details";
 
   // Active issues grouped by urgency
   const activeIssues = company.issues
@@ -202,7 +223,8 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
     });
   }
 
-  // Timeline data
+  // Timeline + document count are always fetched so the Activity section
+  // and "View all documents" count can render on the editorial overview.
   type TimelineEvent = {
     at: Date;
     kind: "issueCreated" | "issueResolved" | "docExtracted" | "messageReceived";
@@ -210,61 +232,90 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
     href?: string;
   };
   const events: TimelineEvent[] = [];
-  if (tab === "timeline") {
-    for (const i of company.issues) {
+  for (const i of company.issues) {
+    events.push({
+      at: i.createdAt,
+      kind: "issueCreated",
+      label: i.titleAr,
+      href: `/organizations/${company.id}/issues/${i.id}`
+    });
+    if (i.resolvedAt) {
       events.push({
-        at: i.createdAt,
-        kind: "issueCreated",
+        at: i.resolvedAt,
+        kind: "issueResolved",
         label: i.titleAr,
         href: `/organizations/${company.id}/issues/${i.id}`
       });
-      if (i.resolvedAt) {
-        events.push({
-          at: i.resolvedAt,
-          kind: "issueResolved",
-          label: i.titleAr,
-          href: `/organizations/${company.id}/issues/${i.id}`
-        });
-      }
     }
-    const [docs, msgs] = await Promise.all([
-      prisma.companyDocument.findMany({
-        where: {
-          organizationId: company.id,
-          extractionStatus: ExtractionStatus.COMPLETED
-        },
-        orderBy: { updatedAt: "desc" },
-        take: 50
-      }),
-      prisma.message.findMany({
-        where: {
-          organizationId: company.id,
-          channelType: ChannelType.TELEGRAM,
-          direction: "INBOUND"
-        },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-        select: { id: true, rawContent: true, createdAt: true, issueId: true }
-      })
-    ]);
-    for (const d of docs) {
-      events.push({
-        at: d.extractionCompletedAt ?? d.updatedAt,
-        kind: "docExtracted",
-        label: d.originalName
-      });
-    }
-    for (const m of msgs) {
-      events.push({
-        at: m.createdAt,
-        kind: "messageReceived",
-        label: (m.rawContent ?? "").slice(0, 80) || "—",
-        href: m.issueId ? `/organizations/${company.id}/issues/${m.issueId}` : undefined
-      });
-    }
-    events.sort((a, b) => b.at.getTime() - a.at.getTime());
   }
-  const timeline = events.slice(0, 30);
+  const [extractedDocs, recentMsgs, totalDocCount] = await Promise.all([
+    prisma.companyDocument.findMany({
+      where: {
+        organizationId: company.id,
+        extractionStatus: ExtractionStatus.COMPLETED
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 20
+    }),
+    prisma.message.findMany({
+      where: {
+        organizationId: company.id,
+        channelType: ChannelType.TELEGRAM,
+        direction: "INBOUND"
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: { id: true, rawContent: true, createdAt: true, issueId: true }
+    }),
+    prisma.companyDocument.count({ where: { organizationId: company.id } })
+  ]);
+  for (const d of extractedDocs) {
+    events.push({
+      at: d.extractionCompletedAt ?? d.updatedAt,
+      kind: "docExtracted",
+      label: d.originalName
+    });
+  }
+  for (const m of recentMsgs) {
+    events.push({
+      at: m.createdAt,
+      kind: "messageReceived",
+      label: (m.rawContent ?? "").slice(0, 80) || "—",
+      href: m.issueId ? `/organizations/${company.id}/issues/${m.issueId}` : undefined
+    });
+  }
+  events.sort((a, b) => b.at.getTime() - a.at.getTime());
+  const timeline = events.slice(0, 10);
+
+  // Authorities status — derive from open issues per governmentBody.
+  const authorityStatus: Record<string, "healthy" | "attention" | "overdue"> = {};
+  const authorityNextIssue: Record<string, (typeof company.issues)[number] | null> = {};
+  for (const auth of AUTHORITIES) {
+    const issuesForAuth = company.issues.filter(
+      (i) => i.governmentBody === auth.code && OPEN_STATUSES.includes(i.status)
+    );
+    const worst = issuesForAuth.reduce(
+      (w, i) => Math.max(w, i.urgencyLevel),
+      0
+    );
+    authorityStatus[auth.code] =
+      worst >= 5 ? "overdue" : worst >= 3 ? "attention" : "healthy";
+    authorityNextIssue[auth.code] =
+      issuesForAuth.sort((a, b) => {
+        const ax = a.detectedDeadline?.getTime() ?? Infinity;
+        const bx = b.detectedDeadline?.getTime() ?? Infinity;
+        return ax - bx;
+      })[0] ?? null;
+  }
+
+  // Upcoming deadlines — active issues with a deadline, sorted ascending.
+  const upcoming = activeIssues
+    .filter((i) => i.detectedDeadline)
+    .sort(
+      (a, b) =>
+        (a.detectedDeadline!.getTime() ?? 0) - (b.detectedDeadline!.getTime() ?? 0)
+    )
+    .slice(0, 5);
 
   const statusWord =
     tone === "healthy"
@@ -399,7 +450,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
 
       {/* Action row */}
       <Reveal delay={160}>
-        <div className="flex items-center gap-2 flex-wrap mb-6">
+        <div className="flex items-center gap-2 flex-wrap mb-8">
           <Button variant="secondary" disabled title={t("company.comingSoon", lang)}>
             {t("company.addIssue", lang)}
           </Button>
@@ -412,27 +463,132 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         </div>
       </Reveal>
 
-      {/* Tabs */}
-      <Reveal delay={200}>
-        <div className="flex items-center gap-1 border-b border-[var(--stone-hair)] mb-6 overflow-x-auto">
-          {tabs.map((t2) => (
+      {/* Secondary nav — deep dives that don't have an overview section yet */}
+      {!showOverview && (
+        <Reveal delay={200}>
+          <div className="flex items-center gap-1 border-b border-[var(--stone-hair)] mb-6 overflow-x-auto">
             <Link
-              key={t2.key}
-              href={`/organizations/${company.id}?tab=${t2.key}`}
-              className={`px-4 py-2 -mb-px text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
-                tab === t2.key
-                  ? "border-[var(--ink)] text-[var(--ink)]"
-                  : "border-transparent text-[var(--ink-40)] hover:text-[var(--ink)]"
-              }`}
+              href={`/organizations/${company.id}`}
+              className="px-4 py-2 -mb-px text-[13px] font-medium border-b-2 border-transparent text-[var(--ink-40)] hover:text-[var(--ink)] whitespace-nowrap"
             >
-              {t2.label}
+              {isAr ? "← العودة للعرض العام" : "← Back to overview"}
             </Link>
-          ))}
-        </div>
-      </Reveal>
+            {tabs.map((t2) => (
+              <Link
+                key={t2.key}
+                href={`/organizations/${company.id}?tab=${t2.key}`}
+                className={`px-4 py-2 -mb-px text-[13px] font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  tab === t2.key
+                    ? "border-[var(--ink)] text-[var(--ink)]"
+                    : "border-transparent text-[var(--ink-40)] hover:text-[var(--ink)]"
+                }`}
+              >
+                {t2.label}
+              </Link>
+            ))}
+          </div>
+        </Reveal>
+      )}
 
-      {tab === "active" && (
-        <div className="space-y-6">
+      {/* Editorial overview — What's ahead · In motion · Authorities · Activity */}
+      {showOverview && (
+        <>
+          {upcoming.length > 0 && (
+            <Reveal delay={200}>
+              <section className="mb-10">
+                <SectionHead
+                  lang={lang}
+                  eyebrow={isAr ? "المواعيد القادمة" : "What's ahead"}
+                  title={isAr ? "خلال الأسابيع القادمة" : "In the weeks to come"}
+                />
+                <div className="mt-5 space-y-1.5">
+                  {upcoming.map((iss) => {
+                    const days = iss.detectedDeadline
+                      ? Math.ceil(
+                          (iss.detectedDeadline.getTime() - Date.now()) / 86_400_000
+                        )
+                      : 0;
+                    const tone2 =
+                      iss.urgencyLevel >= 5 || days < 0
+                        ? "var(--state-overdue)"
+                        : iss.urgencyLevel >= 3 || days <= 7
+                          ? "var(--state-pending)"
+                          : "var(--ink-40)";
+                    return (
+                      <LiftCard
+                        key={iss.id}
+                        tiltMax={0.6}
+                        liftY={-2}
+                        className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 hover:border-[var(--ink-20)]"
+                      >
+                        <Link
+                          href={`/organizations/${company.id}/issues/${iss.id}`}
+                          className="flex items-center gap-5 px-5 py-4"
+                        >
+                          <div className="flex items-center gap-3 flex-none w-[140px]">
+                            <span
+                              className="w-1 h-8 rounded-full shrink-0"
+                              style={{ background: tone2 }}
+                            />
+                            <div>
+                              <div className="text-[16px] font-semibold text-[var(--ink)] num leading-none">
+                                {dateLabel(iss.detectedDeadline!, lang)}
+                              </div>
+                              <div className="text-[10px] font-mono text-[var(--ink-40)] tracking-wider uppercase mt-1">
+                                {days < 0
+                                  ? isAr
+                                    ? `متأخرة ${Math.abs(days)}ي`
+                                    : `${Math.abs(days)}d late`
+                                  : days === 0
+                                    ? isAr
+                                      ? "اليوم"
+                                      : "today"
+                                    : isAr
+                                      ? `خلال ${days}ي`
+                                      : `in ${days}d`}
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            className={`flex-1 min-w-0 text-[13.5px] text-[var(--ink-80)] line-clamp-2 ${
+                              isAr ? "text-ar" : ""
+                            }`}
+                          >
+                            {iss.titleAr}
+                          </div>
+                          {iss.detectedAmountSar && (
+                            <div className="flex-none text-end">
+                              <div className="text-[14px] font-semibold text-[var(--ink)] num leading-none">
+                                {Number(iss.detectedAmountSar).toLocaleString()}
+                              </div>
+                              <div className="text-[10px] font-mono text-[var(--ink-40)] tracking-wider uppercase mt-1">
+                                SAR
+                              </div>
+                            </div>
+                          )}
+                          <ChevronRight
+                            className="h-4 w-4 text-[var(--ink-40)] flex-none flip-rtl"
+                            strokeWidth={1.5}
+                          />
+                        </Link>
+                      </LiftCard>
+                    );
+                  })}
+                </div>
+              </section>
+            </Reveal>
+          )}
+        </>
+      )}
+
+      {showOverview && (
+        <section className="mb-10">
+          <SectionHead
+            lang={lang}
+            eyebrow={isAr ? "المسائل النشطة" : "In motion"}
+            title={isAr ? "ما نتعامل معه الآن" : "What we're handling"}
+          />
+          <div className="mt-5 space-y-6">
           {activeIssues.length === 0 && (
             <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-12 flex flex-col items-center text-center gap-4 px-6">
               <EmptyStateMark size={80} />
@@ -445,7 +601,7 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
             const list = buckets[key];
             if (list.length === 0) return null;
             return (
-              <section key={key}>
+              <div key={key}>
                 <h3 className="text-[10.5px] font-mono text-[var(--ink-40)] tracking-[0.18em] uppercase mb-3">
                   {t(`company.urgency.${key}`, lang)}{" "}
                   <span className="num">({list.length})</span>
@@ -517,10 +673,131 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
                     );
                   })}
                 </div>
-              </section>
+              </div>
             );
           })}
-        </div>
+          </div>
+        </section>
+      )}
+
+      {showOverview && (
+        <>
+          {/* Authorities grid */}
+          <Reveal delay={260}>
+            <section className="mb-10">
+              <SectionHead
+                lang={lang}
+                eyebrow={isAr ? "الجهات" : "Relationships"}
+                title={isAr ? "الجهات المربوطة" : "Authorities on file"}
+              />
+              <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+                {AUTHORITIES.map((auth) => {
+                  const st = authorityStatus[auth.code];
+                  const next = authorityNextIssue[auth.code];
+                  return (
+                    <LiftCard
+                      key={auth.code}
+                      tiltMax={0.6}
+                      liftY={-2}
+                      className="rounded-xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 p-4 hover:border-[var(--ink-20)]"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <StatusDot status={st} size={6} />
+                          <span className="text-[10.5px] font-mono tracking-[0.14em] uppercase text-[var(--ink-60)]">
+                            {auth.code}
+                          </span>
+                        </div>
+                        {next?.detectedDeadline && (
+                          <span className="text-[10px] font-mono text-[var(--ink-40)] num">
+                            {dateLabel(next.detectedDeadline, lang)}
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className={`text-[12.5px] text-[var(--ink-80)] mb-2 leading-snug ${
+                          isAr ? "text-ar" : ""
+                        }`}
+                      >
+                        {isAr ? auth.ar : auth.en}
+                      </div>
+                      <div
+                        className={`text-[11px] text-[var(--ink-40)] truncate ${
+                          isAr ? "text-ar" : ""
+                        }`}
+                      >
+                        {next
+                          ? `${isAr ? "التالي: " : "Next: "}${next.titleAr}`
+                          : isAr
+                            ? "لا يوجد مسائل نشطة"
+                            : "No active matters"}
+                      </div>
+                    </LiftCard>
+                  );
+                })}
+              </div>
+            </section>
+          </Reveal>
+
+          {/* Activity timeline */}
+          <Reveal delay={320}>
+            <section className="mb-16">
+              <SectionHead
+                lang={lang}
+                eyebrow={isAr ? "السجل" : "Recently"}
+                title={isAr ? "ما فعلناه من أجلك" : "What we've done for you"}
+                action={totalDocCount > 0 ? (isAr ? "عرض المستندات" : "See documents") : undefined}
+                actionHref={totalDocCount > 0 ? `/organizations/${company.id}?tab=documents` : undefined}
+              />
+              {timeline.length === 0 ? (
+                <div className="mt-5 rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-10 text-center text-[var(--ink-40)] text-[13px]">
+                  {t("company.noActivity", lang)}
+                </div>
+              ) : (
+                <div className="mt-5 relative">
+                  <div
+                    className="absolute top-0 bottom-0 w-px bg-[var(--stone-light)]"
+                    style={{ [isAr ? "right" : "left"]: "7px" }}
+                  />
+                  <ul className="space-y-3.5">
+                    {timeline.map((e, idx) => (
+                      <li key={idx} className="flex items-start gap-4 relative">
+                        <span
+                          className={`w-[15px] h-[15px] rounded-full flex-none mt-0.5 relative z-10 ${
+                            idx === 0
+                              ? "bg-[var(--ink)] border-2 border-[var(--ink)]"
+                              : "bg-[var(--paper)] border-2 border-[var(--signal)]"
+                          }`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-mono text-[var(--ink-40)] tracking-wider uppercase">
+                            {t(`company.timeline.${e.kind}`, lang)}
+                          </div>
+                          <div
+                            className={`text-[13px] text-[var(--ink-80)] truncate ${
+                              isAr ? "text-ar" : ""
+                            }`}
+                          >
+                            {e.href ? (
+                              <Link href={e.href} className="hover:text-[var(--signal)]">
+                                {e.label}
+                              </Link>
+                            ) : (
+                              e.label
+                            )}
+                          </div>
+                          <div className="text-[10.5px] font-mono text-[var(--ink-40)] mt-0.5 num">
+                            {fmtDate(e.at)}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          </Reveal>
+        </>
       )}
 
       {tab === "resolved" && (
@@ -639,59 +916,6 @@ export default async function CompanyDetailPage({ params, searchParams }: PagePr
         </div>
       )}
 
-      {tab === "timeline" && (
-        <>
-          {timeline.length === 0 ? (
-            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 py-10 text-center text-[var(--ink-40)] text-[13px]">
-              {t("company.noActivity", lang)}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-[var(--stone-hair)] bg-[var(--card)] elev-1 p-5">
-              <ul className="relative">
-                <div
-                  className="absolute top-0 bottom-0 w-px bg-[var(--stone-light)]"
-                  style={{ [isAr ? "right" : "left"]: "7px" }}
-                />
-                {timeline.map((e, idx) => (
-                  <li key={idx} className="ps-6 pe-1 py-2 relative">
-                    <span
-                      className={`w-[15px] h-[15px] rounded-full absolute top-2 border-2 ${
-                        idx === 0
-                          ? "bg-[var(--ink)] border-[var(--ink)]"
-                          : "bg-[var(--paper)] border-[var(--signal)]"
-                      }`}
-                      style={{ [isAr ? "right" : "left"]: 0 }}
-                    />
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[11px] font-mono text-[var(--ink-40)] tracking-wider uppercase">
-                          {t(`company.timeline.${e.kind}`, lang)}
-                        </div>
-                        <div
-                          className={`text-[13px] text-[var(--ink)] truncate ${
-                            isAr ? "text-ar" : ""
-                          }`}
-                        >
-                          {e.href ? (
-                            <Link href={e.href} className="hover:text-[var(--signal)]">
-                              {e.label}
-                            </Link>
-                          ) : (
-                            e.label
-                          )}
-                        </div>
-                      </div>
-                      <span className="num text-[12px] text-[var(--ink-40)] shrink-0">
-                        {fmtDate(e.at)}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 }
