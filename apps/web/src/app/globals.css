@@ -55,8 +55,8 @@
 
   /* Chrome geometry — consumed by sticky elements (approval bar, filter rails)
      so they know how far to offset from the dock. Updated by [data-dock]. */
-  --dock-side-width: 248px;
-  --dock-top-height: 72px;
+  --dock-side-width: 260px;
+  --dock-top-height: 80px;
   --dock-inline-start: var(--dock-side-width);
   --dock-block-start: 0px;
 }

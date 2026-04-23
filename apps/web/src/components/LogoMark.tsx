@@ -80,8 +80,8 @@ export function Wordmark({
   const resolvedSurface: "paper" | "ink" =
     surface === "auto" ? (isDark ? "ink" : "paper") : surface;
 
-  // sm = chrome lockup (40px box). lg = login / hero lockup (72px box).
-  const resolvedHeight = boxHeight ?? (size === "lg" ? 72 : 40);
+  // sm = chrome lockup (48px box). lg = login / hero lockup (80px box).
+  const resolvedHeight = boxHeight ?? (size === "lg" ? 80 : 48);
 
   return (
     <span

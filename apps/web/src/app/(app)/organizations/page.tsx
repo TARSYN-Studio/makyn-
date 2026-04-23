@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 
 import { IssueStatus, prisma } from "@makyn/db";
 import { calculateCompanyStatus, type IssueForStatus } from "@makyn/core";
@@ -208,16 +209,20 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             })}
           </div>
 
-          <form method="get" className="flex-1 min-w-[200px] max-w-[360px]">
+          <form method="get" className="flex-1 min-w-[200px] max-w-[360px] relative">
             {filter !== "all" && <input type="hidden" name="filter" value={filter} />}
             {sort !== "activity" && <input type="hidden" name="sort" value={sort} />}
             {view !== "grid" && <input type="hidden" name="view" value={view} />}
+            <Search
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-40)] start-3 pointer-events-none"
+              strokeWidth={1.5}
+            />
             <input
               type="search"
               name="q"
               defaultValue={q}
               placeholder={isAr ? "بحث بالاسم أو السجل" : "Search name or CR"}
-              className="w-full rounded-lg bg-[var(--card)] border border-[var(--stone-hair)] px-3 py-2 text-[13px] placeholder:text-[var(--ink-40)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--signal)]"
+              className="w-full rounded-lg bg-[var(--card)] border border-[var(--stone-hair)] ps-9 pe-3 py-2 text-[13px] placeholder:text-[var(--ink-40)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--signal)]"
             />
           </form>
 
