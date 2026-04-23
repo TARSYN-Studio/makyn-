@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, Search } from "lucide-react";
 
 import { ExtractionStatus, prisma } from "@makyn/db";
 
@@ -15,38 +15,38 @@ type SearchParams = { sort?: SortKey; q?: string };
 function stateBadge(
   state: ExtractionStatus,
   lang: Lang
-): { label: string; tone: string; dot: string } {
+): { label: string; tone: string; tint: string } {
   const isAr = lang === "ar";
   switch (state) {
     case ExtractionStatus.COMPLETED:
       return {
         label: isAr ? "مكتمل" : "Extracted",
         tone: "var(--state-resolved)",
-        dot: "var(--state-resolved)"
+        tint: "var(--state-resolved-tint)"
       };
     case ExtractionStatus.PROCESSING:
       return {
         label: isAr ? "جارٍ" : "Processing",
         tone: "var(--signal)",
-        dot: "var(--signal)"
+        tint: "var(--signal-tint)"
       };
     case ExtractionStatus.PENDING:
       return {
         label: isAr ? "قيد الانتظار" : "Pending",
         tone: "var(--state-pending)",
-        dot: "var(--state-pending)"
+        tint: "var(--state-pending-tint)"
       };
     case ExtractionStatus.FAILED:
       return {
         label: isAr ? "فشل" : "Failed",
         tone: "var(--state-overdue)",
-        dot: "var(--state-overdue)"
+        tint: "var(--state-overdue-tint)"
       };
     default:
       return {
         label: String(state),
         tone: "var(--ink-40)",
-        dot: "var(--ink-40)"
+        tint: "var(--paper-deep)"
       };
   }
 }
@@ -95,11 +95,23 @@ export default async function DocumentsPage({
     })
   ]);
 
-  const metrics = [
+  const metrics: Array<{ label: string; value: number; tone?: string }> = [
     { label: isAr ? "إجمالي" : "Total", value: total },
-    { label: isAr ? "مستخرجة" : "Extracted", value: completed },
-    { label: isAr ? "قيد الاستخراج" : "In progress", value: pending },
-    { label: isAr ? "فشلت" : "Failed", value: failed }
+    {
+      label: isAr ? "مستخرجة" : "Extracted",
+      value: completed,
+      tone: "var(--state-resolved)"
+    },
+    {
+      label: isAr ? "قيد الاستخراج" : "In progress",
+      value: pending,
+      tone: "var(--signal)"
+    },
+    {
+      label: isAr ? "فشلت" : "Failed",
+      value: failed,
+      tone: failed > 0 ? "var(--state-overdue)" : undefined
+    }
   ];
 
   const sortOptions: Array<{ key: SortKey; label: string }> = [
@@ -148,7 +160,13 @@ export default async function DocumentsPage({
               >
                 {m.label}
               </div>
-              <div className="num text-[24px] font-semibold text-[var(--ink)] leading-none">
+              <div
+                className="num text-[28px] font-semibold leading-none"
+                style={{
+                  color: m.tone ?? "var(--ink)",
+                  letterSpacing: "-0.02em"
+                }}
+              >
                 {m.value}
               </div>
             </div>
@@ -158,14 +176,18 @@ export default async function DocumentsPage({
 
       <Reveal delay={120}>
         <div className="flex items-center gap-3 mb-5 flex-wrap">
-          <form method="get" className="flex-1 min-w-[220px] max-w-[360px]">
+          <form method="get" className="flex-1 min-w-[220px] max-w-[360px] relative">
             {sort !== "recent" && <input type="hidden" name="sort" value={sort} />}
+            <Search
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-40)] start-3 pointer-events-none"
+              strokeWidth={1.5}
+            />
             <input
               type="search"
               name="q"
               defaultValue={q}
               placeholder={isAr ? "بحث بالاسم أو النوع" : "Search name or type"}
-              className="w-full rounded-lg bg-[var(--card)] border border-[var(--stone-hair)] px-3 py-2 text-[13px] placeholder:text-[var(--ink-40)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--signal)]"
+              className="w-full rounded-lg bg-[var(--card)] border border-[var(--stone-hair)] ps-9 pe-3 py-2 text-[13px] placeholder:text-[var(--ink-40)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(30,58,138,0.1)] focus:border-[var(--signal)]"
             />
           </form>
           <div className="ms-auto flex items-center rounded-lg border border-[var(--stone-hair)] bg-[var(--card)] p-0.5">
@@ -241,12 +263,17 @@ export default async function DocumentsPage({
                   <div className="flex items-center text-[12px] text-[var(--ink-60)] truncate">
                     {d.docType}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[12px]">
+                  <div className="flex items-center">
                     <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0"
-                      style={{ background: s.dot }}
-                    />
-                    <span style={{ color: s.tone }}>{s.label}</span>
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono font-medium tracking-wider uppercase"
+                      style={{ background: s.tint, color: s.tone }}
+                    >
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ background: s.tone }}
+                      />
+                      {s.label}
+                    </span>
                   </div>
                   <div className="flex items-center justify-end num text-[12px] text-[var(--ink-40)]">
                     {d.createdAt.toISOString().slice(0, 10)}
